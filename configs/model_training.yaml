@@ -1,0 +1,63 @@
+dataset:
+  root: aeb/dataset_v3
+  report_path: aeb/training_runs/dataset_audit.json
+
+readiness:
+  minimum_images:
+    train: 1500
+    val: 300
+    test: 200
+  minimum_sessions:
+    train: 3
+    val: 1
+    test: 1
+  minimum_train_instances: 3000
+  minimum_empty_ratio: 0.03
+  maximum_empty_ratio: 0.30
+  maximum_near_duplicate_ratio: 0.30
+  near_duplicate_hamming_distance: 2
+
+training:
+  base_model: aeb/models/yolo26n.pt
+  project: aeb/training_runs/detect
+  name_prefix: yolo26n_aeb
+  device: 0
+  imgsz: 640
+  epochs: 100
+  patience: 20
+  batch: 4
+  workers: 4
+  cache: false
+  amp: true
+  seed: 2026
+  deterministic: true
+  optimizer: AdamW
+  lr0: 0.001
+  mosaic: 0.5
+  mixup: 0.0
+  copy_paste: 0.0
+  close_mosaic: 10
+  minimum_free_gpu_memory_mb: 3000
+
+quality_gate:
+  minimum_precision: 0.75
+  minimum_recall: 0.75
+  minimum_map50: 0.80
+  minimum_map50_95: 0.50
+
+export:
+  format: onnx
+  opset: 17
+  simplify: true
+  dynamic: false
+  half: false
+  benchmark_images: 30
+
+deployment:
+  pt_path: aeb/models/yolo26n.pt
+  onnx_path: aeb/models/yolo26n.onnx
+  manifest_path: aeb/models/model_manifest.json
+  archive_dir: aeb/models/archive
+
+watch:
+  poll_seconds: 60

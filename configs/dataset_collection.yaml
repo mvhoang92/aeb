@@ -1,0 +1,78 @@
+world:
+  map: Town04
+  load_map: true
+  fixed_delta_seconds: 0.05
+
+traffic_manager:
+  port: 8000
+  global_distance_to_leading_vehicle_m: 2.5
+  global_speed_difference_percent: 0.0
+  seed: 2026
+
+traffic:
+  spawn_vehicles: true
+  number_of_vehicles: 30
+  actor_filter: vehicle.*
+  safe_blueprints: true
+  car_lights_on: false
+  same_lane_vehicles_ahead: 10
+  same_lane_first_distance_m: 22.0
+  same_lane_spacing_m: 20.0
+  same_lane_following_distance_m: 8.0
+
+ego:
+  blueprint: vehicle.tesla.model3
+  role_name: hero
+  spawn_index: 143
+  autopilot: true
+  auto_lane_change: false
+
+camera:
+  image_size_x: 1280
+  image_size_y: 720
+  fov: 70
+  sensor_tick: 0.0
+  gamma: 2.2
+  enable_postprocess_effects: true
+  location:
+    x: 0.8
+    y: 0.0
+    z: 1.55
+  rotation:
+    pitch: 0.0
+    yaw: 0.0
+    roll: 0.0
+
+dataset:
+  root: aeb/dataset_v3
+  split: train
+  class_id: 0
+  class_name: car
+  save_interval_frames_min: 5
+  save_interval_frames_max: 10
+  max_samples: 2000
+  settle_frames: 10
+  save_empty_images: true
+  empty_frame_keep_ratio: 0.15
+  save_previews: true
+  show_preview_window: true
+  jpeg_quality: 95
+  random_seed: 2026
+
+filter:
+  actor_pattern: vehicle.*
+  minimum_wheels: 4
+  max_distance_m: 80.0
+  near_plane_m: 0.10
+  min_box_width_px: 14
+  min_box_height_px: 10
+  min_box_area_px: 180
+  max_truncation: 0.50
+  use_depth_visibility: true
+  use_semantic_visibility: true
+  vehicle_semantic_tag: 10
+  depth_tolerance_m: 1.5
+  fit_box_to_visible_pixels: true
+  visible_box_padding_px: 2
+  min_visible_pixels: 50
+  min_visible_ratio: 0.25

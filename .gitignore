@@ -1,0 +1,44 @@
+# Python caches and local environments
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# IDE and operating-system files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Generated datasets and training artifacts
+raw_dataset/
+dataset/
+dataset_v2/
+dataset_v3/
+training_runs/
+outputs/
+weights/
+
+# Runtime logs and temporary files
+logs/
+*.log
+*.tmp
+
+# Future model archives and large exports
+models/archive/
+models/*.engine
+models/*.plan
+models/*.trt
+
+# Local secrets and machine-specific configuration
+.env
+.env.*
+!.env.example
