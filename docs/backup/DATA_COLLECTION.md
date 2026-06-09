@@ -1,6 +1,6 @@
 # Thu Thập Dataset Xe Bằng Ground Truth CARLA
 
-Script `collect_ground_truth_data.py` tự động:
+Script `scripts/collect_yolo_dataset.py` tự động:
 
 - Spawn ego `vehicle.tesla.model3`.
 - Tự spawn traffic vehicle bằng Traffic Manager.
@@ -34,7 +34,7 @@ class và thu thêm dataset tương ứng.
 
 ```text
 aeb/
-├── collect_ground_truth_data.py
+├── scripts/collect_yolo_dataset.py
 ├── configs/
 │   └── dataset_collection.yaml
 ├── core/
@@ -90,7 +90,7 @@ ScenarioRunner hoặc client synchronous khác cùng lúc.
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11
-venv/bin/python aeb/collect_ground_truth_data.py \
+venv/bin/python aeb/scripts/collect_yolo_dataset.py \
   --split train \
   --session-id town04_train_01 \
   --seed 2026 \
@@ -102,7 +102,7 @@ Nhấn `Q` hoặc `Esc` trong cửa sổ preview để dừng sớm.
 Mỗi `session-id` là duy nhất. Khi thu một lượt mới, đổi tên session:
 
 ```bash
-venv/bin/python aeb/collect_ground_truth_data.py \
+venv/bin/python aeb/scripts/collect_yolo_dataset.py \
   --split train \
   --session-id town04_train_02 \
   --max-samples 2000
@@ -111,7 +111,7 @@ venv/bin/python aeb/collect_ground_truth_data.py \
 Nếu lượt thu trước bị dừng giữa chừng và config chưa thay đổi, chạy tiếp bằng:
 
 ```bash
-venv/bin/python aeb/collect_ground_truth_data.py \
+venv/bin/python aeb/scripts/collect_yolo_dataset.py \
   --split train \
   --session-id town04_train_01 \
   --max-samples 2000 \
@@ -125,7 +125,7 @@ Nếu config đã thay đổi, hãy tạo session mới để không trộn hai 
 Chạy không mở cửa sổ:
 
 ```bash
-venv/bin/python aeb/collect_ground_truth_data.py \
+venv/bin/python aeb/scripts/collect_yolo_dataset.py \
   --split train \
   --session-id town04_train_01 \
   --max-samples 2000 \
@@ -143,7 +143,7 @@ traffic_manager:
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11
-venv/bin/python aeb/collect_ground_truth_data.py \
+venv/bin/python aeb/scripts/collect_yolo_dataset.py \
   --split val \
   --session-id town04_val_01 \
   --max-samples 500
@@ -322,7 +322,7 @@ Do cấu hình chính luôn đặt xe cùng làn phía trước, nên cần thu 
 đường trống:
 
 ```bash
-venv/bin/python aeb/collect_ground_truth_data.py \
+venv/bin/python aeb/scripts/collect_yolo_dataset.py \
   --split train \
   --session-id town04_train_clear_01 \
   --seed 5026 \

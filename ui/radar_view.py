@@ -6,8 +6,14 @@ from __future__ import print_function
 
 import argparse
 import math
+import sys
+from pathlib import Path
 
-from two_panel_common import (
+AEB_ROOT = Path(__file__).resolve().parents[1]
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
+
+from ui.manual_control_common import (
     RadarSensor,
     add_common_args,
     compute_ttc,

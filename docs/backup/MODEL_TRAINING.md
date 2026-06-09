@@ -1,6 +1,6 @@
 # Pipeline Tự Động Train Và Test YOLO26n
 
-File `aeb/model_pipeline.py` thực hiện tuần tự:
+File `aeb/scripts/train_yolo_pipeline.py` thực hiện tuần tự:
 
 1. Audit dataset train, validation và test.
 2. Chờ dataset đạt quality gate nếu chạy với `--watch`.
@@ -34,26 +34,26 @@ minimum_empty_ratio: 0.03
 Nên thu nhiều session với seed khác nhau:
 
 ```bash
-venv/bin/python aeb/collect_ground_truth_data.py \
+venv/bin/python aeb/scripts/collect_yolo_dataset.py \
   --split train --session-id town04_train_01 --seed 2026 --max-samples 500
 
-venv/bin/python aeb/collect_ground_truth_data.py \
+venv/bin/python aeb/scripts/collect_yolo_dataset.py \
   --split train --session-id town04_train_02 --seed 2027 --max-samples 500
 
-venv/bin/python aeb/collect_ground_truth_data.py \
+venv/bin/python aeb/scripts/collect_yolo_dataset.py \
   --split train --session-id town04_train_03 --seed 2028 --max-samples 500
 
-venv/bin/python aeb/collect_ground_truth_data.py \
+venv/bin/python aeb/scripts/collect_yolo_dataset.py \
   --split val --session-id town04_val_01 --seed 3026 --max-samples 300
 
-venv/bin/python aeb/collect_ground_truth_data.py \
+venv/bin/python aeb/scripts/collect_yolo_dataset.py \
   --split test --session-id town04_test_01 --seed 4026 --max-samples 200
 ```
 
 Thu thêm negative sample đường trống cho từng split. Ví dụ:
 
 ```bash
-venv/bin/python aeb/collect_ground_truth_data.py \
+venv/bin/python aeb/scripts/collect_yolo_dataset.py \
   --split train \
   --session-id town04_train_clear_01 \
   --seed 5026 \
@@ -72,7 +72,7 @@ Không dùng cùng seed cho train, val và test. Collector lưu tất cả vào
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11
-python3 aeb/model_pipeline.py --audit-only
+python3 aeb/scripts/train_yolo_pipeline.py --audit-only
 ```
 
 Report được lưu tại:
@@ -97,7 +97,7 @@ Có thể bật watcher trước hoặc sau khi thu data:
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11
-python3 aeb/model_pipeline.py --watch
+python3 aeb/scripts/train_yolo_pipeline.py --watch
 ```
 
 Watcher kiểm tra lại mỗi 60 giây. Khi dataset đạt và GPU còn tối thiểu 3000 MiB,
@@ -107,7 +107,7 @@ script tự train, test, export và triển khai. Sau khi thu data xong cần t�
 Chạy một lần, không chờ:
 
 ```bash
-python3 aeb/model_pipeline.py
+python3 aeb/scripts/train_yolo_pipeline.py
 ```
 
 Không nên dùng `--force-train` cho model chính thức. Cờ này chỉ phục vụ smoke
@@ -174,8 +174,8 @@ trên `CUDAExecutionProvider`.
 Sau kiểm thử offline, chạy lại trên CARLA:
 
 ```bash
-venv/bin/python aeb/test_model.py
-venv/bin/python aeb/test_fusion.py
+venv/bin/python aeb/ui/yolo_view.py
+venv/bin/python aeb/ui/fusion_view.py
 ```
 
 Hai file này tự dùng `aeb/models/yolo26n.onnx` mới nếu model đã qua quality gate.

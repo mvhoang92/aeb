@@ -10,18 +10,29 @@ triển thuật toán. Đây chưa phải quy trình chứng nhận Euro NCAP ch
 
 | File | Mục đích |
 | --- | --- |
-| `test_cam.py` | Kiểm tra camera sau kính lái và giao diện manual control. |
-| `test_radar.py` | Kiểm tra toàn bộ radar point trên bird-eye view. |
-| `test_model.py` | Kiểm tra camera và YOLO ONNX CUDA. |
-| `test_fusion.py` | Kiểm tra phép chiếu radar lên bbox camera. |
-| `test_brake_radar.py` | Test radar-only AEB, phanh nhị phân và icon cảnh báo FCW/AEB. |
-| `run_radar_aeb_scenarios.py` | Tự spawn xe, chạy batch scenario và ghi log. |
+| `ui/camera_view.py` | Kiểm tra camera sau kính lái và giao diện manual control. |
+| `ui/radar_view.py` | Kiểm tra toàn bộ radar point trên bird-eye view. |
+| `ui/yolo_view.py` | Kiểm tra camera và YOLO ONNX CUDA. |
+| `ui/fusion_view.py` | Kiểm tra phép chiếu radar lên bbox camera. |
+| `ui/radar_aeb_view.py` | Test radar-only AEB, phanh nhị phân và icon cảnh báo FCW/AEB. |
+| `scripts/run_radar_aeb_scenarios.py` | Tự spawn xe, chạy batch scenario và ghi log. |
 
 Config của batch test nằm tại:
 
 ```text
 aeb/configs/radar_aeb_scenarios.yaml
 ```
+
+Ma trận validation 50-80 km/h nằm tại:
+
+```text
+aeb/configs/radar_only_validation.yaml
+```
+
+Ma trận này gồm đường trống, xe đứng yên cùng làn, xe trước chạy chậm, xe
+trước phanh gấp, xe làn bên, xe không khép khoảng cách, đường cong, cut-in,
+cut-out và nhiều xe. Scenario có `control_modes: [physics]` sẽ tự được bỏ qua
+ở deterministic.
 
 ## Kịch Bản Tự Động
 
@@ -63,6 +74,37 @@ aeb/configs/radar_aeb_scenarios.yaml
 - Mục tiêu: kiểm tra hành lang quỹ đạo loại vật thể ngoài làn ego.
 - Kỳ vọng: không phanh nhầm, không va chạm.
 
+### Nhóm cut-in
+
+- `cut_in_65_45`: xe 45 km/h từ làn trái nhập vào trước ego 65 km/h.
+- `cut_in_80_50`: xe 50 km/h từ làn trái nhập vào trước ego 80 km/h.
+- Target ban đầu khác làn, sau đó phải cùng làn với ego.
+- AEB phải phanh, không va chạm và radar target tại thời điểm phanh phải ghép
+  đúng actor có role `cut_in`.
+
+### Nhóm cut-out
+
+- `cut_out_65_35`: xe chậm chuyển làn sớm; có thể cảnh báo vàng ngắn nhưng
+  không được phanh.
+- `cut_out_late_65_35`: xe chuyển làn muộn, thân xe còn lấn hành lang va chạm
+  nên AEB phải phanh.
+- `cut_out_80_50`: xe trước rời làn đủ sớm ở vận tốc ego 80 km/h; không được
+  phanh.
+- Cả ba case phải kết thúc với hazard khác làn ego.
+
+Với cut-out đã rời làn, khoảng cách dọc có thể trở thành số âm khi ego đi qua
+xe ở làn bên. Vì vậy các case này đặt `report_minimum_gap: false`; summary và
+bằng chứng không dùng giá trị đó như khoảng cách an toàn.
+
+### Nhóm nhiều xe
+
+- `multi_adjacent_decoy_65`: xe đứng yên gần hơn ở làn trái là mồi; xe chạy
+  chậm cùng làn mới là hazard.
+- `multi_two_leads_80`: hai xe cùng làn; AEB phải chọn xe gần đang chạy chậm,
+  không chọn xe xa hơn.
+- Cả hai case kiểm tra `expected_brake_actor` để xác nhận AEB phanh theo đúng
+  actor, không chỉ kiểm tra có phanh hay không.
+
 ## Cách Chạy
 
 Khởi động CARLA:
@@ -76,32 +118,54 @@ Chạy toàn bộ batch:
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11
-python3.7 aeb/run_radar_aeb_scenarios.py
+python3.7 aeb/scripts/run_radar_aeb_scenarios.py
 ```
 
 Chỉ chạy một case:
 
 ```bash
-python3.7 aeb/run_radar_aeb_scenarios.py --scenario ccrs_30
+python3.7 aeb/scripts/run_radar_aeb_scenarios.py --scenario ccrs_30
 ```
 
 Chọn tên thư mục log cố định:
 
 ```bash
-python3.7 aeb/run_radar_aeb_scenarios.py --run-id baseline_01
+python3.7 aeb/scripts/run_radar_aeb_scenarios.py --run-id baseline_01
 ```
 
 Lặp mỗi scenario nhiều lần:
 
 ```bash
-python3.7 aeb/run_radar_aeb_scenarios.py --repeat 5
+python3.7 aeb/scripts/run_radar_aeb_scenarios.py --repeat 5
 ```
 
 Chạy điều khiển vận tốc bằng throttle/brake vật lý:
 
 ```bash
-python3.7 aeb/run_radar_aeb_scenarios.py --control-mode physics
+python3.7 aeb/scripts/run_radar_aeb_scenarios.py --control-mode physics
 ```
+
+Chạy toàn bộ ma trận 50-80 km/h:
+
+```bash
+python3.7 aeb/scripts/run_radar_aeb_scenarios.py \
+  --scenario-config aeb/configs/radar_only_validation.yaml \
+  --control-mode physics \
+  --repeat 3
+```
+
+Ghi video và ảnh sự kiện:
+
+```bash
+python3.7 aeb/scripts/run_radar_aeb_scenarios.py \
+  --scenario-config aeb/configs/radar_only_validation.yaml \
+  --control-mode physics \
+  --scenario ccrs_80 \
+  --record-evidence
+```
+
+`--record-evidence` tạo video chase camera `960x540`, 20 FPS và ảnh tại mốc
+cảnh báo đầu tiên, phanh đầu tiên và khoảng cách nhỏ nhất.
 
 `deterministic` là chế độ mặc định và dùng `set_target_velocity` trước khi AEB
 can thiệp. `physics` dùng bộ giữ tốc độ đơn giản để đánh giá gần động lực học
@@ -114,7 +178,7 @@ Runner tự:
 3. Spawn ego, radar, collision sensor và xe mục tiêu.
 4. Giữ đúng vận tốc scenario cho tới khi AEB bắt đầu override; từ thời điểm
    phanh, xe chạy hoàn toàn theo động lực học và lệnh brake của CARLA.
-5. Chạy cùng `RadarAEBPipeline` với `test_brake_radar.py`, không tạo cửa sổ
+5. Chạy cùng `RadarAEBPipeline` với `ui/radar_aeb_view.py`, không tạo cửa sổ
    pygame hoặc đối tượng manual control.
 6. Xóa actor sau mỗi scenario.
 7. Khôi phục world settings ban đầu kể cả khi script gặp lỗi.
@@ -160,6 +224,8 @@ Mỗi file scenario có một dòng cho mỗi tick CARLA. Các cột quan trọn
 | `ego_acceleration_mps2` | Gia tốc dọc từ CARLA; âm là giảm tốc. |
 | `ego_jerk_mps3` | Đạo hàm theo thời gian của gia tốc dọc. |
 | `ego_x_m`, `ego_y_m`, `ego_lane_id` | Vị trí và lane ID ground-truth của ego. |
+| `ego_lane_center_offset_m` | Độ lệch ngang giữa tâm ego và tâm làn. |
+| `ego_heading_error_deg` | Sai lệch yaw giữa ego và hướng của làn. |
 | `target_speed_kph` | Vận tốc thực tế của xe mục tiêu. |
 | `target_x_m`, `target_y_m`, `target_lane_id` | Vị trí và lane ID của target. |
 | `center_distance_m` | Khoảng cách Euclid giữa tâm hai actor. |
@@ -169,16 +235,22 @@ Mỗi file scenario có một dòng cho mỗi tick CARLA. Các cột quan trọn
 | `path_candidates` | Point còn lại sau bộ lọc hành lang và mặt đường. |
 | `clusters` | Số radar cluster đang được theo dõi. |
 | `confirmed_clusters` | Số cluster đủ số frame xác nhận. |
-| `target_distance_m` | Khoảng cách radar của cluster được AEB chọn. |
-| `target_relative_velocity_mps` | Vận tốc tương đối; âm nghĩa là đang khép khoảng cách. |
+| `target_distance_m` | Khoảng cách dọc của `RadarObject` được AEB chọn. |
+| `target_relative_velocity_mps` | Vận tốc tương đối của object; âm nghĩa là đang khép khoảng cách. |
 | `ttc_s` | TTC của target; để trống khi TTC vô hạn. |
 | `required_distance_m` | Khoảng cách dừng yêu cầu theo vận tốc hai xe. |
 | `distance_margin_m` | Khoảng cách radar trừ khoảng cách dừng yêu cầu. |
 | `aeb_state` | `NORMAL`, `WARNING`, `BRAKE` hoặc `RELEASE`. |
 | `brake_cmd` | Lệnh phanh thực tế gửi tới ego. |
+| `steer_cmd` | Lệnh lái của test runner trong case lane-follow. |
 | `aeb_override` | `1` khi AEB đang giành quyền điều khiển phanh. |
 | `collision_count` | Số callback collision đã nhận. |
 | `control_mode` | `deterministic` hoặc `physics`. |
+| `scenario_actor_count` | Tổng số actor do scenario runner sinh ra. |
+| `hazard_actor_role` | Role ground truth của actor được khai báo là nguy hiểm. |
+| `radar_target_actor_role` | Actor ground truth gần nhất với `RadarObject` đang được chọn. |
+| `radar_target_actor_error_m` | Sai số không gian giữa radar object và tâm actor ghép được. |
+| `radar_target_matches_hazard` | `1` khi radar target ghép đúng hazard, `0` khi ghép actor khác. |
 
 Trong giao diện tương tác, trạng thái `WARNING` hiển thị icon `!` màu vàng;
 trạng thái `BRAKE` hiển thị icon `!` màu đỏ. Đây là tín hiệu HMI mô phỏng,
@@ -200,6 +272,10 @@ chưa bao gồm âm thanh cảnh báo.
 - Giảm tốc cực đại, jerk cực đại và vận tốc cuối.
 - Tỷ lệ tick có target radar đã xác nhận.
 - Số radar point, candidate và cluster lớn nhất.
+- Độ lệch tâm làn và sai lệch hướng lớn nhất.
+- Quan hệ cùng làn ban đầu/cuối cùng và thời điểm hazard bắt đầu cùng làn.
+- Tỷ lệ radar target ghép đúng hazard và actor được chọn tại thời điểm phanh.
+- Đường dẫn video và file sự kiện nếu bật ghi bằng chứng.
 
 `aggregate_summary.csv/json` nhóm các lần lặp theo scenario và ghi số lần
 PASS, pass rate, brake rate, gap nhỏ nhất và thời điểm phanh trung bình.
@@ -209,6 +285,7 @@ Tiêu chí hiện tại:
 - Case nguy hiểm: phải có `aeb_override = 1` và không collision.
 - Bumper gap nhỏ nhất phải lớn hơn `min_stop_gap_m`, mặc định `0,5 m`.
 - Case an toàn: không được có `aeb_override = 1` và không collision.
+- Case có `max_lane_offset_m`: độ lệch tâm làn không được vượt ngưỡng.
 - Gia tốc và jerk đã được log; `0,25 s` đầu được bỏ qua khi tính cực trị để
   tránh transient do khởi tạo scenario.
 
@@ -281,3 +358,6 @@ Binary AEB hiện bật `hold_brake_until_stopped`, vì vậy sau khi phanh kh�
 đã kích hoạt, lệnh phanh được giữ tới khi ego gần dừng hẳn. Nếu tắt tùy chọn
 này, cần đặc biệt kiểm tra hiện tượng TTC tăng trong lúc giảm tốc làm AEB nhả
 phanh quá sớm.
+
+Nhật ký regression 50-80 km/h ngày 6/6/2026 nằm tại
+[`RADAR_ONLY_EXPERIMENT_LOG.md`](RADAR_ONLY_EXPERIMENT_LOG.md).

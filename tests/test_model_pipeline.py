@@ -9,7 +9,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from model_pipeline import (
+from scripts.train_yolo_pipeline import (
     difference_hash,
     hamming_distance,
     parse_yolo_label,

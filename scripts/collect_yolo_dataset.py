@@ -16,8 +16,13 @@ from datetime import datetime
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
+AEB_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = AEB_ROOT.parent
+ROOT = PROJECT_ROOT
 CARLA_DIST = ROOT / "PythonAPI" / "carla" / "dist"
+
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
 
 try:
     sys.path.append(
@@ -65,7 +70,7 @@ from core.ground_truth_labels import (
 )
 
 
-DEFAULT_CONFIG = ROOT / "aeb" / "configs" / "dataset_collection.yaml"
+DEFAULT_CONFIG = AEB_ROOT / "configs" / "dataset_collection.yaml"
 
 
 def load_yaml(path):

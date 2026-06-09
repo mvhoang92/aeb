@@ -16,9 +16,13 @@ import weakref
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
+AEB_ROOT = Path(__file__).resolve().parents[1]
+ROOT = AEB_ROOT.parent
 CARLA_DIST = ROOT / "PythonAPI" / "carla" / "dist"
 EXAMPLES_DIR = ROOT / "PythonAPI" / "examples"
+
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
 
 try:
     sys.path.append(
@@ -62,7 +66,7 @@ except ImportError:
 import manual_control
 
 
-DEFAULT_CONFIG = ROOT / "aeb" / "configs" / "camera.yaml"
+DEFAULT_CONFIG = AEB_ROOT / "configs" / "camera.yaml"
 
 
 def load_yaml(path):

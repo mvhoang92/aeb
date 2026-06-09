@@ -6,6 +6,12 @@ from __future__ import print_function
 
 import argparse
 import math
+import sys
+from pathlib import Path
+
+AEB_ROOT = Path(__file__).resolve().parents[1]
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
 
 from control.brake import (
     AEBState,
@@ -13,8 +19,8 @@ from control.brake import (
     compute_ttc,
 )
 from core.radar_aeb_pipeline import RadarAEBPipeline
-from test_radar import RadarBirdEyePanel
-from two_panel_common import (
+from ui.radar_view import RadarBirdEyePanel
+from ui.manual_control_common import (
     add_common_args,
     format_float,
     pygame,

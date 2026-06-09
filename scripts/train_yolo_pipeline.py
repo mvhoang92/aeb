@@ -20,8 +20,13 @@ import numpy as np
 import yaml
 
 
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_CONFIG = ROOT / "aeb" / "configs" / "model_training.yaml"
+AEB_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = AEB_ROOT.parent
+ROOT = PROJECT_ROOT
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
+
+DEFAULT_CONFIG = AEB_ROOT / "configs" / "model_training.yaml"
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png"}
 SPLITS = ("train", "val", "test")
 

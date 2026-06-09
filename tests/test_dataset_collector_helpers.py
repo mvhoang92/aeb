@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from collect_ground_truth_data import heading_difference_degrees
+from scripts.collect_yolo_dataset import heading_difference_degrees
 
 
 class DatasetCollectorHelperTests(unittest.TestCase):

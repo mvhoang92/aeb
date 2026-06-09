@@ -16,9 +16,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
+AEB_ROOT = Path(__file__).resolve().parents[1]
+ROOT = AEB_ROOT.parent
 CARLA_DIST = ROOT / "PythonAPI" / "carla" / "dist"
 EXAMPLES_DIR = ROOT / "PythonAPI" / "examples"
+
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
 
 try:
     sys.path.append(
@@ -64,9 +68,9 @@ except ImportError:
 import manual_control
 
 
-DEFAULT_CONFIG = ROOT / "aeb" / "configs" / "sensors.yaml"
-DEFAULT_MODEL_PATH = ROOT / "aeb" / "models" / "yolo26n.pt"
-DEFAULT_ONNX_MODEL_PATH = ROOT / "aeb" / "models" / "yolo26n.onnx"
+DEFAULT_CONFIG = AEB_ROOT / "configs" / "sensors.yaml"
+DEFAULT_MODEL_PATH = AEB_ROOT / "models" / "yolo26n.pt"
+DEFAULT_ONNX_MODEL_PATH = AEB_ROOT / "models" / "yolo26n.onnx"
 
 COCO_NAMES = {
     0: "person",

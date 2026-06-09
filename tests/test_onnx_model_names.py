@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from two_panel_common import onnx_model_names
+from ui.manual_control_common import onnx_model_names
 
 
 class OnnxModelNamesTests(unittest.TestCase):

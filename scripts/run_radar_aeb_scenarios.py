@@ -8,20 +8,23 @@ import argparse
 import csv
 import json
 import math
+import shutil
+import subprocess
 import sys
+import threading
 import time
 from datetime import datetime
 from pathlib import Path
 
 
-AEB_ROOT = Path(__file__).resolve().parent
+AEB_ROOT = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = AEB_ROOT.parent
 if str(AEB_ROOT) not in sys.path:
     sys.path.insert(0, str(AEB_ROOT))
 
-from control.brake import AEBState, apply_brake_override
+from control.brake import AEBState, apply_brake_override, as_bool
 from core.radar_aeb_pipeline import RadarAEBPipeline
-from two_panel_common import RadarSensor, carla, load_yaml
+from ui.manual_control_common import RadarSensor, carla, load_yaml
 
 
 DEFAULT_SENSOR_CONFIG = AEB_ROOT / "configs" / "sensors.yaml"
@@ -40,11 +43,18 @@ TICK_FIELDS = [
     "ego_x_m",
     "ego_y_m",
     "ego_lane_id",
+    "ego_lane_center_offset_m",
+    "ego_heading_error_deg",
     "target_speed_mps",
     "target_speed_kph",
     "target_x_m",
     "target_y_m",
     "target_lane_id",
+    "scenario_actor_count",
+    "hazard_actor_role",
+    "radar_target_actor_role",
+    "radar_target_actor_error_m",
+    "radar_target_matches_hazard",
     "center_distance_m",
     "bumper_gap_m",
     "lateral_offset_m",
@@ -66,6 +76,7 @@ TICK_FIELDS = [
     "aeb_reason",
     "brake_cmd",
     "throttle_cmd",
+    "steer_cmd",
     "aeb_override",
     "collision_count",
     "control_mode",
@@ -98,6 +109,15 @@ SUMMARY_FIELDS = [
     "maximum_path_candidates",
     "maximum_clusters",
     "maximum_confirmed_clusters",
+    "maximum_abs_lane_center_offset_m",
+    "maximum_abs_heading_error_deg",
+    "hazard_initial_same_lane",
+    "hazard_final_same_lane",
+    "first_hazard_same_lane_s",
+    "radar_target_hazard_match_rate_pct",
+    "brake_target_actor_role",
+    "evidence_video",
+    "evidence_events",
     "log_file",
     "failure_reason",
 ]
@@ -152,6 +172,165 @@ class CollisionRecorder(object):
         self.sensor = None
 
 
+class ScenarioEvidenceRecorder(object):
+    """Record a chase-camera video and event screenshots for one scenario."""
+
+    def __init__(
+        self,
+        world,
+        vehicle,
+        run_directory,
+        scenario_id,
+        run_index,
+        repeat,
+        fixed_delta_seconds,
+    ):
+        suffix = "_run_{:02d}".format(run_index) if repeat > 1 else ""
+        self.name = "{}{}".format(scenario_id, suffix)
+        self.output_directory = Path(run_directory) / "evidence" / self.name
+        self.frames_directory = self.output_directory / "frames"
+        self.frames_directory.mkdir(parents=True, exist_ok=False)
+        self.video_path = self.output_directory / "{}.mp4".format(self.name)
+        self.events_path = self.output_directory / "events.json"
+        self._callback_error = None
+        self._lock = threading.Lock()
+        self.saved_frames = {}
+        self.latest_frame = None
+
+        blueprint = world.get_blueprint_library().find("sensor.camera.rgb")
+        blueprint.set_attribute("image_size_x", "960")
+        blueprint.set_attribute("image_size_y", "540")
+        blueprint.set_attribute("fov", "90")
+        camera_tick = float(fixed_delta_seconds)
+        blueprint.set_attribute("sensor_tick", str(camera_tick))
+        self.frame_rate = 1.0 / camera_tick
+        transform = carla.Transform(
+            carla.Location(x=-8.0, y=0.0, z=2.8),
+            carla.Rotation(pitch=-5.0),
+        )
+        attachment_type = getattr(carla.AttachmentType, "SpringArm", None)
+        spawn_kwargs = {"attach_to": vehicle}
+        if attachment_type is not None:
+            spawn_kwargs["attachment_type"] = attachment_type
+        self.sensor = world.spawn_actor(blueprint, transform, **spawn_kwargs)
+        self.sensor.listen(self._save_frame)
+
+    def _save_frame(self, image):
+        path = self.frames_directory / "{:08d}.png".format(image.frame)
+        try:
+            image.save_to_disk(str(path))
+            with self._lock:
+                self.saved_frames[int(image.frame)] = path
+                self.latest_frame = int(image.frame)
+        except Exception as exc:  # pylint: disable=broad-except
+            self._callback_error = str(exc)
+
+    def wait_for_frame(self, world_frame, timeout_s=2.0):
+        deadline = time.monotonic() + float(timeout_s)
+        while time.monotonic() < deadline:
+            with self._lock:
+                latest_frame = self.latest_frame
+            if latest_frame is not None and latest_frame >= int(world_frame):
+                return True
+            if self._callback_error is not None:
+                return False
+            time.sleep(0.001)
+        return False
+
+    def finalize(self, rows, keep_frames=False, include_minimum_gap=True):
+        self.destroy()
+        deadline = time.monotonic() + 2.0
+        while time.monotonic() < deadline:
+            if any(self.frames_directory.glob("*.png")):
+                break
+            time.sleep(0.02)
+
+        frame_paths = sorted(self.frames_directory.glob("*.png"))
+        event_records = []
+        for event in select_evidence_events(
+            rows,
+            include_minimum_gap=include_minimum_gap,
+        ):
+            source = nearest_frame_path(frame_paths, int(event["frame"]))
+            record = dict(event)
+            record["image"] = None
+            if source is not None:
+                destination = self.output_directory / "{}.png".format(event["name"])
+                shutil.copyfile(str(source), str(destination))
+                record["image"] = destination.name
+            event_records.append(record)
+
+        video_created = self._encode_video() if frame_paths else False
+        payload = {
+            "scenario": self.name,
+            "camera": {
+                "view": "third_person_chase",
+                "resolution": [960, 540],
+                "frame_rate": round(self.frame_rate, 3),
+            },
+            "video": self.video_path.name if video_created else None,
+            "callback_error": self._callback_error,
+            "events": event_records,
+        }
+        with open(str(self.events_path), "w") as stream:
+            json.dump(payload, stream, ensure_ascii=False, indent=2)
+
+        if video_created and not keep_frames:
+            shutil.rmtree(str(self.frames_directory))
+        evidence_root = self.output_directory.parent.parent
+        return {
+            "video": (
+                str(self.video_path.relative_to(evidence_root))
+                if video_created
+                else None
+            ),
+            "events": str(self.events_path.relative_to(evidence_root)),
+        }
+
+    def _encode_video(self):
+        command = [
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-framerate",
+            "{:.3f}".format(self.frame_rate),
+            "-pattern_type",
+            "glob",
+            "-i",
+            str(self.frames_directory / "*.png"),
+            "-c:v",
+            "libx264",
+            "-preset",
+            "veryfast",
+            "-crf",
+            "22",
+            "-pix_fmt",
+            "yuv420p",
+            str(self.video_path),
+        ]
+        try:
+            subprocess.run(command, check=True)
+        except (OSError, subprocess.CalledProcessError) as exc:
+            self._callback_error = "{}; ffmpeg: {}".format(
+                self._callback_error or "",
+                exc,
+            ).strip("; ")
+            return False
+        return self.video_path.exists() and self.video_path.stat().st_size > 0
+
+    def destroy(self):
+        if self.sensor is None:
+            return
+        try:
+            self.sensor.stop()
+            self.sensor.destroy()
+        except RuntimeError:
+            pass
+        self.sensor = None
+
+
 class ScenarioRunner(object):
     def __init__(self, args):
         self.args = args
@@ -168,6 +347,7 @@ class ScenarioRunner(object):
         self.original_settings = self.world.get_settings()
         self.carla_map = self.world.get_map()
         self.managed_actors = []
+        self.speed_control_integral = {}
 
     def run(self):
         self._ensure_map()
@@ -246,47 +426,104 @@ class ScenarioRunner(object):
         run_id = self.args.run_id or datetime.now().strftime("%Y%m%d_%H%M%S")
         run_directory = Path(self.args.log_root) / run_id
         run_directory.mkdir(parents=True, exist_ok=False)
+        config_directory = run_directory / "config_snapshot"
+        config_directory.mkdir()
+        shutil.copyfile(
+            str(self.args.sensor_config),
+            str(config_directory / Path(self.args.sensor_config).name),
+        )
+        shutil.copyfile(
+            str(self.args.scenario_config),
+            str(config_directory / Path(self.args.scenario_config).name),
+        )
         return run_directory
 
     def _selected_scenarios(self):
         scenarios = self.scenario_config.get("scenarios", [])
         if not self.args.scenario:
-            return scenarios
-        requested = set(self.args.scenario)
-        selected = [scenario for scenario in scenarios if scenario["id"] in requested]
-        missing = requested - set(scenario["id"] for scenario in selected)
-        if missing:
-            raise ValueError("Không tìm thấy scenario: {}".format(", ".join(sorted(missing))))
-        return selected
+            selected = scenarios
+        else:
+            requested = set(self.args.scenario)
+            selected = [
+                scenario for scenario in scenarios if scenario["id"] in requested
+            ]
+            missing = requested - set(scenario["id"] for scenario in selected)
+            if missing:
+                raise ValueError(
+                    "Không tìm thấy scenario: {}".format(
+                        ", ".join(sorted(missing))
+                    )
+                )
+        return [
+            scenario
+            for scenario in selected
+            if self._scenario_supports_control_mode(scenario)
+        ]
+
+    def _scenario_supports_control_mode(self, scenario):
+        control_modes = scenario.get("control_modes")
+        if not control_modes:
+            return True
+        return self.args.control_mode in [str(mode) for mode in control_modes]
 
     def _run_scenario(self, scenario, run_directory, run_index):
         self._destroy_managed_actors()
-        ego = self._spawn_ego()
+        ego = self._spawn_ego(scenario)
         collision = CollisionRecorder(ego)
         system = HeadlessRadarAEB(
             ego,
             self.sensor_config,
             self.carla_map,
         )
-        target = None
+        scenario_actors = []
+        hazard_entry = None
+        evidence = None
         rows = []
         try:
             ego_speed_mps = kph_to_mps(scenario.get("ego_speed_kph", 0.0))
-            self._initialize_vehicle_speed(ego, ego_speed_mps)
-            target = self._spawn_target(ego, scenario)
-            if target is not None:
-                self.managed_actors.append(target)
+            scenario_actors = self._spawn_scenario_actors(ego, scenario)
+            hazard_entry = next(
+                (entry for entry in scenario_actors if entry["hazard"]),
+                scenario_actors[0] if scenario_actors else None,
+            )
+            self._set_vehicle_speed(ego, ego_speed_mps)
+            for entry in scenario_actors:
+                self._set_vehicle_speed(
+                    entry["actor"],
+                    kph_to_mps(entry["spec"].get("speed_kph", 0.0)),
+                )
 
             settle_ticks = int(self.runner_config.get("settle_ticks", 4))
             for _ in range(settle_ticks):
-                self._apply_target_control(target, scenario, 0.0)
-                self._maintain_ego_speed(ego, ego_speed_mps)
+                self._apply_scenario_actor_controls(
+                    scenario_actors,
+                    scenario,
+                    0.0,
+                )
+                self._maintain_ego_speed(ego, ego_speed_mps, scenario)
                 frame = self.world.tick()
                 self._wait_for_radar(system, frame)
                 system.tick()
 
+            self._set_vehicle_speed(ego, ego_speed_mps)
+            for entry in scenario_actors:
+                self._set_vehicle_speed(
+                    entry["actor"],
+                    kph_to_mps(entry["spec"].get("speed_kph", 0.0)),
+                )
+            self.speed_control_integral = {}
             start_snapshot = self.world.get_snapshot()
             start_time_s = start_snapshot.timestamp.elapsed_seconds
+            if self.args.record_evidence:
+                evidence = ScenarioEvidenceRecorder(
+                    self.world,
+                    ego,
+                    run_directory,
+                    scenario["id"],
+                    run_index,
+                    self.args.repeat,
+                    self.runner_config.get("fixed_delta_seconds", 0.05),
+                )
             max_duration_s = float(scenario.get("duration_s", 8.0))
             stop_hold_ticks = max(
                 1,
@@ -303,12 +540,18 @@ class ScenarioRunner(object):
             while True:
                 snapshot = self.world.get_snapshot()
                 elapsed_s = snapshot.timestamp.elapsed_seconds - start_time_s
-                self._apply_target_control(target, scenario, elapsed_s)
-                if not system.aeb_override_active:
-                    self._maintain_ego_speed(ego, ego_speed_mps)
+                self._apply_scenario_actor_controls(
+                    scenario_actors,
+                    scenario,
+                    elapsed_s,
+                )
+                if not brake_activated and not system.aeb_override_active:
+                    self._maintain_ego_speed(ego, ego_speed_mps, scenario)
 
                 frame = self.world.tick()
                 self._wait_for_radar(system, frame)
+                if evidence is not None:
+                    evidence.wait_for_frame(frame)
                 system.tick()
                 snapshot = self.world.get_snapshot()
                 elapsed_s = snapshot.timestamp.elapsed_seconds - start_time_s
@@ -317,7 +560,8 @@ class ScenarioRunner(object):
                     snapshot,
                     elapsed_s,
                     ego,
-                    target,
+                    hazard_entry,
+                    scenario_actors,
                     system,
                     collision,
                 )
@@ -348,22 +592,42 @@ class ScenarioRunner(object):
                 suffix,
             )
             write_csv(log_path, TICK_FIELDS, rows)
-            return summarize_scenario(
+            summary = summarize_scenario(
                 scenario,
                 rows,
                 log_path.name,
                 run_index,
             )
+            if evidence is not None:
+                evidence_paths = evidence.finalize(
+                    rows,
+                    keep_frames=self.args.keep_evidence_frames,
+                    include_minimum_gap=as_bool(
+                        scenario.get("report_minimum_gap", True)
+                    ),
+                )
+                evidence = None
+                summary["evidence_video"] = evidence_paths["video"]
+                summary["evidence_events"] = evidence_paths["events"]
+            return summary
         finally:
+            if evidence is not None:
+                evidence.destroy()
             system.destroy()
             collision.destroy()
-            self._destroy_actor(target)
+            for entry in scenario_actors:
+                self._destroy_actor(entry["actor"])
             self._destroy_actor(ego)
             self.managed_actors = []
             self.world.tick()
 
-    def _spawn_ego(self):
-        spawn_index = int(self.runner_config.get("spawn_index", 18))
+    def _spawn_ego(self, scenario):
+        spawn_index = int(
+            scenario.get(
+                "spawn_index",
+                self.runner_config.get("spawn_index", 18),
+            )
+        )
         spawn_points = self.carla_map.get_spawn_points()
         if spawn_index < 0 or spawn_index >= len(spawn_points):
             raise ValueError("spawn_index không hợp lệ: {}".format(spawn_index))
@@ -382,16 +646,14 @@ class ScenarioRunner(object):
         self.world.tick()
         return ego
 
-    def _initialize_vehicle_speed(self, vehicle, speed_mps):
+    def _set_vehicle_speed(self, vehicle, speed_mps):
         direction = vehicle.get_transform().get_forward_vector()
         vehicle.set_target_velocity(scale_vector(direction, speed_mps))
-        for _ in range(2):
-            self.world.tick()
 
-    def _spawn_target(self, ego, scenario):
+    def _spawn_scenario_actors(self, ego, scenario):
         scenario_type = scenario.get("type")
         if scenario_type == "clear_road":
-            return None
+            return []
 
         ego_waypoint = self.carla_map.get_waypoint(
             ego.get_location(),
@@ -401,12 +663,45 @@ class ScenarioRunner(object):
         if ego_waypoint is None:
             raise RuntimeError("Không tìm được waypoint cho ego")
 
-        initial_gap_m = float(scenario.get("initial_gap_m", 25.0))
+        actor_specs = scenario.get("actors")
+        if not actor_specs:
+            actor_specs = [legacy_target_spec(scenario)]
+        entries = []
+        for index, raw_spec in enumerate(actor_specs):
+            spec = dict(raw_spec)
+            role = str(spec.get("role", "target_{:02d}".format(index + 1)))
+            entry = self._spawn_scenario_actor(
+                ego,
+                ego_waypoint,
+                scenario,
+                spec,
+                role,
+            )
+            entries.append(entry)
+            self.managed_actors.append(entry["actor"])
+        self.world.tick()
+        return entries
+
+    def _spawn_scenario_actor(
+        self,
+        ego,
+        ego_waypoint,
+        scenario,
+        spec,
+        role,
+    ):
+        initial_gap_m = float(spec.get("initial_gap_m", 25.0))
         target_blueprint = self.world.get_blueprint_library().find(
-            self.runner_config.get("target_blueprint", "vehicle.audi.tt")
+            spec.get(
+                "blueprint",
+                self.runner_config.get("target_blueprint", "vehicle.audi.tt"),
+            )
         )
         if target_blueprint.has_attribute("role_name"):
-            target_blueprint.set_attribute("role_name", "aeb_scenario_target")
+            target_blueprint.set_attribute(
+                "role_name",
+                "aeb_scenario_{}".format(role),
+            )
 
         provisional_waypoint = first_waypoint_ahead(ego_waypoint, initial_gap_m + 6.0)
         target = self.world.try_spawn_actor(
@@ -422,78 +717,217 @@ class ScenarioRunner(object):
             + float(target.bounding_box.extent.x)
         )
         target_waypoint = first_waypoint_ahead(ego_waypoint, center_distance_m)
-        if scenario_type == "adjacent_stationary":
+        spawn_lane = str(spec.get("spawn_lane", "ego")).lower()
+        if spawn_lane in ("left", "right"):
             target_waypoint = adjacent_driving_waypoint(
                 target_waypoint,
-                scenario.get("adjacent_lane", "left"),
+                spawn_lane,
             )
         target.set_transform(raised_transform(target_waypoint.transform))
         target.set_target_velocity(carla.Vector3D())
         target.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
-        self.world.tick()
-        return target
+        lane_change = spec.get("lane_change") or {}
+        target_lane_id = None
+        if lane_change:
+            destination_waypoint = adjacent_driving_waypoint(
+                target_waypoint,
+                lane_change.get("direction", "left"),
+            )
+            target_lane_id = destination_waypoint.lane_id
+        return {
+            "actor": target,
+            "role": role,
+            "hazard": as_bool(spec.get("hazard", False)),
+            "spec": spec,
+            "initial_lane_id": target_waypoint.lane_id,
+            "target_lane_id": target_lane_id,
+            "lane_change_completed_s": None,
+        }
 
-    def _maintain_ego_speed(self, ego, target_speed_mps):
+    def _maintain_ego_speed(self, ego, target_speed_mps, scenario):
+        steer = self._lane_follow_steer(ego, scenario)
         if self.args.control_mode == "physics":
-            self._apply_speed_control(ego, target_speed_mps)
+            self._apply_speed_control(ego, target_speed_mps, steer)
             return
         direction = ego.get_transform().get_forward_vector()
         ego.set_target_velocity(scale_vector(direction, target_speed_mps))
-        ego.apply_control(carla.VehicleControl(throttle=0.0, steer=0.0, brake=0.0))
+        ego.apply_control(
+            carla.VehicleControl(throttle=0.0, steer=steer, brake=0.0)
+        )
 
-    def _apply_speed_control(self, vehicle, target_speed_mps):
+    def _apply_speed_control(self, vehicle, target_speed_mps, steer=0.0):
         speed_error = float(target_speed_mps) - vehicle_speed_mps(vehicle)
         kp = float(self.runner_config.get("physics_speed_kp", 0.35))
+        ki = float(self.runner_config.get("physics_speed_ki", 0.0))
+        fixed_delta_seconds = float(
+            self.runner_config.get("fixed_delta_seconds", 0.05)
+        )
+        integral_limit = float(
+            self.runner_config.get("physics_speed_integral_limit", 3.0)
+        )
+        vehicle_id = getattr(vehicle, "id", id(vehicle))
+        integral = self.speed_control_integral.get(vehicle_id, 0.0)
+        integral = clamp(
+            integral + speed_error * fixed_delta_seconds,
+            -integral_limit,
+            integral_limit,
+        )
+        self.speed_control_integral[vehicle_id] = integral
         feedforward = float(
             self.runner_config.get("physics_throttle_feedforward", 0.18)
         )
+        feedforward += float(
+            self.runner_config.get("physics_throttle_per_mps", 0.0)
+        ) * float(target_speed_mps)
         throttle_limit = float(
             self.runner_config.get("physics_throttle_limit", 0.70)
         )
         brake_limit = float(
             self.runner_config.get("physics_brake_limit", 0.40)
         )
-        if speed_error >= 0.0:
-            throttle = clamp(feedforward + kp * speed_error, 0.0, throttle_limit)
+        speed_deadband = max(
+            0.0,
+            float(self.runner_config.get("physics_speed_deadband_mps", 0.0)),
+        )
+        if speed_error >= -speed_deadband:
+            throttle = clamp(
+                feedforward + kp * speed_error + ki * integral,
+                0.0,
+                throttle_limit,
+            )
             brake = 0.0
         else:
             throttle = 0.0
-            brake = clamp(-kp * speed_error, 0.0, brake_limit)
+            brake = clamp(
+                kp * (-speed_error - speed_deadband) - ki * integral,
+                0.0,
+                brake_limit,
+            )
         vehicle.apply_control(
             carla.VehicleControl(
                 throttle=throttle,
-                steer=0.0,
+                steer=steer,
                 brake=brake,
             )
         )
 
-    def _apply_target_control(self, target, scenario, elapsed_s):
-        if target is None:
-            return
-        scenario_type = scenario.get("type")
-        if scenario_type in ("stationary_lead", "adjacent_stationary"):
-            target.apply_control(
+    def _apply_scenario_actor_controls(self, entries, scenario, elapsed_s):
+        for entry in entries:
+            self._apply_scenario_actor_control(entry, scenario, elapsed_s)
+
+    def _apply_scenario_actor_control(self, entry, scenario, elapsed_s):
+        actor = entry["actor"]
+        spec = entry["spec"]
+        motion = str(spec.get("motion", "moving"))
+        if motion == "stationary":
+            actor.apply_control(
                 carla.VehicleControl(throttle=0.0, brake=1.0, hand_brake=True)
             )
             return
-        if scenario_type == "braking_lead" and elapsed_s >= float(
-            scenario.get("target_brake_time_s", 1.5)
-        ):
-            target.apply_control(
+        brake_event = spec.get("brake_event") or {}
+        if brake_event and elapsed_s >= float(brake_event.get("start_s", 1.5)):
+            actor.apply_control(
                 carla.VehicleControl(
                     throttle=0.0,
-                    brake=float(scenario.get("target_brake", 1.0)),
+                    brake=float(brake_event.get("brake", 1.0)),
                 )
             )
             return
 
-        target_speed_mps = kph_to_mps(scenario.get("target_speed_kph", 0.0))
+        target_speed_mps = kph_to_mps(spec.get("speed_kph", 0.0))
+        steer = self._scenario_actor_steer(entry, scenario, elapsed_s)
         if self.args.control_mode == "physics":
-            self._apply_speed_control(target, target_speed_mps)
+            self._apply_speed_control(actor, target_speed_mps, steer)
             return
-        direction = target.get_transform().get_forward_vector()
-        target.set_target_velocity(scale_vector(direction, target_speed_mps))
-        target.apply_control(carla.VehicleControl(throttle=0.0, brake=0.0))
+        direction = actor.get_transform().get_forward_vector()
+        actor.set_target_velocity(scale_vector(direction, target_speed_mps))
+        actor.apply_control(
+            carla.VehicleControl(throttle=0.0, steer=steer, brake=0.0)
+        )
+
+    def _scenario_actor_steer(self, entry, scenario, elapsed_s):
+        lane_change = entry["spec"].get("lane_change") or {}
+        if lane_change and elapsed_s >= float(lane_change.get("start_s", 1.0)):
+            target_lane_id = entry.get("target_lane_id")
+            waypoint = self.carla_map.get_waypoint(
+                entry["actor"].get_location(),
+                project_to_road=True,
+                lane_type=carla.LaneType.Driving,
+            )
+            if waypoint is not None and waypoint.lane_id == target_lane_id:
+                if entry["lane_change_completed_s"] is None:
+                    entry["lane_change_completed_s"] = elapsed_s
+            else:
+                return self._lane_change_steer(
+                    entry["actor"],
+                    lane_change.get("direction", "left"),
+                    lane_change,
+                )
+        actor_scenario = dict(scenario)
+        actor_scenario["lane_follow"] = as_bool(
+            entry["spec"].get(
+                "lane_follow",
+                scenario.get("lane_follow", False),
+            )
+        )
+        return self._lane_follow_steer(entry["actor"], actor_scenario)
+
+    def _lane_change_steer(self, vehicle, direction, config):
+        waypoint = self.carla_map.get_waypoint(
+            vehicle.get_location(),
+            project_to_road=True,
+            lane_type=carla.LaneType.Driving,
+        )
+        if waypoint is None:
+            return 0.0
+        destination = adjacent_driving_waypoint(waypoint, direction)
+        lookahead_m = float(config.get("lookahead_m", 14.0))
+        target_waypoint = first_waypoint_ahead(destination, lookahead_m)
+        return steer_towards_location(
+            vehicle,
+            target_waypoint.transform.location,
+            float(config.get("gain", 1.35)),
+            float(config.get("full_steer_angle_deg", 35.0)),
+        )
+
+    def _lane_follow_steer(self, vehicle, scenario):
+        if not as_bool(scenario.get("lane_follow", False)):
+            return 0.0
+        waypoint = self.carla_map.get_waypoint(
+            vehicle.get_location(),
+            project_to_road=True,
+            lane_type=carla.LaneType.Driving,
+        )
+        if waypoint is None:
+            return 0.0
+        speed_mps = vehicle_speed_mps(vehicle)
+        lookahead_m = clamp(
+            float(scenario.get("lane_follow_min_lookahead_m", 8.0))
+            + speed_mps
+            * float(scenario.get("lane_follow_speed_lookahead_s", 0.35)),
+            8.0,
+            float(scenario.get("lane_follow_max_lookahead_m", 20.0)),
+        )
+        try:
+            target_waypoint = first_waypoint_ahead(waypoint, lookahead_m)
+        except RuntimeError:
+            return 0.0
+        vehicle_transform = vehicle.get_transform()
+        vehicle_location = vehicle_transform.location
+        target_location = target_waypoint.transform.location
+        delta_x = target_location.x - vehicle_location.x
+        delta_y = target_location.y - vehicle_location.y
+        forward = vehicle_transform.get_forward_vector()
+        right_x = -forward.y
+        right_y = forward.x
+        local_forward = delta_x * forward.x + delta_y * forward.y
+        local_right = delta_x * right_x + delta_y * right_y
+        heading_error = math.atan2(local_right, max(0.1, local_forward))
+        steer_angle = math.radians(
+            float(scenario.get("lane_follow_full_steer_angle_deg", 35.0))
+        )
+        gain = float(scenario.get("lane_follow_gain", 1.25))
+        return clamp(gain * heading_error / max(0.1, steer_angle), -1.0, 1.0)
 
     def _wait_for_radar(self, system, world_frame):
         timeout_s = float(self.runner_config.get("sensor_wait_timeout_s", 1.0))
@@ -511,7 +945,8 @@ class ScenarioRunner(object):
         snapshot,
         elapsed_s,
         ego,
-        target_actor,
+        hazard_entry,
+        scenario_actors,
         system,
         collision,
     ):
@@ -519,6 +954,7 @@ class ScenarioRunner(object):
         target_cluster = pipeline.selected_target
         raw_points = system.radar.points if system.radar is not None else []
         ego_control = ego.get_control()
+        target_actor = hazard_entry["actor"] if hazard_entry is not None else None
         center_distance, bumper_gap, lateral_offset = actor_distances(
             ego,
             target_actor,
@@ -548,6 +984,13 @@ class ScenarioRunner(object):
             else None
         )
         ttc_s = system.decision.ttc_s
+        lane_offset, heading_error = lane_pose_errors(ego, ego_waypoint)
+        matched_entry, match_error = match_cluster_to_scenario_actor(
+            target_cluster,
+            scenario_actors,
+        )
+        hazard_role = hazard_entry["role"] if hazard_entry is not None else None
+        matched_role = matched_entry["role"] if matched_entry is not None else None
         return {
             "scenario_id": scenario["id"],
             "frame": snapshot.frame,
@@ -560,6 +1003,8 @@ class ScenarioRunner(object):
             "ego_x_m": round(ego_location.x, 4),
             "ego_y_m": round(ego_location.y, 4),
             "ego_lane_id": ego_waypoint.lane_id if ego_waypoint is not None else None,
+            "ego_lane_center_offset_m": optional_round(lane_offset, 4),
+            "ego_heading_error_deg": optional_round(heading_error, 4),
             "target_speed_mps": optional_round(target_speed, 4),
             "target_speed_kph": optional_round(
                 None if target_speed is None else target_speed * 3.6,
@@ -575,6 +1020,15 @@ class ScenarioRunner(object):
             ),
             "target_lane_id": (
                 target_waypoint.lane_id if target_waypoint is not None else None
+            ),
+            "scenario_actor_count": len(scenario_actors),
+            "hazard_actor_role": hazard_role,
+            "radar_target_actor_role": matched_role,
+            "radar_target_actor_error_m": optional_round(match_error, 4),
+            "radar_target_matches_hazard": (
+                None
+                if target_cluster is None or hazard_role is None
+                else int(matched_role == hazard_role)
             ),
             "center_distance_m": optional_round(center_distance, 4),
             "bumper_gap_m": optional_round(bumper_gap, 4),
@@ -626,6 +1080,7 @@ class ScenarioRunner(object):
             "aeb_reason": system.decision.reason,
             "brake_cmd": round(float(ego_control.brake), 4),
             "throttle_cmd": round(float(ego_control.throttle), 4),
+            "steer_cmd": round(float(ego_control.steer), 4),
             "aeb_override": int(system.aeb_override_active),
             "collision_count": len(collision.events),
             "control_mode": self.args.control_mode,
@@ -649,8 +1104,11 @@ class ScenarioRunner(object):
             json.dump(aggregate, stream, ensure_ascii=False, indent=2)
 
     def _write_metadata(self, run_directory, summaries):
+        git_commit, git_dirty = git_state(AEB_ROOT)
         metadata = {
             "created_at": datetime.now().isoformat(),
+            "carla_client_version": self.client.get_client_version(),
+            "carla_server_version": self.client.get_server_version(),
             "carla_map": self.world.get_map().name,
             "fixed_delta_seconds": self.runner_config.get(
                 "fixed_delta_seconds",
@@ -658,9 +1116,13 @@ class ScenarioRunner(object):
             ),
             "sensor_config": str(self.args.sensor_config),
             "scenario_config": str(self.args.scenario_config),
+            "config_snapshot_directory": "config_snapshot",
+            "git_commit": git_commit,
+            "git_dirty": git_dirty,
             "scenario_count": len(summaries),
             "repeat": self.args.repeat,
             "control_mode": self.args.control_mode,
+            "record_evidence": self.args.record_evidence,
             "passed": sum(1 for summary in summaries if summary["status"] == "PASS"),
             "failed": sum(1 for summary in summaries if summary["status"] == "FAIL"),
         }
@@ -681,6 +1143,7 @@ class ScenarioRunner(object):
         for actor in list(reversed(self.managed_actors)):
             self._destroy_actor(actor)
         self.managed_actors = []
+        self.speed_control_integral = {}
 
 
 def summarize_scenario(scenario, rows, log_file, run_index=1):
@@ -711,6 +1174,8 @@ def summarize_scenario(scenario, rows, log_file, run_index=1):
     ]
     accelerations = numeric_values(metric_rows, "ego_acceleration_mps2")
     jerks = numeric_values(metric_rows, "ego_jerk_mps3")
+    lane_offsets = numeric_values(metric_rows, "ego_lane_center_offset_m")
+    heading_errors = numeric_values(metric_rows, "ego_heading_error_deg")
     if expected_brake and not collision and bumper_gaps:
         minimum_stop_gap = float(scenario.get("min_stop_gap_m", 0.5))
         if min(bumper_gaps) < minimum_stop_gap:
@@ -720,8 +1185,64 @@ def summarize_scenario(scenario, rows, log_file, run_index=1):
                     minimum_stop_gap,
                 )
             )
+    if lane_offsets and scenario.get("max_lane_offset_m") is not None:
+        maximum_lane_offset = max(abs(value) for value in lane_offsets)
+        allowed_lane_offset = float(scenario["max_lane_offset_m"])
+        if maximum_lane_offset > allowed_lane_offset:
+            failures.append(
+                "maximum_lane_offset={:.3f}m above {:.3f}m".format(
+                    maximum_lane_offset,
+                    allowed_lane_offset,
+                )
+            )
+    lane_relation_rows = [
+        row
+        for row in rows
+        if row.get("ego_lane_id") is not None
+        and row.get("target_lane_id") is not None
+    ]
+    initial_same_lane = (
+        lane_relation_rows[0]["ego_lane_id"]
+        == lane_relation_rows[0]["target_lane_id"]
+        if lane_relation_rows
+        else None
+    )
+    final_same_lane = (
+        lane_relation_rows[-1]["ego_lane_id"]
+        == lane_relation_rows[-1]["target_lane_id"]
+        if lane_relation_rows
+        else None
+    )
+    first_same_lane = next(
+        (
+            row
+            for row in lane_relation_rows
+            if row["ego_lane_id"] == row["target_lane_id"]
+        ),
+        None,
+    )
+    for key, actual in (
+        ("expected_hazard_initial_same_lane", initial_same_lane),
+        ("expected_hazard_final_same_lane", final_same_lane),
+    ):
+        if scenario.get(key) is None or actual is None:
+            continue
+        expected = as_bool(scenario.get(key))
+        if actual != expected:
+            failures.append("{}={} actual={}".format(key, expected, actual))
     first_brake = brake_rows[0] if brake_rows else None
     first_warning = warning_rows[0] if warning_rows else None
+    expected_brake_actor = scenario.get("expected_brake_actor")
+    if first_brake is not None and expected_brake_actor is not None:
+        actual_brake_actor = first_brake.get("radar_target_actor_role")
+        if actual_brake_actor != expected_brake_actor:
+            failures.append(
+                "expected_brake_actor={} actual={}".format(
+                    expected_brake_actor,
+                    actual_brake_actor,
+                )
+            )
+    hazard_match_values = numeric_values(rows, "radar_target_matches_hazard")
     return {
         "scenario_id": scenario["id"],
         "run_index": run_index,
@@ -757,6 +1278,7 @@ def summarize_scenario(scenario, rows, log_file, run_index=1):
                 min(bumper_gaps)
                 if bumper_gaps
                 and scenario.get("type") != "adjacent_stationary"
+                and as_bool(scenario.get("report_minimum_gap", True))
                 else None
             ),
             3,
@@ -796,6 +1318,33 @@ def summarize_scenario(scenario, rows, log_file, run_index=1):
         "maximum_path_candidates": max_value(rows, "path_candidates"),
         "maximum_clusters": max_value(rows, "clusters"),
         "maximum_confirmed_clusters": max_value(rows, "confirmed_clusters"),
+        "maximum_abs_lane_center_offset_m": optional_round(
+            max(abs(value) for value in lane_offsets) if lane_offsets else None,
+            3,
+        ),
+        "maximum_abs_heading_error_deg": optional_round(
+            max(abs(value) for value in heading_errors) if heading_errors else None,
+            3,
+        ),
+        "hazard_initial_same_lane": initial_same_lane,
+        "hazard_final_same_lane": final_same_lane,
+        "first_hazard_same_lane_s": optional_round(
+            first_same_lane["elapsed_s"] if first_same_lane else None,
+            3,
+        ),
+        "radar_target_hazard_match_rate_pct": optional_round(
+            (
+                100.0 * sum(hazard_match_values) / len(hazard_match_values)
+                if hazard_match_values
+                else None
+            ),
+            2,
+        ),
+        "brake_target_actor_role": (
+            first_brake.get("radar_target_actor_role") if first_brake else None
+        ),
+        "evidence_video": None,
+        "evidence_events": None,
         "log_file": log_file,
         "failure_reason": "; ".join(failures),
     }
@@ -878,6 +1427,92 @@ def actor_distances(ego, target):
         - float(target.bounding_box.extent.x)
     )
     return center_distance, bumper_gap, lateral_offset
+
+
+def legacy_target_spec(scenario):
+    scenario_type = str(scenario.get("type", "moving_lead"))
+    spec = {
+        "role": "target",
+        "hazard": scenario_type != "adjacent_stationary",
+        "initial_gap_m": float(scenario.get("initial_gap_m", 25.0)),
+        "speed_kph": float(scenario.get("target_speed_kph", 0.0)),
+        "spawn_lane": (
+            scenario.get("adjacent_lane", "left")
+            if scenario_type == "adjacent_stationary"
+            else "ego"
+        ),
+        "motion": (
+            "stationary"
+            if scenario_type in ("stationary_lead", "adjacent_stationary")
+            else "moving"
+        ),
+        "lane_follow": as_bool(scenario.get("lane_follow", False)),
+    }
+    if scenario_type == "braking_lead":
+        spec["brake_event"] = {
+            "start_s": float(scenario.get("target_brake_time_s", 1.5)),
+            "brake": float(scenario.get("target_brake", 1.0)),
+        }
+    return spec
+
+
+def match_cluster_to_scenario_actor(cluster, entries, max_error_m=6.0):
+    if cluster is None or cluster.world_location is None or not entries:
+        return None, None
+    candidates = []
+    for entry in entries:
+        actor = entry["actor"]
+        location = actor.get_location()
+        delta_x = float(cluster.world_location.x) - float(location.x)
+        delta_y = float(cluster.world_location.y) - float(location.y)
+        delta_z = float(cluster.world_location.z) - float(location.z)
+        error = math.sqrt(
+            delta_x * delta_x + delta_y * delta_y + delta_z * delta_z
+        )
+        candidates.append((error, entry))
+    error, entry = min(candidates, key=lambda item: item[0])
+    if error > float(max_error_m):
+        return None, error
+    return entry, error
+
+
+def lane_pose_errors(vehicle, waypoint):
+    if vehicle is None or waypoint is None:
+        return None, None
+    vehicle_transform = vehicle.get_transform()
+    vehicle_location = vehicle_transform.location
+    lane_transform = waypoint.transform
+    lane_location = lane_transform.location
+    lane_forward = lane_transform.get_forward_vector()
+    lane_right_x = -lane_forward.y
+    lane_right_y = lane_forward.x
+    delta_x = vehicle_location.x - lane_location.x
+    delta_y = vehicle_location.y - lane_location.y
+    lane_offset = delta_x * lane_right_x + delta_y * lane_right_y
+    heading_error = normalized_angle_degrees(
+        vehicle_transform.rotation.yaw - lane_transform.rotation.yaw
+    )
+    return lane_offset, heading_error
+
+
+def steer_towards_location(
+    vehicle,
+    target_location,
+    gain=1.25,
+    full_steer_angle_deg=35.0,
+):
+    vehicle_transform = vehicle.get_transform()
+    vehicle_location = vehicle_transform.location
+    delta_x = target_location.x - vehicle_location.x
+    delta_y = target_location.y - vehicle_location.y
+    forward = vehicle_transform.get_forward_vector()
+    right_x = -forward.y
+    right_y = forward.x
+    local_forward = delta_x * forward.x + delta_y * forward.y
+    local_right = delta_x * right_x + delta_y * right_y
+    heading_error = math.atan2(local_right, max(0.1, local_forward))
+    steer_angle = math.radians(float(full_steer_angle_deg))
+    return clamp(float(gain) * heading_error / max(0.1, steer_angle), -1.0, 1.0)
 
 
 def adjacent_driving_waypoint(waypoint, direction):
@@ -980,6 +1615,75 @@ def format_number(value, digits):
     return ("{:." + str(digits) + "f}").format(float(value))
 
 
+def select_evidence_events(rows, include_minimum_gap=True):
+    if not rows:
+        return []
+
+    warning = next(
+        (row for row in rows if row.get("aeb_state") in ("WARNING", "BRAKE")),
+        None,
+    )
+    brake = next((row for row in rows if row.get("aeb_override")), None)
+    gap_rows = [
+        row for row in rows if row.get("bumper_gap_m") not in (None, "")
+    ]
+    minimum_gap = (
+        min(gap_rows, key=lambda row: float(row["bumper_gap_m"]))
+        if gap_rows and include_minimum_gap
+        else None
+    )
+    events = []
+    for name, row in (
+        ("first_warning", warning),
+        ("first_brake", brake),
+        ("minimum_gap", minimum_gap),
+    ):
+        if row is None:
+            continue
+        events.append(
+            {
+                "name": name,
+                "frame": int(row["frame"]),
+                "elapsed_s": float(row["elapsed_s"]),
+                "ego_speed_kph": float(row["ego_speed_kph"]),
+                "bumper_gap_m": optional_float(row.get("bumper_gap_m")),
+                "ttc_s": optional_float(row.get("ttc_s")),
+                "aeb_state": row.get("aeb_state"),
+            }
+        )
+    return events
+
+
+def nearest_frame_path(frame_paths, target_frame):
+    if not frame_paths:
+        return None
+    return min(
+        frame_paths,
+        key=lambda path: abs(int(path.stem) - int(target_frame)),
+    )
+
+
+def optional_float(value):
+    if value in (None, ""):
+        return None
+    return float(value)
+
+
+def git_state(repository):
+    try:
+        commit = subprocess.check_output(
+            ["git", "-C", str(repository), "rev-parse", "HEAD"],
+            universal_newlines=True,
+        ).strip()
+        status = subprocess.check_output(
+            ["git", "-C", str(repository), "status", "--porcelain"],
+            universal_newlines=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None, None
+    return commit, bool(status.strip())
+
+
 def write_csv(path, fieldnames, rows):
     with open(str(path), "w", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=fieldnames)
@@ -1020,6 +1724,16 @@ def parse_args():
         "--scenario",
         action="append",
         help="Chỉ chạy scenario có ID này; có thể truyền nhiều lần.",
+    )
+    parser.add_argument(
+        "--record-evidence",
+        action="store_true",
+        help="Ghi video chase camera và ảnh tại các mốc AEB.",
+    )
+    parser.add_argument(
+        "--keep-evidence-frames",
+        action="store_true",
+        help="Giữ toàn bộ frame PNG sau khi đã tạo video.",
     )
     parser.add_argument("--load-map", action="store_true")
     args = parser.parse_args()

@@ -12,9 +12,13 @@ from control.brake import (
     BinaryAEB,
     BinaryBrakeConfig,
     as_bool,
-    compute_ttc,
 )
-from radar_cluster import RadarCluster, RadarClusterConfig, RadarClusterTracker
+from core.radar_object import RadarObject, radar_objects_from_clusters
+from core.target_selector import select_aeb_target
+from perception.radar.radar_object_tracker import (
+    RadarClusterConfig,
+    RadarClusterTracker,
+)
 
 
 @dataclass(frozen=True)
@@ -27,7 +31,8 @@ class RadarAEBFrame:
     ground_point_count: int
     tracked_cluster_count: int
     confirmed_cluster_count: int
-    target: Optional[RadarCluster]
+    radar_objects: List[RadarObject]
+    target: Optional[RadarObject]
     decision: AEBDecision
     required_distance_m: Optional[float]
     distance_margin_m: Optional[float]
@@ -51,6 +56,7 @@ class RadarAEBPipeline(object):
         )
         self.cluster_tracker = RadarClusterTracker(self.cluster_config)
         self.tracked_clusters = []
+        self.radar_objects = []
         self.candidate_points = []
         self.selected_target = None
         self.cluster_frame = None
@@ -70,6 +76,7 @@ class RadarAEBPipeline(object):
             ground_point_count=0,
             tracked_cluster_count=0,
             confirmed_cluster_count=0,
+            radar_objects=[],
             target=None,
             decision=self.decision,
             required_distance_m=None,
@@ -95,6 +102,7 @@ class RadarAEBPipeline(object):
         self.aeb.reset()
         self.cluster_tracker.reset()
         self.tracked_clusters = []
+        self.radar_objects = []
         self.candidate_points = []
         self.selected_target = None
         self.cluster_frame = None
@@ -118,6 +126,7 @@ class RadarAEBPipeline(object):
         if self.disable_in_reverse() and self.ego_is_reversing():
             self.cluster_tracker.reset()
             self.tracked_clusters = []
+            self.radar_objects = []
             self.candidate_points = []
             self.selected_target = None
             self.cluster_frame = None
@@ -135,7 +144,8 @@ class RadarAEBPipeline(object):
             return self._build_frame(radar, ego_speed_mps)
 
         self._update_clusters(radar)
-        self.selected_target = self.select_target()
+        self.radar_objects = radar_objects_from_clusters(self.tracked_clusters)
+        self.selected_target = select_aeb_target(self.radar_objects)
         self.decision = self.aeb.decide_from_target(
             self.selected_target,
             timestamp_s=radar_timestamp,
@@ -164,6 +174,7 @@ class RadarAEBPipeline(object):
                 for cluster in self.tracked_clusters
                 if cluster.confirmed and not cluster.is_stale
             ),
+            radar_objects=list(self.radar_objects),
             target=target,
             decision=self.decision,
             required_distance_m=required_distance,
@@ -196,23 +207,7 @@ class RadarAEBPipeline(object):
         self.cluster_frame = radar.frame
 
     def select_target(self):
-        candidates = [
-            cluster
-            for cluster in self.tracked_clusters
-            if cluster.confirmed and not cluster.is_stale
-        ]
-        if not candidates:
-            return None
-
-        def sort_key(cluster):
-            ttc = compute_ttc(
-                cluster.x_forward_m,
-                cluster.relative_velocity_mps,
-            )
-            has_ttc = 0 if math.isfinite(ttc) else 1
-            return has_ttc, ttc, cluster.x_forward_m
-
-        return min(candidates, key=sort_key)
+        return select_aeb_target(self.radar_objects)
 
     def valid_path_target(self, point):
         min_forward = float(
