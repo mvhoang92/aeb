@@ -40,16 +40,41 @@ aeb/
 ## Thứ Tự Đọc Tài Liệu
 
 1. `docs/official/00_PROJECT_INTRODUCTION.md`: mục tiêu, phạm vi và trạng thái.
-2. `docs/official/01_SYSTEM_ARCHITECTURE.md`: kiến trúc pipeline tổng thể.
-3. `docs/official/02_SENSOR_CONFIGURATION.md`: cấu hình camera/radar/ego car.
-4. `docs/official/03_RADAR_PROCESSING.md`: xử lý radar, object list và chọn target.
-5. `docs/official/06_AEB_DECISION_AND_BRAKING.md`: TTC, khoảng cách dừng và phanh.
-6. `docs/official/07_SCENARIOS_AND_VALIDATION.md`: scenario và cách đọc log.
-7. `docs/official/08_DATASET_AND_TRAINING.md`: thu data và train YOLO.
-8. `docs/research/00_ADAS_AEB_BACKGROUND.md`: nền tảng ADAS/AEB cho báo cáo.
-9. `docs/research/07_REPO_COMPARISON_SUMMARY.md`: so sánh Autoware, openpilot,
+2. `docs/official/11_ENVIRONMENT_AND_INSTALLATION.md`: cấu hình máy, tải CARLA,
+   đặt thư mục `aeb/` và tạo môi trường Python.
+3. `docs/official/01_SYSTEM_ARCHITECTURE.md`: kiến trúc pipeline tổng thể.
+4. `docs/official/02_SENSOR_CONFIGURATION.md`: cấu hình camera/radar/ego car.
+5. `docs/official/03_RADAR_PROCESSING.md`: xử lý radar, object list và chọn target.
+6. `docs/official/06_AEB_DECISION_AND_BRAKING.md`: TTC, khoảng cách dừng và phanh.
+7. `docs/official/07_SCENARIOS_AND_VALIDATION.md`: scenario và cách đọc log.
+8. `docs/official/08_DATASET_AND_TRAINING.md`: thu data và train YOLO.
+9. `docs/research/00_ADAS_AEB_BACKGROUND.md`: nền tảng ADAS/AEB cho báo cáo.
+10. `docs/research/07_REPO_COMPARISON_SUMMARY.md`: so sánh Autoware, openpilot,
    Apollo và hướng đang dùng trong project.
-10. `docs/log/EXPERIMENT_LOG.md`: nhật ký thử nghiệm, kết quả và bằng chứng.
+11. `docs/official/12_AI_WORKFLOW.md`: quy trình giao việc cho AI, test, cập
+   nhật tài liệu và push GitHub.
+12. `docs/log/EXPERIMENT_LOG.md`: nhật ký thử nghiệm, kết quả và bằng chứng.
+
+## Cài Đặt Nhanh
+
+CARLA 0.9.11 cần được tải và giải nén trước. Sau đó clone project `aeb` trực
+tiếp vào thư mục gốc CARLA:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11
+git clone https://github.com/mvhoang92/aeb.git aeb
+```
+
+Project hiện dùng Python 3.7 và `venv/` ở thư mục gốc CARLA:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11
+python3.7 -m venv venv
+source venv/bin/activate
+pip install numpy==1.21.6 pygame PyYAML opencv-python
+```
+
+Xem đầy đủ tại `docs/official/11_ENVIRONMENT_AND_INSTALLATION.md`.
 
 ## Chạy CARLA
 

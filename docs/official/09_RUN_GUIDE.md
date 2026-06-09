@@ -1,5 +1,9 @@
 # 09. Hướng Dẫn Chạy
 
+Trước khi chạy, cần cài CARLA 0.9.11, đặt thư mục `aeb/` trong thư mục gốc
+CARLA và tạo `venv/`. Xem chi tiết ở
+`docs/official/11_ENVIRONMENT_AND_INSTALLATION.md`.
+
 ## Khởi Động CARLA
 
 ```bash
