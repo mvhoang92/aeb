@@ -40,20 +40,25 @@ aeb/
 ## Thứ Tự Đọc Tài Liệu
 
 1. `docs/official/00_PROJECT_INTRODUCTION.md`: mục tiêu, phạm vi và trạng thái.
-2. `docs/official/11_ENVIRONMENT_AND_INSTALLATION.md`: cấu hình máy, tải CARLA,
+2. `docs/official/13_PROJECT_PROGRESS_REPORT.md`: báo cáo tiến độ tổng hợp,
+   gồm giới thiệu dự án, research đã tham khảo, pipeline dự kiến/hiện tại và
+   checklist đã làm/đang làm/sẽ làm.
+3. `docs/official/11_ENVIRONMENT_AND_INSTALLATION.md`: cấu hình máy, tải CARLA,
    đặt thư mục `aeb/` và tạo môi trường Python.
-3. `docs/official/01_SYSTEM_ARCHITECTURE.md`: kiến trúc pipeline tổng thể.
-4. `docs/official/02_SENSOR_CONFIGURATION.md`: cấu hình camera/radar/ego car.
-5. `docs/official/03_RADAR_PROCESSING.md`: xử lý radar, object list và chọn target.
-6. `docs/official/06_AEB_DECISION_AND_BRAKING.md`: TTC, khoảng cách dừng và phanh.
-7. `docs/official/07_SCENARIOS_AND_VALIDATION.md`: scenario và cách đọc log.
-8. `docs/official/08_DATASET_AND_TRAINING.md`: thu data và train YOLO.
-9. `docs/research/00_ADAS_AEB_BACKGROUND.md`: nền tảng ADAS/AEB cho báo cáo.
-10. `docs/research/07_REPO_COMPARISON_SUMMARY.md`: so sánh Autoware, openpilot,
+4. `docs/official/01_SYSTEM_ARCHITECTURE.md`: kiến trúc pipeline tổng thể.
+5. `docs/official/02_SENSOR_CONFIGURATION.md`: cấu hình camera/radar/ego car.
+6. `docs/official/03_RADAR_PROCESSING.md`: xử lý radar, object list và chọn target.
+7. `docs/official/06_AEB_DECISION_AND_BRAKING.md`: TTC, khoảng cách dừng và phanh.
+8. `docs/official/07_SCENARIOS_AND_VALIDATION.md`: scenario và cách đọc log.
+9. `docs/official/08_DATASET_AND_TRAINING.md`: thu data và train YOLO.
+10. `docs/research/00_ADAS_AEB_BACKGROUND.md`: nền tảng ADAS/AEB cho báo cáo.
+11. `docs/research/07_REPO_COMPARISON_SUMMARY.md`: so sánh Autoware, openpilot,
    Apollo và hướng đang dùng trong project.
-11. `docs/official/12_AI_WORKFLOW.md`: quy trình giao việc cho AI, test, cập
+12. `docs/official/12_AI_WORKFLOW.md`: quy trình giao việc cho AI, test, cập
    nhật tài liệu và push GitHub.
-12. `docs/log/EXPERIMENT_LOG.md`: nhật ký thử nghiệm, kết quả và bằng chứng.
+13. `docs/official/15_CONTRIBUTING_AND_TASK_WORKFLOW.md`: onboarding cho người
+   mới hoặc AI khác, gồm cách nhận task, sửa code, test và bàn giao.
+14. `docs/log/EXPERIMENT_LOG.md`: nhật ký thử nghiệm, kết quả và bằng chứng.
 
 ## Cài Đặt Nhanh
 
@@ -149,3 +154,4 @@ CARLA radar-only với `clear_road_50`, `ccrs_50` đã đạt `2/2 PASS`.
 - Train YOLO model riêng, export ONNX CUDA.
 - Hoàn thiện fusion camera-radar để xác nhận target trước khi phanh.
 - Thay binary brake bằng PID hoặc brake profile mượt hơn.
+# documents
