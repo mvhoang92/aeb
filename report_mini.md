@@ -65,7 +65,7 @@ Các cảm biến thường gặp trong ADAS/AEB gồm:
 | --- | --- | --- |
 | Camera | Nhận diện xe, làn đường, biển báo, người đi bộ | Mạnh về phân loại và hình dạng |
 | Radar | Đo khoảng cách và vận tốc tương đối | Phù hợp bài toán car-to-car |
-| LiDAR | Tạo point cloud 3D chính xác | Chi phí cao, thường gặp trong robot tự hành |
+| LiDAR | Tạo point cloud 3D chính xác | Chi phí cao, thường gặp trong robot họă xe tự hành |
 | Ultrasonic | Đo khoảng cách rất gần | Phù hợp parking |
 | IMU/GNSS/wheel speed | Trạng thái chuyển động ego | Hỗ trợ dự đoán quỹ đạo |
 
@@ -147,8 +147,8 @@ Không dùng `-opengl` vì từng gây lỗi render Pygame/manual control.
 | Thành phần | Cấu hình |
 | --- | --- |
 | OS | Ubuntu 22.04.5 LTS |
-| CPU logical cores | 12 |
-| RAM | 15 GiB |
+| CPU logical cores | i5 11400H 6 nhân 12 luồng |
+| RAM | 16 GiB |
 | GPU | NVIDIA GeForce RTX 3050 Laptop GPU, 4 GiB VRAM |
 | NVIDIA driver | 580.159.04 |
 | Python CARLA | Python 3.7.17 |
