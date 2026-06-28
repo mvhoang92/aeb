@@ -1,0 +1,72 @@
+runner:
+  map: Town04
+  spawn_index: 18
+  fixed_delta_seconds: 0.05
+  sensor_wait_timeout_s: 1.0
+  settle_ticks: 4
+  stop_speed_mps: 0.3
+  stop_hold_time_s: 0.2
+  target_blueprint: vehicle.audi.tt
+  control_mode: deterministic
+  physics_speed_kp: 0.2
+  physics_speed_ki: 0.03
+  physics_speed_integral_limit: 3.0
+  physics_speed_deadband_mps: 0.8
+  physics_throttle_feedforward: 0.45
+  physics_throttle_per_mps: 0.015
+  physics_throttle_limit: 1.0
+  physics_brake_limit: 0.6
+scenarios:
+- id: curve_clear_65
+  description: Đường cao tốc cong, ego 65 km/h không được phanh nhầm.
+  type: clear_road
+  control_modes:
+  - physics
+  spawn_index: 208
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  ego_speed_kph: 65.0
+  duration_s: 5.0
+  expected_brake: false
+  expected_collision: false
+- id: curve_clear_80
+  description: Đường cao tốc cong, ego 80 km/h không được phanh nhầm.
+  type: clear_road
+  control_modes:
+  - physics
+  spawn_index: 208
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  ego_speed_kph: 80.0
+  duration_s: 5.0
+  expected_brake: false
+  expected_collision: false
+- id: curve_adjacent_stationary_65
+  description: Xe đứng yên làn bên trên đường cong, ego không được phanh nhầm.
+  type: adjacent_stationary
+  control_modes:
+  - physics
+  spawn_index: 208
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  ego_speed_kph: 65.0
+  target_speed_kph: 0.0
+  initial_gap_m: 40.0
+  adjacent_lane: left
+  duration_s: 5.0
+  expected_brake: false
+  expected_collision: false
+- id: curve_ccrs_65
+  description: Xe đứng yên cùng làn trên đường cong, ego tiếp cận ở 65 km/h.
+  type: stationary_lead
+  control_modes:
+  - physics
+  spawn_index: 208
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  ego_speed_kph: 65.0
+  target_speed_kph: 0.0
+  initial_gap_m: 55.0
+  duration_s: 8.0
+  expected_brake: true
+  expected_collision: false

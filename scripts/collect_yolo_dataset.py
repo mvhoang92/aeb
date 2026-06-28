@@ -1044,6 +1044,9 @@ class GroundTruthCollector(object):
                 ):
                     self.reject_counts["semantic_visible_ratio"] += 1
                     continue
+                if not self._passes_heavy_occlusion_filter(visibility):
+                    self.reject_counts["semantic_heavy_occlusion"] += 1
+                    continue
                 if bool(
                     self.filter_config.get(
                         "fit_box_to_visible_pixels",
@@ -1073,6 +1076,9 @@ class GroundTruthCollector(object):
                 ):
                     self.reject_counts["occluded_ratio"] += 1
                     continue
+                if not self._passes_heavy_occlusion_filter(visibility):
+                    self.reject_counts["depth_heavy_occlusion"] += 1
+                    continue
 
             if projected.width < float(
                 self.filter_config.get("min_box_width_px", 8)
@@ -1097,7 +1103,79 @@ class GroundTruthCollector(object):
                 }
             )
         boxes.sort(key=lambda item: item["distance_m"])
+        boxes = self._suppress_overlapping_boxes(boxes)
         return boxes
+
+    def _suppress_overlapping_boxes(self, boxes):
+        if not bool(self.filter_config.get("suppress_overlapping_boxes", True)):
+            return boxes
+
+        iou_threshold = float(
+            self.filter_config.get("overlap_suppression_iou", 0.55)
+        )
+        containment_threshold = float(
+            self.filter_config.get("overlap_suppression_containment", 0.75)
+        )
+        kept = []
+        for item in boxes:
+            duplicate = False
+            for kept_item in kept:
+                overlap = self._box_overlap_stats(item["box"], kept_item["box"])
+                if (
+                    overlap["iou"] >= iou_threshold
+                    or overlap["min_containment"] >= containment_threshold
+                ):
+                    duplicate = True
+                    break
+            if duplicate:
+                self.reject_counts["overlap_suppressed"] += 1
+                continue
+            kept.append(item)
+        return kept
+
+    @staticmethod
+    def _box_overlap_stats(first, second):
+        intersection_x1 = max(first.x1, second.x1)
+        intersection_y1 = max(first.y1, second.y1)
+        intersection_x2 = min(first.x2, second.x2)
+        intersection_y2 = min(first.y2, second.y2)
+        intersection_width = max(0.0, intersection_x2 - intersection_x1)
+        intersection_height = max(0.0, intersection_y2 - intersection_y1)
+        intersection_area = intersection_width * intersection_height
+
+        first_area = max(0.0, first.area)
+        second_area = max(0.0, second.area)
+        union_area = first_area + second_area - intersection_area
+        min_area = min(first_area, second_area)
+
+        return {
+            "iou": intersection_area / union_area if union_area > 0.0 else 0.0,
+            "min_containment": (
+                intersection_area / min_area if min_area > 0.0 else 0.0
+            ),
+        }
+
+    def _passes_heavy_occlusion_filter(self, visibility):
+        heavy_ratio = float(
+            self.filter_config.get("heavy_occlusion_visible_ratio", 0.0)
+        )
+        if heavy_ratio <= 0.0 or visibility.visible_ratio >= heavy_ratio:
+            return True
+
+        min_visible_pixels = int(
+            self.filter_config.get("heavy_occlusion_min_visible_pixels", 0)
+        )
+        if visibility.visible_pixels >= min_visible_pixels:
+            return True
+
+        fitted_box = visibility.fitted_box
+        min_fitted_area = float(
+            self.filter_config.get("heavy_occlusion_min_fitted_area_px", 0.0)
+        )
+        if fitted_box is not None and fitted_box.area >= min_fitted_area:
+            return True
+
+        return False
 
     def _is_four_wheel_vehicle(self, actor):
         minimum_wheels = int(
@@ -1218,6 +1296,7 @@ class GroundTruthCollector(object):
             "class_name": str(self.dataset_config.get("class_name", "car")),
             "actor_id": int(item["actor"].id),
             "blueprint": item["actor"].type_id,
+            "color": item["actor"].attributes.get("color"),
             "same_lane_seeded": (
                 int(item["actor"].id) in self.same_lane_vehicle_ids
             ),

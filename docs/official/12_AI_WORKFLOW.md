@@ -3,6 +3,11 @@
 File này quy định cách dùng AI trong dự án để việc code, test, viết tài liệu và
 review không bị lệch khỏi mục tiêu AEB CARLA.
 
+Nếu một AI/người mới nhảy vào dự án lần đầu, hãy đọc thêm
+`docs/official/15_CONTRIBUTING_AND_TASK_WORKFLOW.md`. File đó đóng vai trò
+onboarding chi tiết: thứ tự đọc tài liệu, bản đồ module, cách nhận task, test
+tối thiểu và mẫu bàn giao kết quả.
+
 ## Vai Trò Của AI
 
 AI có thể hỗ trợ:
@@ -67,7 +72,7 @@ Sau khi sửa radar/AEB hoặc scenario, nên chạy smoke test CARLA:
 
 ```bash
 ../venv/bin/python scripts/run_radar_aeb_scenarios.py \
-  --scenario-config configs/radar_only_validation.yaml \
+  --scenario-config configs/scenarios/suites/radar_only_regression.yaml \
   --control-mode physics \
   --scenario clear_road_50 \
   --scenario ccrs_50 \

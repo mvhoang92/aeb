@@ -9,9 +9,9 @@ runner:
   target_blueprint: vehicle.audi.tt
   control_mode: deterministic
   physics_speed_kp: 0.20
-  physics_speed_ki: 0.08
+  physics_speed_ki: 0.03
   physics_speed_integral_limit: 3.0
-  physics_speed_deadband_mps: 0.50
+  physics_speed_deadband_mps: 0.80
   physics_throttle_feedforward: 0.45
   physics_throttle_per_mps: 0.015
   physics_throttle_limit: 1.00
@@ -49,6 +49,36 @@ scenarios:
     target_speed_kph: 0.0
     initial_gap_m: 45.0
     duration_s: 8.0
+    expected_brake: true
+    expected_collision: false
+
+  - id: ccrs_60_gap_200
+    description: Xe đứng yên cùng làn cách 200 m, ego chạy ổn định 60 km/h trước khi vào vùng radar.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 60.0
+    target_speed_kph: 0.0
+    initial_gap_m: 200.0
+    duration_s: 18.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+
+  - id: ccrs_60_demo_150
+    description: "Demo trực quan: xe đứng yên cùng làn cách 150 m, ego chạy 60 km/h trên đoạn Town04 rộng/thẳng."
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 60.0
+    target_speed_kph: 0.0
+    initial_gap_m: 150.0
+    duration_s: 16.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
     expected_brake: true
     expected_collision: false
 

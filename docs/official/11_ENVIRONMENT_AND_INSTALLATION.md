@@ -158,7 +158,7 @@ Smoke test khi CARLA server đã bật:
 
 ```bash
 ../venv/bin/python scripts/run_radar_aeb_scenarios.py \
-  --scenario-config configs/radar_only_validation.yaml \
+  --scenario-config configs/scenarios/suites/radar_only_regression.yaml \
   --control-mode physics \
   --scenario clear_road_50 \
   --scenario ccrs_50 \

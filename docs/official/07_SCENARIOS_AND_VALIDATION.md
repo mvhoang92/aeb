@@ -7,6 +7,12 @@ phanh nhầm khi không nguy hiểm không.
 
 - `clear_road`: đường trống, không được phanh.
 - `ccrs`: xe phía trước đứng yên, ego tiến đến.
+- `ccrs_60_gap_200`: biến thể demo dài trên đoạn Town04 rộng/thẳng
+  (`spawn_index=81`), target đứng yên cách 200 m, ego chạy 60 km/h; radar-only
+  AEB chỉ bắt đầu thấy target khi xe vào trong range radar 100 m.
+- `ccrs_60_demo_150`: bài demo trực quan trên cùng đoạn rộng/thẳng, target đứng
+  yên cách 150 m để ego có đoạn chạy ổn định ở 60 km/h trước khi vào vùng radar
+  và AEB can thiệp.
 - `ccrm`: xe phía trước chạy chậm hơn.
 - `ccrb`: xe phía trước phanh gấp.
 - `adjacent_lane`: xe ở làn bên, không được phanh nhầm.
@@ -28,13 +34,16 @@ NCAP chính thức.
   - `target_id`: target được chọn.
   - `collision`: có va chạm hay không.
   - `false_positive`: phanh khi không cần.
+  - `maximum_abs_jerk_mps3`: jerk raw của CARLA, chỉ dùng để so sánh tương đối
+    giữa các cấu hình phanh trong cùng bộ test; không coi là jerk tuyệt đối của
+    xe thật.
 
 ## Chạy Batch
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
 ../venv/bin/python scripts/run_radar_aeb_scenarios.py \
-  --scenario-config configs/radar_only_validation.yaml \
+  --scenario-config configs/scenarios/suites/radar_only_regression.yaml \
   --control-mode physics \
   --load-map
 ```

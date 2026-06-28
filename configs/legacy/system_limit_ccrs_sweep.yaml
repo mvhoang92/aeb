@@ -1,0 +1,915 @@
+runner:
+  map: Town04
+  spawn_index: 81
+  fixed_delta_seconds: 0.05
+  sensor_wait_timeout_s: 1.0
+  settle_ticks: 4
+  stop_speed_mps: 0.30
+  stop_hold_time_s: 0.20
+  target_blueprint: vehicle.audi.tt
+  control_mode: physics
+  physics_speed_kp: 0.20
+  physics_speed_ki: 0.03
+  physics_speed_integral_limit: 3.0
+  physics_speed_deadband_mps: 0.80
+  physics_throttle_feedforward: 0.45
+  physics_throttle_per_mps: 0.015
+  physics_throttle_limit: 1.00
+  physics_brake_limit: 0.60
+
+scenarios:
+  - id: ccrs_40_gap_20
+    description: System limit sweep - ego 40 km/h, stationary lead, gap 20 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 40.0
+    target_speed_kph: 0.0
+    initial_gap_m: 20.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_40_gap_30
+    description: System limit sweep - ego 40 km/h, stationary lead, gap 30 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 40.0
+    target_speed_kph: 0.0
+    initial_gap_m: 30.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_40_gap_40
+    description: System limit sweep - ego 40 km/h, stationary lead, gap 40 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 40.0
+    target_speed_kph: 0.0
+    initial_gap_m: 40.0
+    duration_s: 7.6
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_40_gap_50
+    description: System limit sweep - ego 40 km/h, stationary lead, gap 50 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 40.0
+    target_speed_kph: 0.0
+    initial_gap_m: 50.0
+    duration_s: 8.5
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_40_gap_60
+    description: System limit sweep - ego 40 km/h, stationary lead, gap 60 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 40.0
+    target_speed_kph: 0.0
+    initial_gap_m: 60.0
+    duration_s: 9.4
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_40_gap_80
+    description: System limit sweep - ego 40 km/h, stationary lead, gap 80 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 40.0
+    target_speed_kph: 0.0
+    initial_gap_m: 80.0
+    duration_s: 11.2
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_40_gap_100
+    description: System limit sweep - ego 40 km/h, stationary lead, gap 100 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 40.0
+    target_speed_kph: 0.0
+    initial_gap_m: 100.0
+    duration_s: 13.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_50_gap_20
+    description: System limit sweep - ego 50 km/h, stationary lead, gap 20 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 50.0
+    target_speed_kph: 0.0
+    initial_gap_m: 20.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_50_gap_30
+    description: System limit sweep - ego 50 km/h, stationary lead, gap 30 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 50.0
+    target_speed_kph: 0.0
+    initial_gap_m: 30.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_50_gap_40
+    description: System limit sweep - ego 50 km/h, stationary lead, gap 40 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 50.0
+    target_speed_kph: 0.0
+    initial_gap_m: 40.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_50_gap_50
+    description: System limit sweep - ego 50 km/h, stationary lead, gap 50 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 50.0
+    target_speed_kph: 0.0
+    initial_gap_m: 50.0
+    duration_s: 7.6
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_50_gap_60
+    description: System limit sweep - ego 50 km/h, stationary lead, gap 60 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 50.0
+    target_speed_kph: 0.0
+    initial_gap_m: 60.0
+    duration_s: 8.3
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_50_gap_80
+    description: System limit sweep - ego 50 km/h, stationary lead, gap 80 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 50.0
+    target_speed_kph: 0.0
+    initial_gap_m: 80.0
+    duration_s: 9.8
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_50_gap_100
+    description: System limit sweep - ego 50 km/h, stationary lead, gap 100 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 50.0
+    target_speed_kph: 0.0
+    initial_gap_m: 100.0
+    duration_s: 11.2
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_60_gap_20
+    description: System limit sweep - ego 60 km/h, stationary lead, gap 20 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 60.0
+    target_speed_kph: 0.0
+    initial_gap_m: 20.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_60_gap_30
+    description: System limit sweep - ego 60 km/h, stationary lead, gap 30 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 60.0
+    target_speed_kph: 0.0
+    initial_gap_m: 30.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_60_gap_40
+    description: System limit sweep - ego 60 km/h, stationary lead, gap 40 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 60.0
+    target_speed_kph: 0.0
+    initial_gap_m: 40.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_60_gap_50
+    description: System limit sweep - ego 60 km/h, stationary lead, gap 50 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 60.0
+    target_speed_kph: 0.0
+    initial_gap_m: 50.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_60_gap_60
+    description: System limit sweep - ego 60 km/h, stationary lead, gap 60 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 60.0
+    target_speed_kph: 0.0
+    initial_gap_m: 60.0
+    duration_s: 7.6
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_60_gap_80
+    description: System limit sweep - ego 60 km/h, stationary lead, gap 80 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 60.0
+    target_speed_kph: 0.0
+    initial_gap_m: 80.0
+    duration_s: 8.8
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_60_gap_100
+    description: System limit sweep - ego 60 km/h, stationary lead, gap 100 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 60.0
+    target_speed_kph: 0.0
+    initial_gap_m: 100.0
+    duration_s: 10.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_70_gap_20
+    description: System limit sweep - ego 70 km/h, stationary lead, gap 20 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 70.0
+    target_speed_kph: 0.0
+    initial_gap_m: 20.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_70_gap_30
+    description: System limit sweep - ego 70 km/h, stationary lead, gap 30 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 70.0
+    target_speed_kph: 0.0
+    initial_gap_m: 30.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_70_gap_40
+    description: System limit sweep - ego 70 km/h, stationary lead, gap 40 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 70.0
+    target_speed_kph: 0.0
+    initial_gap_m: 40.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_70_gap_50
+    description: System limit sweep - ego 70 km/h, stationary lead, gap 50 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 70.0
+    target_speed_kph: 0.0
+    initial_gap_m: 50.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_70_gap_60
+    description: System limit sweep - ego 70 km/h, stationary lead, gap 60 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 70.0
+    target_speed_kph: 0.0
+    initial_gap_m: 60.0
+    duration_s: 7.1
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_70_gap_80
+    description: System limit sweep - ego 70 km/h, stationary lead, gap 80 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 70.0
+    target_speed_kph: 0.0
+    initial_gap_m: 80.0
+    duration_s: 8.1
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_70_gap_100
+    description: System limit sweep - ego 70 km/h, stationary lead, gap 100 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 70.0
+    target_speed_kph: 0.0
+    initial_gap_m: 100.0
+    duration_s: 9.1
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_80_gap_20
+    description: System limit sweep - ego 80 km/h, stationary lead, gap 20 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 80.0
+    target_speed_kph: 0.0
+    initial_gap_m: 20.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_80_gap_30
+    description: System limit sweep - ego 80 km/h, stationary lead, gap 30 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 80.0
+    target_speed_kph: 0.0
+    initial_gap_m: 30.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_80_gap_40
+    description: System limit sweep - ego 80 km/h, stationary lead, gap 40 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 80.0
+    target_speed_kph: 0.0
+    initial_gap_m: 40.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_80_gap_50
+    description: System limit sweep - ego 80 km/h, stationary lead, gap 50 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 80.0
+    target_speed_kph: 0.0
+    initial_gap_m: 50.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_80_gap_60
+    description: System limit sweep - ego 80 km/h, stationary lead, gap 60 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 80.0
+    target_speed_kph: 0.0
+    initial_gap_m: 60.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_80_gap_80
+    description: System limit sweep - ego 80 km/h, stationary lead, gap 80 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 80.0
+    target_speed_kph: 0.0
+    initial_gap_m: 80.0
+    duration_s: 7.6
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_80_gap_100
+    description: System limit sweep - ego 80 km/h, stationary lead, gap 100 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 80.0
+    target_speed_kph: 0.0
+    initial_gap_m: 100.0
+    duration_s: 8.5
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_90_gap_20
+    description: System limit sweep - ego 90 km/h, stationary lead, gap 20 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 90.0
+    target_speed_kph: 0.0
+    initial_gap_m: 20.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_90_gap_30
+    description: System limit sweep - ego 90 km/h, stationary lead, gap 30 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 90.0
+    target_speed_kph: 0.0
+    initial_gap_m: 30.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_90_gap_40
+    description: System limit sweep - ego 90 km/h, stationary lead, gap 40 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 90.0
+    target_speed_kph: 0.0
+    initial_gap_m: 40.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_90_gap_50
+    description: System limit sweep - ego 90 km/h, stationary lead, gap 50 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 90.0
+    target_speed_kph: 0.0
+    initial_gap_m: 50.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_90_gap_60
+    description: System limit sweep - ego 90 km/h, stationary lead, gap 60 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 90.0
+    target_speed_kph: 0.0
+    initial_gap_m: 60.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_90_gap_80
+    description: System limit sweep - ego 90 km/h, stationary lead, gap 80 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 90.0
+    target_speed_kph: 0.0
+    initial_gap_m: 80.0
+    duration_s: 7.2
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_90_gap_100
+    description: System limit sweep - ego 90 km/h, stationary lead, gap 100 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 90.0
+    target_speed_kph: 0.0
+    initial_gap_m: 100.0
+    duration_s: 8.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_100_gap_20
+    description: System limit sweep - ego 100 km/h, stationary lead, gap 20 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 100.0
+    target_speed_kph: 0.0
+    initial_gap_m: 20.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_100_gap_30
+    description: System limit sweep - ego 100 km/h, stationary lead, gap 30 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 100.0
+    target_speed_kph: 0.0
+    initial_gap_m: 30.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_100_gap_40
+    description: System limit sweep - ego 100 km/h, stationary lead, gap 40 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 100.0
+    target_speed_kph: 0.0
+    initial_gap_m: 40.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_100_gap_50
+    description: System limit sweep - ego 100 km/h, stationary lead, gap 50 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 100.0
+    target_speed_kph: 0.0
+    initial_gap_m: 50.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_100_gap_60
+    description: System limit sweep - ego 100 km/h, stationary lead, gap 60 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 100.0
+    target_speed_kph: 0.0
+    initial_gap_m: 60.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_100_gap_80
+    description: System limit sweep - ego 100 km/h, stationary lead, gap 80 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 100.0
+    target_speed_kph: 0.0
+    initial_gap_m: 80.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_100_gap_100
+    description: System limit sweep - ego 100 km/h, stationary lead, gap 100 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 100.0
+    target_speed_kph: 0.0
+    initial_gap_m: 100.0
+    duration_s: 7.6
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_110_gap_20
+    description: System limit sweep - ego 110 km/h, stationary lead, gap 20 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 110.0
+    target_speed_kph: 0.0
+    initial_gap_m: 20.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_110_gap_30
+    description: System limit sweep - ego 110 km/h, stationary lead, gap 30 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 110.0
+    target_speed_kph: 0.0
+    initial_gap_m: 30.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_110_gap_40
+    description: System limit sweep - ego 110 km/h, stationary lead, gap 40 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 110.0
+    target_speed_kph: 0.0
+    initial_gap_m: 40.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_110_gap_50
+    description: System limit sweep - ego 110 km/h, stationary lead, gap 50 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 110.0
+    target_speed_kph: 0.0
+    initial_gap_m: 50.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_110_gap_60
+    description: System limit sweep - ego 110 km/h, stationary lead, gap 60 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 110.0
+    target_speed_kph: 0.0
+    initial_gap_m: 60.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_110_gap_80
+    description: System limit sweep - ego 110 km/h, stationary lead, gap 80 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 110.0
+    target_speed_kph: 0.0
+    initial_gap_m: 80.0
+    duration_s: 7.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: ccrs_110_gap_100
+    description: System limit sweep - ego 110 km/h, stationary lead, gap 100 m.
+    type: stationary_lead
+    control_modes:
+      - physics
+    spawn_index: 81
+    ego_speed_kph: 110.0
+    target_speed_kph: 0.0
+    initial_gap_m: 100.0
+    duration_s: 7.3
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5

@@ -1,0 +1,123 @@
+runner:
+  map: Town04
+  spawn_index: 81
+  fixed_delta_seconds: 0.05
+  sensor_wait_timeout_s: 1.0
+  settle_ticks: 4
+  stop_speed_mps: 0.3
+  stop_hold_time_s: 0.2
+  target_blueprint: vehicle.audi.tt
+  control_mode: physics
+  physics_speed_kp: 0.2
+  physics_speed_ki: 0.03
+  physics_speed_integral_limit: 3.0
+  physics_speed_deadband_mps: 0.8
+  physics_throttle_feedforward: 0.45
+  physics_throttle_per_mps: 0.015
+  physics_throttle_limit: 1.0
+  physics_brake_limit: 0.6
+
+scenarios:
+- id: clear_road_50
+  description: Final video - đường trống 50 km/h, không được cảnh báo/phanh.
+  type: clear_road
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 50.0
+  duration_s: 7.0
+  lane_follow: true
+  expected_brake: false
+  expected_collision: false
+
+- id: ccrs_80_gap_30
+  description: Final video - ego 80 km/h gặp xe đứng yên phía trước, gap 30 m.
+  type: stationary_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  target_speed_kph: 0.0
+  initial_gap_m: 30.0
+  duration_s: 7.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+
+- id: ccrb_95_gap_20
+  description: Final video - xe trước phanh gấp ở 95 km/h, gap 20 m, case giới hạn.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 95.0
+  duration_s: 8.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 95.0
+  initial_gap_m: 20.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+
+- id: cutin_80_50_gap_25
+  description: Final video - cut-in pass, ego 80 km/h, target 50 km/h, gap 25 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 8.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 50.0
+    initial_gap_m: 25.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
+
+- id: cutin_100_60_gap_25
+  description: Final video - cut-in fail giới hạn, ego 100 km/h, target 60 km/h, gap 25 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 100.0
+  duration_s: 8.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 60.0
+    initial_gap_m: 25.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0

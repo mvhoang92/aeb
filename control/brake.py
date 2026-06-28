@@ -22,7 +22,35 @@ class BinaryBrakeConfig:
     brake_ttc_s: float = 1.8
     release_ttc_s: float = 3.5
     min_brake_hold_time_s: float = 0.3
+    brake_mode: str = "binary"
     full_brake: float = 1.0
+    staged_soft_brake: float = 0.55
+    staged_medium_brake: float = 0.75
+    staged_hard_brake: float = 0.90
+    staged_emergency_brake: float = 1.0
+    staged_hard_ttc_s: float = 1.10
+    staged_emergency_ttc_s: float = 0.80
+    staged_hard_margin_m: float = -2.0
+    staged_emergency_margin_m: float = -5.0
+    staged_emergency_distance_m: float = 18.0
+    pid_kp: float = 0.16
+    pid_ki: float = 0.02
+    pid_kd: float = 0.04
+    pid_ttc_kp: float = 0.15
+    pid_min_brake: float = 0.35
+    pid_hold_brake: float = 0.75
+    pid_max_brake: float = 1.0
+    pid_integral_limit: float = 8.0
+    pid_margin_deadband_m: float = 0.2
+    pid_target_margin_m: float = 0.0
+    pid_target_margin_max_lateral_m: float = 999.0
+    pid_default_dt_s: float = 0.05
+    pid_brake_rise_rate_per_s: float = 3.0
+    pid_brake_fall_rate_per_s: float = 5.0
+    pid_emergency_rise_rate_per_s: float = 20.0
+    pid_emergency_distance_m: float = 18.0
+    pid_emergency_margin_m: float = -5.0
+    pid_emergency_ttc_s: float = 0.80
     min_valid_distance_m: float = 0.5
     max_valid_distance_m: float = 120.0
     min_closing_speed_mps: float = 0.2
@@ -54,7 +82,156 @@ class BinaryBrakeConfig:
                     data.get("min_brake_hold_time", cls.min_brake_hold_time_s),
                 )
             ),
+            brake_mode=str(data.get("brake_mode", cls.brake_mode)).lower(),
             full_brake=float(data.get("full_brake", cls.full_brake)),
+            staged_soft_brake=clamp(
+                float(data.get("staged_soft_brake", cls.staged_soft_brake)),
+                0.0,
+                1.0,
+            ),
+            staged_medium_brake=clamp(
+                float(data.get("staged_medium_brake", cls.staged_medium_brake)),
+                0.0,
+                1.0,
+            ),
+            staged_hard_brake=clamp(
+                float(data.get("staged_hard_brake", cls.staged_hard_brake)),
+                0.0,
+                1.0,
+            ),
+            staged_emergency_brake=clamp(
+                float(
+                    data.get(
+                        "staged_emergency_brake",
+                        cls.staged_emergency_brake,
+                    )
+                ),
+                0.0,
+                1.0,
+            ),
+            staged_hard_ttc_s=max(
+                0.0,
+                float(data.get("staged_hard_ttc_s", cls.staged_hard_ttc_s)),
+            ),
+            staged_emergency_ttc_s=max(
+                0.0,
+                float(
+                    data.get(
+                        "staged_emergency_ttc_s",
+                        cls.staged_emergency_ttc_s,
+                    )
+                ),
+            ),
+            staged_hard_margin_m=float(
+                data.get("staged_hard_margin_m", cls.staged_hard_margin_m)
+            ),
+            staged_emergency_margin_m=float(
+                data.get(
+                    "staged_emergency_margin_m",
+                    cls.staged_emergency_margin_m,
+                )
+            ),
+            staged_emergency_distance_m=max(
+                0.0,
+                float(
+                    data.get(
+                        "staged_emergency_distance_m",
+                        cls.staged_emergency_distance_m,
+                    )
+                ),
+            ),
+            pid_kp=float(data.get("pid_kp", cls.pid_kp)),
+            pid_ki=float(data.get("pid_ki", cls.pid_ki)),
+            pid_kd=float(data.get("pid_kd", cls.pid_kd)),
+            pid_ttc_kp=float(data.get("pid_ttc_kp", cls.pid_ttc_kp)),
+            pid_min_brake=clamp(
+                float(data.get("pid_min_brake", cls.pid_min_brake)),
+                0.0,
+                1.0,
+            ),
+            pid_hold_brake=clamp(
+                float(data.get("pid_hold_brake", cls.pid_hold_brake)),
+                0.0,
+                1.0,
+            ),
+            pid_max_brake=clamp(
+                float(data.get("pid_max_brake", cls.pid_max_brake)),
+                0.0,
+                1.0,
+            ),
+            pid_integral_limit=max(
+                0.0,
+                float(data.get("pid_integral_limit", cls.pid_integral_limit)),
+            ),
+            pid_margin_deadband_m=max(
+                0.0,
+                float(
+                    data.get(
+                        "pid_margin_deadband_m",
+                        cls.pid_margin_deadband_m,
+                    )
+                ),
+            ),
+            pid_target_margin_m=max(
+                0.0,
+                float(data.get("pid_target_margin_m", cls.pid_target_margin_m)),
+            ),
+            pid_target_margin_max_lateral_m=max(
+                0.0,
+                float(
+                    data.get(
+                        "pid_target_margin_max_lateral_m",
+                        cls.pid_target_margin_max_lateral_m,
+                    )
+                ),
+            ),
+            pid_default_dt_s=max(
+                1e-3,
+                float(data.get("pid_default_dt_s", cls.pid_default_dt_s)),
+            ),
+            pid_brake_rise_rate_per_s=max(
+                0.0,
+                float(
+                    data.get(
+                        "pid_brake_rise_rate_per_s",
+                        cls.pid_brake_rise_rate_per_s,
+                    )
+                ),
+            ),
+            pid_brake_fall_rate_per_s=max(
+                0.0,
+                float(
+                    data.get(
+                        "pid_brake_fall_rate_per_s",
+                        cls.pid_brake_fall_rate_per_s,
+                    )
+                ),
+            ),
+            pid_emergency_rise_rate_per_s=max(
+                0.0,
+                float(
+                    data.get(
+                        "pid_emergency_rise_rate_per_s",
+                        cls.pid_emergency_rise_rate_per_s,
+                    )
+                ),
+            ),
+            pid_emergency_distance_m=max(
+                0.0,
+                float(
+                    data.get(
+                        "pid_emergency_distance_m",
+                        cls.pid_emergency_distance_m,
+                    )
+                ),
+            ),
+            pid_emergency_margin_m=float(
+                data.get("pid_emergency_margin_m", cls.pid_emergency_margin_m)
+            ),
+            pid_emergency_ttc_s=max(
+                0.0,
+                float(data.get("pid_emergency_ttc_s", cls.pid_emergency_ttc_s)),
+            ),
             min_valid_distance_m=float(
                 data.get("min_valid_distance_m", cls.min_valid_distance_m)
             ),
@@ -165,10 +342,18 @@ class BinaryAEB:
         self.config = config or BinaryBrakeConfig()
         self.state = AEBState.NORMAL
         self._state_entered_at = time.monotonic()
+        self._pid_integral = 0.0
+        self._pid_previous_error = 0.0
+        self._pid_last_timestamp = None
+        self._last_brake = 0.0
 
     def reset(self) -> None:
         self.state = AEBState.NORMAL
         self._state_entered_at = time.monotonic()
+        self._pid_integral = 0.0
+        self._pid_previous_error = 0.0
+        self._pid_last_timestamp = None
+        self._last_brake = 0.0
 
     def decide_from_target(
         self,
@@ -185,6 +370,7 @@ class BinaryAEB:
                 ego_speed_mps=ego_speed_mps,
             )
         distance_m = first_existing_attr(target, "x_forward_m", "distance_m", "depth_m")
+        target_lateral_m = first_existing_attr(target, "y_right_m", "lateral_m")
         relative_velocity_mps = first_existing_attr(
             target,
             "relative_velocity_mps",
@@ -195,6 +381,7 @@ class BinaryAEB:
             relative_velocity_mps,
             timestamp_s=timestamp_s,
             ego_speed_mps=ego_speed_mps,
+            target_lateral_m=target_lateral_m,
         )
 
     def decide(
@@ -204,15 +391,17 @@ class BinaryAEB:
         *,
         timestamp_s: Optional[float] = None,
         ego_speed_mps: Optional[float] = None,
+        target_lateral_m: Optional[float] = None,
     ) -> AEBDecision:
         now = time.monotonic() if timestamp_s is None else float(timestamp_s)
         cfg = self.config
 
         if not self._valid_target(distance_m, relative_velocity_mps):
             if self._must_hold_until_stopped(ego_speed_mps):
+                brake = self._hold_brake_command(now)
                 return self._transition(
                     AEBState.BRAKE,
-                    brake=cfg.full_brake,
+                    brake=brake,
                     ttc_s=math.inf,
                     target_distance_m=distance_m,
                     relative_velocity_mps=relative_velocity_mps,
@@ -246,10 +435,13 @@ class BinaryAEB:
             if required_distance_m is None or distance_m is None
             else distance_m - required_distance_m
         )
+        distance_brake_threshold_m = self._distance_brake_threshold(
+            target_lateral_m
+        )
         distance_brake = (
             cfg.use_stopping_distance
             and distance_margin_m is not None
-            and distance_margin_m <= 0.0
+            and distance_margin_m <= distance_brake_threshold_m
         )
         if distance_brake:
             desired = AEBState.BRAKE
@@ -262,7 +454,14 @@ class BinaryAEB:
             now,
             ego_speed_mps,
         )
-        brake = cfg.full_brake if next_state == AEBState.BRAKE else 0.0
+        brake = self._brake_command(
+            next_state,
+            ttc_s,
+            distance_m,
+            distance_margin_m,
+            target_lateral_m,
+            now,
+        )
 
         return self._transition(
             next_state,
@@ -369,6 +568,260 @@ class BinaryAEB:
             return AEBState.NORMAL
 
         return desired
+
+    def _brake_command(
+        self,
+        state: AEBState,
+        ttc_s: float,
+        distance_m: Optional[float],
+        distance_margin_m: Optional[float],
+        target_lateral_m: Optional[float],
+        now: float,
+    ) -> float:
+        cfg = self.config
+        if state != AEBState.BRAKE:
+            self._pid_integral = 0.0
+            self._pid_previous_error = 0.0
+            self._pid_last_timestamp = None
+            self._last_brake = 0.0
+            return 0.0
+        if self._is_pid_mode():
+            return self._pid_brake_command(
+                ttc_s,
+                distance_m,
+                distance_margin_m,
+                target_lateral_m,
+                now,
+            )
+        if cfg.brake_mode != "staged":
+            self._last_brake = cfg.full_brake
+            return cfg.full_brake
+        if not math.isfinite(ttc_s):
+            self._last_brake = cfg.full_brake
+            return cfg.full_brake
+        if distance_m is not None and distance_m <= cfg.staged_emergency_distance_m:
+            self._last_brake = cfg.staged_emergency_brake
+            return cfg.staged_emergency_brake
+        if (
+            distance_margin_m is not None
+            and distance_margin_m <= cfg.staged_emergency_margin_m
+        ):
+            self._last_brake = cfg.staged_emergency_brake
+            return cfg.staged_emergency_brake
+        if ttc_s <= cfg.staged_emergency_ttc_s:
+            self._last_brake = cfg.staged_emergency_brake
+            return cfg.staged_emergency_brake
+        if (
+            distance_margin_m is not None
+            and distance_margin_m <= cfg.staged_hard_margin_m
+        ):
+            self._last_brake = cfg.staged_hard_brake
+            return cfg.staged_hard_brake
+        if ttc_s <= cfg.staged_hard_ttc_s:
+            self._last_brake = cfg.staged_hard_brake
+            return cfg.staged_hard_brake
+        if distance_margin_m is not None and distance_margin_m <= 0.0:
+            self._last_brake = cfg.staged_medium_brake
+            return cfg.staged_medium_brake
+        if ttc_s <= cfg.brake_ttc_s:
+            self._last_brake = cfg.staged_medium_brake
+            return cfg.staged_medium_brake
+        self._last_brake = cfg.staged_soft_brake
+        return cfg.staged_soft_brake
+
+    def _pid_brake_command(
+        self,
+        ttc_s: float,
+        distance_m: Optional[float],
+        distance_margin_m: Optional[float],
+        target_lateral_m: Optional[float],
+        now: float,
+    ) -> float:
+        cfg = self.config
+        dt = self._pid_dt(now)
+        emergency = self._pid_emergency(
+            ttc_s,
+            distance_m,
+            distance_margin_m,
+        ) or self._staged_pid_emergency(ttc_s, distance_m, distance_margin_m)
+        if emergency:
+            target = (
+                cfg.staged_emergency_brake
+                if self._is_staged_pid_mode()
+                else cfg.pid_max_brake
+            )
+            return self._rate_limited_brake(target, dt, emergency=True)
+
+        margin_error = 0.0
+        if distance_margin_m is not None:
+            margin_error = max(
+                0.0,
+                self._distance_brake_threshold(target_lateral_m)
+                - float(distance_margin_m)
+                - cfg.pid_margin_deadband_m,
+            )
+        ttc_error = 0.0
+        if math.isfinite(ttc_s):
+            ttc_error = max(0.0, cfg.brake_ttc_s - float(ttc_s))
+        error = margin_error + cfg.pid_ttc_kp * ttc_error
+        self._pid_integral = clamp(
+            self._pid_integral + error * dt,
+            -cfg.pid_integral_limit,
+            cfg.pid_integral_limit,
+        )
+        derivative = max(
+            0.0,
+            (error - self._pid_previous_error) / max(1e-3, dt),
+        )
+        self._pid_previous_error = error
+
+        target = (
+            cfg.pid_min_brake
+            + cfg.pid_kp * error
+            + cfg.pid_ki * self._pid_integral
+            + cfg.pid_kd * derivative
+        )
+        target = clamp(target, cfg.pid_min_brake, cfg.pid_max_brake)
+        target = self._staged_pid_target(
+            target,
+            ttc_s,
+            distance_m,
+            distance_margin_m,
+        )
+        return self._rate_limited_brake(target, dt, emergency=False)
+
+    def _staged_pid_target(
+        self,
+        target: float,
+        ttc_s: float,
+        distance_m: Optional[float],
+        distance_margin_m: Optional[float],
+    ) -> float:
+        if not self._is_staged_pid_mode():
+            return target
+
+        cfg = self.config
+        if (
+            distance_m is not None
+            and distance_m <= cfg.staged_emergency_distance_m
+        ):
+            return cfg.staged_emergency_brake
+        if (
+            distance_margin_m is not None
+            and distance_margin_m <= cfg.staged_emergency_margin_m
+        ):
+            return cfg.staged_emergency_brake
+        if math.isfinite(ttc_s) and ttc_s <= cfg.staged_emergency_ttc_s:
+            return cfg.staged_emergency_brake
+
+        if (
+            distance_margin_m is not None
+            and distance_margin_m <= cfg.staged_hard_margin_m
+        ):
+            return clamp(target, cfg.staged_medium_brake, cfg.staged_hard_brake)
+        if math.isfinite(ttc_s) and ttc_s <= cfg.staged_hard_ttc_s:
+            return clamp(target, cfg.staged_medium_brake, cfg.staged_hard_brake)
+
+        if distance_margin_m is not None and distance_margin_m <= 0.0:
+            return clamp(target, cfg.staged_soft_brake, cfg.staged_medium_brake)
+        if math.isfinite(ttc_s) and ttc_s <= cfg.brake_ttc_s:
+            return clamp(target, cfg.staged_soft_brake, cfg.staged_medium_brake)
+
+        return clamp(target, cfg.pid_min_brake, cfg.staged_soft_brake)
+
+    def _pid_emergency(
+        self,
+        ttc_s: float,
+        distance_m: Optional[float],
+        distance_margin_m: Optional[float],
+    ) -> bool:
+        cfg = self.config
+        if distance_m is not None and distance_m <= cfg.pid_emergency_distance_m:
+            return True
+        if (
+            distance_margin_m is not None
+            and distance_margin_m <= cfg.pid_emergency_margin_m
+        ):
+            return True
+        return math.isfinite(ttc_s) and ttc_s <= cfg.pid_emergency_ttc_s
+
+    def _staged_pid_emergency(
+        self,
+        ttc_s: float,
+        distance_m: Optional[float],
+        distance_margin_m: Optional[float],
+    ) -> bool:
+        if not self._is_staged_pid_mode():
+            return False
+        cfg = self.config
+        if distance_m is not None and distance_m <= cfg.staged_emergency_distance_m:
+            return True
+        if (
+            distance_margin_m is not None
+            and distance_margin_m <= cfg.staged_emergency_margin_m
+        ):
+            return True
+        return math.isfinite(ttc_s) and ttc_s <= cfg.staged_emergency_ttc_s
+
+    def _pid_dt(self, now: float) -> float:
+        cfg = self.config
+        if self._pid_last_timestamp is None:
+            self._pid_last_timestamp = now
+            return cfg.pid_default_dt_s
+        dt = max(1e-3, float(now) - float(self._pid_last_timestamp))
+        self._pid_last_timestamp = now
+        return dt
+
+    def _distance_brake_threshold(
+        self,
+        target_lateral_m: Optional[float],
+    ) -> float:
+        cfg = self.config
+        if not self._is_pid_mode():
+            return 0.0
+        if target_lateral_m is not None:
+            if abs(float(target_lateral_m)) > cfg.pid_target_margin_max_lateral_m:
+                return 0.0
+        return cfg.pid_target_margin_m
+
+    def _rate_limited_brake(self, target: float, dt: float, emergency: bool) -> float:
+        cfg = self.config
+        rise_rate = (
+            cfg.pid_emergency_rise_rate_per_s
+            if emergency
+            else cfg.pid_brake_rise_rate_per_s
+        )
+        if target >= self._last_brake:
+            limit = rise_rate * dt
+            brake = min(target, self._last_brake + limit)
+        else:
+            limit = cfg.pid_brake_fall_rate_per_s * dt
+            brake = max(target, self._last_brake - limit)
+        self._last_brake = clamp(brake, 0.0, cfg.pid_max_brake)
+        return self._last_brake
+
+    def _hold_brake_command(self, now: float) -> float:
+        cfg = self.config
+        if self._is_pid_mode():
+            dt = self._pid_dt(now)
+            return self._rate_limited_brake(
+                max(self._last_brake, cfg.pid_hold_brake),
+                dt,
+                emergency=False,
+            )
+        return cfg.full_brake
+
+    def _is_pid_mode(self) -> bool:
+        return self.config.brake_mode in (
+            "pid",
+            "pid_v1",
+            "pid_v2",
+            "pid_v2_comfort",
+            "staged_pid",
+        )
+
+    def _is_staged_pid_mode(self) -> bool:
+        return self.config.brake_mode == "staged_pid"
 
     def _must_hold_until_stopped(
         self,

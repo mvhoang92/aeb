@@ -1,0 +1,46 @@
+runner:
+  map: Town04
+  spawn_index: 18
+  fixed_delta_seconds: 0.05
+  sensor_wait_timeout_s: 1.0
+  settle_ticks: 4
+  stop_speed_mps: 0.3
+  stop_hold_time_s: 0.2
+  target_blueprint: vehicle.audi.tt
+  control_mode: deterministic
+  physics_speed_kp: 0.2
+  physics_speed_ki: 0.03
+  physics_speed_integral_limit: 3.0
+  physics_speed_deadband_mps: 0.8
+  physics_throttle_feedforward: 0.45
+  physics_throttle_per_mps: 0.015
+  physics_throttle_limit: 1.0
+  physics_brake_limit: 0.6
+scenarios:
+- id: adjacent_stationary_50
+  description: Xe đứng yên ở làn kế bên, ego 50 km/h không được phanh nhầm.
+  type: adjacent_stationary
+  ego_speed_kph: 50.0
+  target_speed_kph: 0.0
+  initial_gap_m: 35.0
+  duration_s: 6.0
+  expected_brake: false
+  expected_collision: false
+- id: adjacent_stationary_65
+  description: Xe đứng yên ở làn kế bên, ego 65 km/h không được phanh nhầm.
+  type: adjacent_stationary
+  ego_speed_kph: 65.0
+  target_speed_kph: 0.0
+  initial_gap_m: 45.0
+  duration_s: 6.0
+  expected_brake: false
+  expected_collision: false
+- id: adjacent_stationary_80
+  description: Xe đứng yên ở làn kế bên, ego 80 km/h không được phanh nhầm.
+  type: adjacent_stationary
+  ego_speed_kph: 80.0
+  target_speed_kph: 0.0
+  initial_gap_m: 60.0
+  duration_s: 6.0
+  expected_brake: false
+  expected_collision: false

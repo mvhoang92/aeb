@@ -33,7 +33,11 @@ script ở root.
 
 - `scripts/run_radar_aeb_scenarios.py`: chạy batch scenario và sinh log.
 - `scripts/collect_yolo_dataset.py`: thu dataset YOLO bằng ground truth CARLA.
-- `scripts/train_yolo_pipeline.py`: audit, train, test và export model.
+- `scripts/check_yolo_dataset.py`: audit dataset YOLO trước khi train.
+- `scripts/train_yolo26n.py`: train YOLO26n trên dataset đã cấu hình.
+- `scripts/export_yolo26n_onnx.py`: export `best.pt` sang ONNX cho runtime.
+- `scripts/train_yolo_pipeline.py`: pipeline tổng hợp đời cũ, chỉ giữ để tham
+  khảo hoặc chạy lại log cũ.
 
 ## Tests
 

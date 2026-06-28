@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import argparse
 import ast
+import copy
 import glob
 import math
 import os
@@ -69,8 +70,8 @@ import manual_control
 
 
 DEFAULT_CONFIG = AEB_ROOT / "configs" / "sensors.yaml"
-DEFAULT_MODEL_PATH = AEB_ROOT / "models" / "yolo26n.pt"
-DEFAULT_ONNX_MODEL_PATH = AEB_ROOT / "models" / "yolo26n.onnx"
+DEFAULT_MODEL_PATH = AEB_ROOT / "models" / "yolo26n_aeb_v7.pt"
+DEFAULT_ONNX_MODEL_PATH = AEB_ROOT / "models" / "yolo26n_aeb_v7.onnx"
 
 COCO_NAMES = {
     0: "person",
@@ -215,6 +216,12 @@ def load_or_get_world(client, config, args):
     load_map = bool(world_cfg.get("load_map", True))
     world = client.get_world()
     current_map_name = world.get_map().name.split("/")[-1]
+    if bool(getattr(args, "reload_world_on_start", False)):
+        if load_map and current_map_name != map_name:
+            world = client.load_world(map_name)
+        else:
+            world = client.reload_world() or client.get_world()
+        return world
     if load_map and current_map_name != map_name:
         world = client.load_world(map_name)
     return world
@@ -240,6 +247,11 @@ def add_common_args(parser, default_config=DEFAULT_CONFIG):
     parser.add_argument("--config", type=Path, default=default_config)
     parser.add_argument("--map-name", default=None)
     parser.add_argument(
+        "--reload-world-on-start",
+        action="store_true",
+        help="Reload CARLA world trước khi spawn ego/sensor để bắt đầu scenario từ world sạch.",
+    )
+    parser.add_argument(
         "--res",
         metavar="WIDTHxHEIGHT",
         default=None,
@@ -248,13 +260,37 @@ def add_common_args(parser, default_config=DEFAULT_CONFIG):
     parser.add_argument("-a", "--autopilot", action="store_true")
     parser.add_argument("--filter", default=None)
     parser.add_argument("--rolename", default=None)
+    parser.add_argument(
+        "--brake-mode",
+        choices=(
+            "config",
+            "binary",
+            "staged",
+            "pid",
+            "pid_v1",
+            "pid_v2",
+            "pid_v2_comfort",
+            "staged_pid",
+        ),
+        default="config",
+        help="Override brake.brake_mode trong runtime config. Mặc định dùng sensors.yaml.",
+    )
     return parser
+
+
+def apply_runtime_overrides(config, args):
+    brake_mode = getattr(args, "brake_mode", "config")
+    if brake_mode and brake_mode != "config":
+        config = copy.deepcopy(config)
+        config.setdefault("brake", {})["brake_mode"] = brake_mode
+    return config
 
 
 def run_two_panel(args, panel_factory, caption):
     """Run manual_control.py unchanged on the left and a custom panel on the right."""
 
     config = load_yaml(args.config)
+    config = apply_runtime_overrides(config, args)
     panel_width, panel_height = display_size_from_args(args, config)
     fps = int(config_value(config, "display", "fps", 60))
     gamma = float(config_value(config, "display", "gamma", 2.2))
@@ -287,16 +323,21 @@ def run_two_panel(args, panel_factory, caption):
             right_panel.set_controller(controller)
 
         clock = pygame.time.Clock()
-        while True:
-            clock.tick_busy_loop(fps)
-            if controller.parse_events(client, manual_world, clock):
-                return
+        try:
+            while True:
+                clock.tick_busy_loop(fps)
+                if controller.parse_events(client, manual_world, clock):
+                    return
 
-            right_panel.tick()
-            manual_world.tick(clock)
-            manual_world.render(display)
-            right_panel.render(display)
-            pygame.display.flip()
+                right_panel.tick()
+                manual_world.tick(clock)
+                manual_world.render(display)
+                right_panel.render(display)
+                pygame.display.flip()
+        except RuntimeError as error:
+            print("CARLA connection/runtime stopped: {}".format(error))
+            print("UI sẽ thoát sạch. Hãy bật lại CARLA server rồi chạy lại.")
+            return
 
     finally:
         if manual_world is not None and manual_world.recording_enabled and client is not None:
@@ -513,6 +554,7 @@ class YoloDetector(object):
         self.enabled = bool(self.config.get("enabled", True))
         self.backend = str(self.config.get("backend", "auto")).lower()
         self.confidence = float(self.config.get("confidence", 0.25))
+        self.nms_iou = float(self.config.get("nms_iou", 0.50))
         self.inference_interval_s = float(self.config.get("inference_interval_s", 0.15))
         self.allowed_classes = self.config.get("allowed_classes")
         self.input_size = int(self.config.get("input_size", 640))
@@ -520,6 +562,12 @@ class YoloDetector(object):
             "providers",
             ["CUDAExecutionProvider", "CPUExecutionProvider"],
         )
+        self.configured_names = {
+            int(class_id): str(class_name)
+            for class_id, class_name in (
+                self.config.get("class_names", {}) or {}
+            ).items()
+        }
         self.model = None
         self.session = None
         self.input_name = None
@@ -564,13 +612,26 @@ class YoloDetector(object):
             providers = [provider for provider in self.providers if provider in available]
             if not providers:
                 providers = ["CPUExecutionProvider"]
-            self.session = ort.InferenceSession(str(model_path), providers=providers)
+            try:
+                self.session = ort.InferenceSession(
+                    str(model_path),
+                    providers=providers,
+                )
+            except Exception:
+                if providers == ["CPUExecutionProvider"]:
+                    raise
+                self.session = ort.InferenceSession(
+                    str(model_path),
+                    providers=["CPUExecutionProvider"],
+                )
             self.input_name = self.session.get_inputs()[0].name
             self.output_names = [output.name for output in self.session.get_outputs()]
             self.names = onnx_model_names(
                 self.session.get_modelmeta().custom_metadata_map,
                 COCO_NAMES,
             )
+            if self.configured_names:
+                self.names.update(self.configured_names)
             active_providers = self.session.get_providers()
             self.runtime_label = (
                 "ONNX CUDA" if "CUDAExecutionProvider" in active_providers else "ONNX CPU"
@@ -589,6 +650,8 @@ class YoloDetector(object):
         try:
             self.model = YOLO(str(model_path))
             self.names = getattr(self.model, "names", {}) or {}
+            if self.configured_names:
+                self.names.update(self.configured_names)
             self.status = "YOLO: {}".format(model_path.name)
         except Exception as exc:  # pylint: disable=broad-except
             self.status = "Lỗi tải YOLO: {}".format(exc)
@@ -624,6 +687,7 @@ class YoloDetector(object):
             names=self.names,
             confidence_threshold=self.confidence,
         )
+        detections = nms_detections(detections, self.nms_iou)
         return self._filter_allowed_classes(detections)
 
     def _infer_ultralytics(self, rgb_image):
@@ -760,6 +824,40 @@ def parse_ultralytics_result(result, default_names, confidence_threshold):
             )
         )
     return detections
+
+
+def nms_detections(detections, iou_threshold):
+    if not detections:
+        return []
+    threshold = max(0.0, min(1.0, float(iou_threshold)))
+    kept = []
+    remaining = sorted(detections, key=lambda det: det.confidence, reverse=True)
+    while remaining:
+        current = remaining.pop(0)
+        kept.append(current)
+        remaining = [
+            det
+            for det in remaining
+            if det.class_id != current.class_id
+            or detection_iou(current, det) <= threshold
+        ]
+    return kept
+
+
+def detection_iou(first, second):
+    x1 = max(first.x1, second.x1)
+    y1 = max(first.y1, second.y1)
+    x2 = min(first.x2, second.x2)
+    y2 = min(first.y2, second.y2)
+    intersection_width = max(0.0, x2 - x1)
+    intersection_height = max(0.0, y2 - y1)
+    intersection = intersection_width * intersection_height
+    first_area = max(0.0, first.x2 - first.x1) * max(0.0, first.y2 - first.y1)
+    second_area = max(0.0, second.x2 - second.x1) * max(0.0, second.y2 - second.y1)
+    union = first_area + second_area - intersection
+    if union <= 0.0:
+        return 0.0
+    return intersection / union
 
 
 def tensor_to_numpy(value):

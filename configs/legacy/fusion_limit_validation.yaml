@@ -1,0 +1,322 @@
+runner:
+  map: Town04
+  spawn_index: 81
+  fixed_delta_seconds: 0.05
+  sensor_wait_timeout_s: 1.0
+  settle_ticks: 4
+  stop_speed_mps: 0.30
+  stop_hold_time_s: 0.20
+  target_blueprint: vehicle.audi.tt
+  control_mode: physics
+  physics_speed_kp: 0.20
+  physics_speed_ki: 0.03
+  physics_speed_integral_limit: 3.0
+  physics_speed_deadband_mps: 0.80
+  physics_throttle_feedforward: 0.45
+  physics_throttle_per_mps: 0.015
+  physics_throttle_limit: 1.00
+  physics_brake_limit: 0.60
+
+scenarios:
+  # Nhóm A - Operating range: xe đứng yên cùng làn, khoảng cách đủ rộng.
+  - id: limit_ccrs_40_gap_40
+    description: Operating range - ego 40 km/h, xe đứng yên cùng làn, gap 40 m.
+    type: stationary_lead
+    ego_speed_kph: 40.0
+    target_speed_kph: 0.0
+    initial_gap_m: 40.0
+    duration_s: 8.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: limit_ccrs_50_gap_45
+    description: Operating range - ego 50 km/h, xe đứng yên cùng làn, gap 45 m.
+    type: stationary_lead
+    ego_speed_kph: 50.0
+    target_speed_kph: 0.0
+    initial_gap_m: 45.0
+    duration_s: 8.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: limit_ccrs_60_gap_55
+    description: Operating range - ego 60 km/h, xe đứng yên cùng làn, gap 55 m.
+    type: stationary_lead
+    ego_speed_kph: 60.0
+    target_speed_kph: 0.0
+    initial_gap_m: 55.0
+    duration_s: 8.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: limit_ccrs_70_gap_65
+    description: Operating range - ego 70 km/h, xe đứng yên cùng làn, gap 65 m.
+    type: stationary_lead
+    ego_speed_kph: 70.0
+    target_speed_kph: 0.0
+    initial_gap_m: 65.0
+    duration_s: 8.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: limit_ccrs_80_gap_75
+    description: Operating range - ego 80 km/h, xe đứng yên cùng làn, gap 75 m.
+    type: stationary_lead
+    ego_speed_kph: 80.0
+    target_speed_kph: 0.0
+    initial_gap_m: 75.0
+    duration_s: 8.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: limit_ccrs_90_gap_90
+    description: Operating range mở rộng - ego 90 km/h, xe đứng yên cùng làn, gap 90 m.
+    type: stationary_lead
+    ego_speed_kph: 90.0
+    target_speed_kph: 0.0
+    initial_gap_m: 90.0
+    duration_s: 9.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: limit_ccrs_100_gap_105
+    description: Stress ngoài dải mục tiêu - ego 100 km/h, xe đứng yên cùng làn, gap 105 m.
+    type: stationary_lead
+    ego_speed_kph: 100.0
+    target_speed_kph: 0.0
+    initial_gap_m: 105.0
+    duration_s: 10.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  # Nhóm B - Short-gap boundary: giảm gap để tìm biên fail theo vận tốc.
+  - id: short_gap_60_25
+    description: Boundary - ego 60 km/h, xe đứng yên cùng làn, gap ngắn 25 m.
+    type: stationary_lead
+    ego_speed_kph: 60.0
+    target_speed_kph: 0.0
+    initial_gap_m: 25.0
+    duration_s: 7.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: short_gap_60_30
+    description: Boundary - ego 60 km/h, xe đứng yên cùng làn, gap 30 m.
+    type: stationary_lead
+    ego_speed_kph: 60.0
+    target_speed_kph: 0.0
+    initial_gap_m: 30.0
+    duration_s: 7.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: short_gap_80_35
+    description: Boundary - ego 80 km/h, xe đứng yên cùng làn, gap ngắn 35 m.
+    type: stationary_lead
+    ego_speed_kph: 80.0
+    target_speed_kph: 0.0
+    initial_gap_m: 35.0
+    duration_s: 7.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: short_gap_80_45
+    description: Boundary - ego 80 km/h, xe đứng yên cùng làn, gap 45 m.
+    type: stationary_lead
+    ego_speed_kph: 80.0
+    target_speed_kph: 0.0
+    initial_gap_m: 45.0
+    duration_s: 7.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: short_gap_90_55
+    description: Boundary - ego 90 km/h, xe đứng yên cùng làn, gap 55 m.
+    type: stationary_lead
+    ego_speed_kph: 90.0
+    target_speed_kph: 0.0
+    initial_gap_m: 55.0
+    duration_s: 8.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: short_gap_90_65
+    description: Boundary - ego 90 km/h, xe đứng yên cùng làn, gap 65 m.
+    type: stationary_lead
+    ego_speed_kph: 90.0
+    target_speed_kph: 0.0
+    initial_gap_m: 65.0
+    duration_s: 8.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  # Nhóm C - Moving/braking target: giới hạn khi target còn chuyển động.
+  - id: moving_80_50_gap_35
+    description: Boundary - ego 80 km/h, xe trước 50 km/h, gap 35 m.
+    type: moving_lead
+    ego_speed_kph: 80.0
+    target_speed_kph: 50.0
+    initial_gap_m: 35.0
+    duration_s: 10.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: moving_90_60_gap_45
+    description: Boundary - ego 90 km/h, xe trước 60 km/h, gap 45 m.
+    type: moving_lead
+    ego_speed_kph: 90.0
+    target_speed_kph: 60.0
+    initial_gap_m: 45.0
+    duration_s: 10.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: braking_65_gap_28
+    description: Boundary - hai xe 65 km/h, xe trước phanh gấp, gap 28 m.
+    type: braking_lead
+    ego_speed_kph: 65.0
+    target_speed_kph: 65.0
+    initial_gap_m: 28.0
+    target_brake_time_s: 1.5
+    target_brake: 1.0
+    duration_s: 10.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: braking_80_gap_40
+    description: Boundary - hai xe 80 km/h, xe trước phanh gấp, gap 40 m.
+    type: braking_lead
+    ego_speed_kph: 80.0
+    target_speed_kph: 80.0
+    initial_gap_m: 40.0
+    target_brake_time_s: 1.5
+    target_brake: 1.0
+    duration_s: 10.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  - id: braking_90_gap_55
+    description: Boundary - hai xe 90 km/h, xe trước phanh gấp, gap 55 m.
+    type: braking_lead
+    ego_speed_kph: 90.0
+    target_speed_kph: 90.0
+    initial_gap_m: 55.0
+    target_brake_time_s: 1.5
+    target_brake: 1.0
+    duration_s: 11.0
+    expected_brake: true
+    expected_collision: false
+    min_stop_gap_m: 0.5
+
+  # Nhóm D - False-positive robustness ở tốc độ cao hơn dải mục tiêu.
+  - id: false_clear_90
+    description: False positive - đường trống 90 km/h, không được phanh.
+    type: clear_road
+    ego_speed_kph: 90.0
+    duration_s: 6.0
+    expected_brake: false
+    expected_collision: false
+
+  - id: false_adjacent_90
+    description: False positive - xe đứng yên làn bên, ego 90 km/h, không được phanh nhầm.
+    type: adjacent_stationary
+    ego_speed_kph: 90.0
+    target_speed_kph: 0.0
+    initial_gap_m: 65.0
+    duration_s: 6.0
+    expected_brake: false
+    expected_collision: false
+
+  - id: false_curve_clear_90
+    description: False positive - đường cong 90 km/h, không được phanh nhầm.
+    type: clear_road
+    control_modes:
+      - physics
+    spawn_index: 208
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    ego_speed_kph: 90.0
+    duration_s: 6.0
+    expected_brake: false
+    expected_collision: false
+
+  - id: false_curve_adjacent_65
+    description: False positive - đường cong, xe làn bên, ego 65 km/h, không được phanh nhầm.
+    type: adjacent_stationary
+    control_modes:
+      - physics
+    spawn_index: 208
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    ego_speed_kph: 65.0
+    target_speed_kph: 0.0
+    initial_gap_m: 40.0
+    adjacent_lane: left
+    duration_s: 6.0
+    expected_brake: false
+    expected_collision: false
+
+  - id: false_curve_adjacent_70
+    description: False positive - đường cong, xe làn bên, ego 70 km/h, không được phanh nhầm.
+    type: adjacent_stationary
+    control_modes:
+      - physics
+    spawn_index: 208
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    ego_speed_kph: 70.0
+    target_speed_kph: 0.0
+    initial_gap_m: 45.0
+    adjacent_lane: left
+    duration_s: 6.0
+    expected_brake: false
+    expected_collision: false
+
+  - id: false_curve_adjacent_75
+    description: False positive - đường cong, xe làn bên, ego 75 km/h, không được phanh nhầm.
+    type: adjacent_stationary
+    control_modes:
+      - physics
+    spawn_index: 208
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    ego_speed_kph: 75.0
+    target_speed_kph: 0.0
+    initial_gap_m: 50.0
+    adjacent_lane: left
+    duration_s: 6.0
+    expected_brake: false
+    expected_collision: false
+
+  - id: false_curve_adjacent_80
+    description: False positive - đường cong, xe làn bên, ego 80 km/h, không được phanh nhầm.
+    type: adjacent_stationary
+    control_modes:
+      - physics
+    spawn_index: 208
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    ego_speed_kph: 80.0
+    target_speed_kph: 0.0
+    initial_gap_m: 55.0
+    adjacent_lane: left
+    duration_s: 6.0
+    expected_brake: false
+    expected_collision: false

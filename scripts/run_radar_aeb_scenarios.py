@@ -22,13 +22,15 @@ PROJECT_ROOT = AEB_ROOT.parent
 if str(AEB_ROOT) not in sys.path:
     sys.path.insert(0, str(AEB_ROOT))
 
-from control.brake import AEBState, apply_brake_override, as_bool
+from control.brake import AEBState, BinaryBrakeConfig, apply_brake_override, as_bool
 from core.radar_aeb_pipeline import RadarAEBPipeline
 from ui.manual_control_common import RadarSensor, carla, load_yaml
 
 
 DEFAULT_SENSOR_CONFIG = AEB_ROOT / "configs" / "sensors.yaml"
-DEFAULT_SCENARIO_CONFIG = AEB_ROOT / "configs" / "radar_aeb_scenarios.yaml"
+DEFAULT_SCENARIO_CONFIG = (
+    AEB_ROOT / "configs" / "scenarios" / "suites" / "smoke_basic.yaml"
+)
 DEFAULT_LOG_ROOT = AEB_ROOT / "logs"
 
 TICK_FIELDS = [
@@ -74,6 +76,7 @@ TICK_FIELDS = [
     "distance_margin_m",
     "aeb_state",
     "aeb_reason",
+    "brake_stage",
     "brake_cmd",
     "throttle_cmd",
     "steer_cmd",
@@ -143,6 +146,11 @@ class HeadlessRadarAEB(object):
             apply_brake_override(self.ego, self.decision)
             self.aeb_override_active = False
         return frame
+
+    def reset_control_state(self):
+        self.pipeline.reset_control_state()
+        self.decision = self.pipeline.decision
+        self.aeb_override_active = False
 
     def destroy(self):
         self.pipeline.reset()
@@ -387,6 +395,7 @@ class ScenarioRunner(object):
                         summary["log_file"],
                     )
                 )
+                self._stabilize_between_scenarios(index, len(jobs))
         finally:
             self._destroy_managed_actors()
             self.world.apply_settings(self.original_settings)
@@ -421,6 +430,31 @@ class ScenarioRunner(object):
         )
         self.world.apply_settings(settings)
         self.world.tick()
+
+    def _stabilize_between_scenarios(self, index, total):
+        if index >= total:
+            return
+        self._destroy_managed_actors()
+        self._destroy_stale_aeb_actors()
+        cooldown_s = max(0.0, float(getattr(self.args, "scenario_cooldown_s", 0.0)))
+        if cooldown_s > 0.0:
+            fixed_dt = float(self.runner_config.get("fixed_delta_seconds", 0.05))
+            ticks = max(1, int(round(cooldown_s / max(fixed_dt, 0.001))))
+            for _ in range(ticks):
+                self.world.tick()
+
+        reload_every = int(getattr(self.args, "reload_world_every", 0) or 0)
+        if reload_every > 0 and index % reload_every == 0:
+            print("  Reload world để giảm rủi ro crash CARLA sau {} scenario".format(index))
+            self.world.apply_settings(self.original_settings)
+            self.world = self.client.reload_world() or self.client.get_world()
+            wait_s = max(0.0, float(getattr(self.args, "reload_world_wait_s", 2.0)))
+            if wait_s > 0.0:
+                time.sleep(wait_s)
+            self.carla_map = self.world.get_map()
+            self.original_settings = self.world.get_settings()
+            self._enable_synchronous_mode()
+            self._destroy_stale_aeb_actors()
 
     def _create_run_directory(self):
         run_id = self.args.run_id or datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -468,13 +502,10 @@ class ScenarioRunner(object):
 
     def _run_scenario(self, scenario, run_directory, run_index):
         self._destroy_managed_actors()
+        self._destroy_stale_aeb_actors()
         ego = self._spawn_ego(scenario)
         collision = CollisionRecorder(ego)
-        system = HeadlessRadarAEB(
-            ego,
-            self.sensor_config,
-            self.carla_map,
-        )
+        system = self._make_system(ego)
         scenario_actors = []
         hazard_entry = None
         evidence = None
@@ -486,21 +517,13 @@ class ScenarioRunner(object):
                 (entry for entry in scenario_actors if entry["hazard"]),
                 scenario_actors[0] if scenario_actors else None,
             )
-            self._set_vehicle_speed(ego, ego_speed_mps)
-            for entry in scenario_actors:
-                self._set_vehicle_speed(
-                    entry["actor"],
-                    kph_to_mps(entry["spec"].get("speed_kph", 0.0)),
-                )
-
             settle_ticks = int(self.runner_config.get("settle_ticks", 4))
             for _ in range(settle_ticks):
-                self._apply_scenario_actor_controls(
-                    scenario_actors,
-                    scenario,
-                    0.0,
-                )
-                self._maintain_ego_speed(ego, ego_speed_mps, scenario)
+                ego.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
+                for entry in scenario_actors:
+                    entry["actor"].apply_control(
+                        carla.VehicleControl(throttle=0.0, brake=1.0)
+                    )
                 frame = self.world.tick()
                 self._wait_for_radar(system, frame)
                 system.tick()
@@ -511,6 +534,7 @@ class ScenarioRunner(object):
                     entry["actor"],
                     kph_to_mps(entry["spec"].get("speed_kph", 0.0)),
                 )
+            self._reset_system_control_state(system)
             self.speed_control_integral = {}
             start_snapshot = self.world.get_snapshot()
             start_time_s = start_snapshot.timestamp.elapsed_seconds
@@ -612,14 +636,36 @@ class ScenarioRunner(object):
             return summary
         finally:
             if evidence is not None:
-                evidence.destroy()
-            system.destroy()
-            collision.destroy()
+                try:
+                    evidence.destroy()
+                except RuntimeError:
+                    pass
+            try:
+                system.destroy()
+            except RuntimeError:
+                pass
+            try:
+                collision.destroy()
+            except RuntimeError:
+                pass
             for entry in scenario_actors:
                 self._destroy_actor(entry["actor"])
             self._destroy_actor(ego)
             self.managed_actors = []
-            self.world.tick()
+            try:
+                self.world.tick()
+            except RuntimeError:
+                pass
+
+    def _reset_system_control_state(self, system):
+        if hasattr(system, "reset_control_state"):
+            system.reset_control_state()
+            return
+        pipeline = getattr(system, "pipeline", None)
+        if pipeline is not None and hasattr(pipeline, "reset_control_state"):
+            pipeline.reset_control_state()
+        if hasattr(system, "aeb_override_active"):
+            system.aeb_override_active = False
 
     def _spawn_ego(self, scenario):
         spawn_index = int(
@@ -649,6 +695,9 @@ class ScenarioRunner(object):
     def _set_vehicle_speed(self, vehicle, speed_mps):
         direction = vehicle.get_transform().get_forward_vector()
         vehicle.set_target_velocity(scale_vector(direction, speed_mps))
+        vehicle.apply_control(
+            carla.VehicleControl(throttle=0.0, steer=0.0, brake=0.0, hand_brake=False)
+        )
 
     def _spawn_scenario_actors(self, ego, scenario):
         scenario_type = scenario.get("type")
@@ -756,6 +805,9 @@ class ScenarioRunner(object):
         )
 
     def _apply_speed_control(self, vehicle, target_speed_mps, steer=0.0):
+        if self._physics_velocity_lock_enabled() and float(target_speed_mps) > 0.0:
+            direction = vehicle.get_transform().get_forward_vector()
+            vehicle.set_target_velocity(scale_vector(direction, target_speed_mps))
         speed_error = float(target_speed_mps) - vehicle_speed_mps(vehicle)
         kp = float(self.runner_config.get("physics_speed_kp", 0.35))
         ki = float(self.runner_config.get("physics_speed_ki", 0.0))
@@ -810,6 +862,9 @@ class ScenarioRunner(object):
                 brake=brake,
             )
         )
+
+    def _physics_velocity_lock_enabled(self):
+        return as_bool(self.runner_config.get("physics_velocity_lock", True))
 
     def _apply_scenario_actor_controls(self, entries, scenario, elapsed_s):
         for entry in entries:
@@ -939,6 +994,13 @@ class ScenarioRunner(object):
                 return
             time.sleep(0.001)
 
+    def _make_system(self, ego):
+        return HeadlessRadarAEB(
+            ego,
+            self.sensor_config,
+            self.carla_map,
+        )
+
     def _make_tick_row(
         self,
         scenario,
@@ -954,6 +1016,11 @@ class ScenarioRunner(object):
         target_cluster = pipeline.selected_target
         raw_points = system.radar.points if system.radar is not None else []
         ego_control = ego.get_control()
+        logged_brake = float(ego_control.brake)
+        logged_throttle = float(ego_control.throttle)
+        if system.decision.state == AEBState.BRAKE:
+            logged_brake = float(system.decision.brake)
+            logged_throttle = 0.0
         target_actor = hazard_entry["actor"] if hazard_entry is not None else None
         center_distance, bumper_gap, lateral_offset = actor_distances(
             ego,
@@ -1078,8 +1145,12 @@ class ScenarioRunner(object):
             ),
             "aeb_state": system.decision.state.value,
             "aeb_reason": system.decision.reason,
-            "brake_cmd": round(float(ego_control.brake), 4),
-            "throttle_cmd": round(float(ego_control.throttle), 4),
+            "brake_stage": brake_stage_label(
+                system.decision,
+                system_brake_config(system),
+            ),
+            "brake_cmd": round(logged_brake, 4),
+            "throttle_cmd": round(logged_throttle, 4),
             "steer_cmd": round(float(ego_control.steer), 4),
             "aeb_override": int(system.aeb_override_active),
             "collision_count": len(collision.events),
@@ -1144,6 +1215,29 @@ class ScenarioRunner(object):
             self._destroy_actor(actor)
         self.managed_actors = []
         self.speed_control_integral = {}
+
+    def _destroy_stale_aeb_actors(self):
+        try:
+            actors = self.world.get_actors()
+        except RuntimeError:
+            return
+        stale = []
+        for actor in actors:
+            role_name = str(actor.attributes.get("role_name", ""))
+            if role_name.startswith("aeb_scenario_"):
+                stale.append(actor)
+        if not stale:
+            return
+        print("  Dọn {} actor AEB còn sót".format(len(stale)))
+        for actor in stale:
+            try:
+                actor.destroy()
+            except RuntimeError:
+                pass
+        try:
+            self.world.tick()
+        except RuntimeError:
+            pass
 
 
 def summarize_scenario(scenario, rows, log_file, run_index=1):
@@ -1615,6 +1709,40 @@ def format_number(value, digits):
     return ("{:." + str(digits) + "f}").format(float(value))
 
 
+def brake_stage_label(decision, config):
+    if decision is None:
+        return "SAFE"
+    state = getattr(decision, "state", None)
+    brake = float(getattr(decision, "brake", 0.0) or 0.0)
+    reason = str(getattr(decision, "reason", "") or "")
+    if state == AEBState.WARNING:
+        return "WARNING"
+    if state != AEBState.BRAKE or brake <= 0.0:
+        if state == AEBState.RELEASE:
+            return "RELEASE"
+        return "SAFE"
+    if reason == "brake_held_until_stopped":
+        return "HOLD_STOP"
+    if brake >= float(config.staged_emergency_brake) - 1e-3:
+        return "EMERGENCY"
+    if brake >= float(config.staged_hard_brake) - 1e-3:
+        return "HARD_BRAKE"
+    if brake >= float(config.staged_medium_brake) - 1e-3:
+        return "MEDIUM_BRAKE"
+    return "SOFT_BRAKE"
+
+
+def system_brake_config(system):
+    config = getattr(system, "aeb_config", None)
+    if config is not None:
+        return config
+    pipeline = getattr(system, "pipeline", None)
+    config = getattr(pipeline, "aeb_config", None)
+    if config is not None:
+        return config
+    return BinaryBrakeConfig.from_mapping(getattr(system, "brake_config", {}))
+
+
 def select_evidence_events(rows, include_minimum_gap=True):
     if not rows:
         return []
@@ -1735,10 +1863,40 @@ def parse_args():
         action="store_true",
         help="Giữ toàn bộ frame PNG sau khi đã tạo video.",
     )
+    parser.add_argument(
+        "--scenario-cooldown-s",
+        type=float,
+        default=1.0,
+        help=(
+            "Nghỉ/tick thêm giữa các scenario để CARLA kịp dọn actor/sensor. "
+            "CARLA 0.9.11 ổn định hơn khi chạy batch dài."
+        ),
+    )
+    parser.add_argument(
+        "--reload-world-every",
+        type=int,
+        default=1,
+        help=(
+            "Nếu > 0, reload world sau mỗi N scenario để tránh CARLA tích trạng thái. "
+            "Chậm hơn nhưng hữu ích khi UE4 văng sau vài bài."
+        ),
+    )
+    parser.add_argument(
+        "--reload-world-wait-s",
+        type=float,
+        default=2.0,
+        help="Số giây đợi sau reload_world trước khi chạy scenario tiếp theo.",
+    )
     parser.add_argument("--load-map", action="store_true")
     args = parser.parse_args()
     if args.repeat < 1:
         parser.error("--repeat phải lớn hơn hoặc bằng 1")
+    if args.scenario_cooldown_s < 0:
+        parser.error("--scenario-cooldown-s không được âm")
+    if args.reload_world_every < 0:
+        parser.error("--reload-world-every không được âm")
+    if args.reload_world_wait_s < 0:
+        parser.error("--reload-world-wait-s không được âm")
     return args
 
 

@@ -26,9 +26,9 @@ driver_camera:
   fov: 70
   sensor_tick: 0.05
   location:
-    x: 0.8
+    x: 0.43
     y: 0.0
-    z: 1.55
+    z: 1.35
   rotation:
     pitch: 0.0
     yaw: 0.0
@@ -44,9 +44,9 @@ front_radar:
   points_per_second: 2000
   sensor_tick: 0.05
   location:
-    x: 2.35
+    x: 2.53
     y: 0.0
-    z: 0.55
+    z: 0.48
   rotation:
     pitch: 0.0
     yaw: 0.0
@@ -55,13 +55,16 @@ front_radar:
 model:
   enabled: true
   backend: onnx
-  path: aeb/models/yolo26n.onnx
+  path: aeb/models/yolo26n_aeb_v7.onnx
   input_size: 640
   confidence: 0.25
+  nms_iou: 0.50
   inference_interval_s: 0.15
   providers:
     - CUDAExecutionProvider
     - CPUExecutionProvider
+  class_names:
+    0: car
   allowed_classes: null
 
 fusion:
@@ -71,6 +74,12 @@ fusion:
   min_radar_forward_distance_m: 0.5
   draw_projected_radar_points: true
   radar_match_inside_bbox: true
+
+target_gate:
+  enabled: true
+  selected_confirm_frames: 5
+  immediate_brake_distance_m: 22.0
+  immediate_distance_margin_m: -4.0
 
 radar_cluster:
   tolerance_m: 1.0
@@ -87,6 +96,34 @@ radar_cluster:
   max_prediction_time_s: 0.30
 
 brake:
+  brake_mode: staged_pid
+  staged_soft_brake: 0.55
+  staged_medium_brake: 0.75
+  staged_hard_brake: 0.90
+  staged_emergency_brake: 1.0
+  staged_hard_ttc_s: 1.10
+  staged_emergency_ttc_s: 0.80
+  staged_hard_margin_m: -2.0
+  staged_emergency_margin_m: -5.0
+  staged_emergency_distance_m: 18.0
+  pid_kp: 0.12
+  pid_ki: 0.01
+  pid_kd: 0.0
+  pid_ttc_kp: 0.12
+  pid_min_brake: 0.25
+  pid_hold_brake: 0.75
+  pid_max_brake: 1.0
+  pid_integral_limit: 8.0
+  pid_margin_deadband_m: 0.2
+  pid_target_margin_m: 4.0
+  pid_target_margin_max_lateral_m: 0.95
+  pid_default_dt_s: 0.05
+  pid_brake_rise_rate_per_s: 3.0
+  pid_brake_fall_rate_per_s: 1.5
+  pid_emergency_rise_rate_per_s: 20.0
+  pid_emergency_distance_m: 16.0
+  pid_emergency_margin_m: -5.0
+  pid_emergency_ttc_s: 0.80
   warning_ttc_s: 3.0
   brake_ttc_s: 1.5
   release_ttc_s: 3.5
@@ -107,7 +144,7 @@ brake:
   path_max_heading_change_deg: 75.0
   min_brake_hold_time_s: 0.3
   hold_brake_until_stopped: true
-  release_speed_mps: 0.3
+  release_speed_mps: -0.1
   use_stopping_distance: true
   response_time_s: 0.20
   ego_emergency_decel_mps2: 8.0

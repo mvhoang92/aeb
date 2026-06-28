@@ -47,17 +47,30 @@ Nếu `distance_m <= d_required`, AEB có thể phanh dù TTC chưa quá thấp.
 Khi xe đang lùi, AEB phía trước không nên override phanh, vì radar trước có thể
 vẫn thấy vật cản trong lúc người lái đang lùi ra khỏi tình huống.
 
-## Phanh Hiện Tại
+## Các Chế Độ Phanh
 
-Baseline đang dùng binary brake:
+Project giữ nhiều chế độ phanh để so sánh:
+
+- `binary`: baseline đơn giản, có nguy hiểm thì `brake = 1.0`.
+- `staged`: chia tầng rủi ro và gán lực phanh cố định cho từng tầng.
+- `pid_v1`: PID điều khiển lực phanh theo sai số khoảng cách/TTC.
+- `pid_v2_comfort`: PID phanh sớm hơn nhưng nhẹ hơn, có lateral gate để tránh
+  phanh nhầm khi target đang lệch khỏi hành lang dự kiến.
+- `staged_pid`: bản đang phát triển, chia tầng rủi ro như `staged` nhưng lực
+  phanh trong từng tầng vẫn do PID và rate limiter điều khiển.
+
+Ý tưởng của `staged_pid`:
 
 ```text
-throttle = 0.0
-brake = 1.0
+soft risk      -> PID trong khung phanh nhẹ
+medium risk    -> PID trong khung phanh vừa
+hard risk      -> PID trong khung phanh mạnh
+emergency risk -> cho phép phanh tối đa
 ```
 
-Cách này dễ kiểm chứng nhưng không mượt. Khi radar-only đã ổn, nên thay bằng
-PID hoặc brake profile theo TTC/khoảng cách để giảm phanh nhạy ở vận tốc thấp.
+Như vậy hệ thống vẫn có phản ứng nhiều nấc giống AEB thực tế hơn, nhưng không bị
+giật như binary full-brake ngay từ đầu. Kết quả jerk trong CARLA vẫn chỉ nên xem
+là `CARLA raw jerk` để so sánh tương đối giữa các chế độ.
 
 ## Cảnh Báo
 

@@ -49,6 +49,7 @@ class RadarAEBPipeline(object):
         self.radar_config = config.get("front_radar", {})
         self.fusion_config = config.get("fusion", {})
         self.brake_config = config.get("brake", {})
+        self.target_gate_config = config.get("target_gate", {})
         self.aeb_config = BinaryBrakeConfig.from_mapping(self.brake_config)
         self.aeb = BinaryAEB(self.aeb_config)
         self.cluster_config = RadarClusterConfig.from_mapping(
@@ -66,6 +67,9 @@ class RadarAEBPipeline(object):
         self.predicted_path = []
         self.road_height_cache = {}
         self.road_height_cache_frame = None
+        self.target_gate_track_id = None
+        self.target_gate_selected_frames = 0
+        self.target_gate_block_reason = None
         self.decision = self.aeb.decide(None, None)
         self.last_frame = RadarAEBFrame(
             radar_frame=None,
@@ -112,6 +116,15 @@ class RadarAEBPipeline(object):
         self.predicted_path = []
         self.road_height_cache = {}
         self.road_height_cache_frame = None
+        self.target_gate_track_id = None
+        self.target_gate_selected_frames = 0
+        self.target_gate_block_reason = None
+        self.decision = self.aeb.decide(None, None)
+
+    def reset_control_state(self):
+        """Reset AEB/PID state without clearing radar perception history."""
+
+        self.aeb.reset()
         self.decision = self.aeb.decide(None, None)
 
     def update(self, radar) -> RadarAEBFrame:
@@ -145,7 +158,8 @@ class RadarAEBPipeline(object):
 
         self._update_clusters(radar)
         self.radar_objects = radar_objects_from_clusters(self.tracked_clusters)
-        self.selected_target = select_aeb_target(self.radar_objects)
+        raw_target = select_aeb_target(self.radar_objects)
+        self.selected_target = self.target_after_gate(raw_target, ego_speed_mps)
         self.decision = self.aeb.decide_from_target(
             self.selected_target,
             timestamp_s=radar_timestamp,
@@ -208,6 +222,62 @@ class RadarAEBPipeline(object):
 
     def select_target(self):
         return select_aeb_target(self.radar_objects)
+
+    def target_after_gate(self, target, ego_speed_mps):
+        if target is None:
+            self.target_gate_track_id = None
+            self.target_gate_selected_frames = 0
+            self.target_gate_block_reason = None
+            return None
+        if not self.target_gate_enabled():
+            self.target_gate_block_reason = None
+            return target
+
+        track_id = target.track_id
+        if track_id == self.target_gate_track_id:
+            self.target_gate_selected_frames += 1
+        else:
+            self.target_gate_track_id = track_id
+            self.target_gate_selected_frames = 1
+
+        if self.target_gate_selected_frames >= self.target_gate_confirm_frames():
+            self.target_gate_block_reason = None
+            return target
+        if self.target_gate_emergency_bypass(target, ego_speed_mps):
+            self.target_gate_block_reason = None
+            return target
+
+        self.target_gate_block_reason = "target_not_stable_enough"
+        return None
+
+    def target_gate_enabled(self):
+        return as_bool(self.target_gate_config.get("enabled", False))
+
+    def target_gate_confirm_frames(self):
+        return max(
+            1,
+            int(self.target_gate_config.get("selected_confirm_frames", 5)),
+        )
+
+    def target_gate_emergency_bypass(self, target, ego_speed_mps):
+        if target is None:
+            return False
+        immediate_distance = float(
+            self.target_gate_config.get("immediate_brake_distance_m", 22.0)
+        )
+        if target.x_forward_m <= immediate_distance:
+            return True
+        margin_threshold = float(
+            self.target_gate_config.get("immediate_distance_margin_m", -4.0)
+        )
+        required_distance = self.aeb.required_stopping_distance(
+            ego_speed_mps,
+            target.relative_velocity_mps,
+        )
+        if required_distance is None:
+            return False
+        distance_margin = target.x_forward_m - required_distance
+        return distance_margin <= margin_threshold
 
     def valid_path_target(self, point):
         min_forward = float(

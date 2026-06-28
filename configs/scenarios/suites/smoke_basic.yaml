@@ -1,0 +1,61 @@
+runner:
+  map: Town04
+  spawn_index: 18
+  fixed_delta_seconds: 0.05
+  sensor_wait_timeout_s: 1.0
+  settle_ticks: 4
+  stop_speed_mps: 0.3
+  stop_hold_time_s: 0.05
+  target_blueprint: vehicle.audi.tt
+  control_mode: deterministic
+  physics_speed_kp: 0.35
+  physics_throttle_feedforward: 0.18
+  physics_throttle_limit: 0.7
+  physics_brake_limit: 0.4
+scenarios:
+- id: clear_road_50
+  description: Ego chạy 50 km/h trên đường trống, AEB không được phanh.
+  type: clear_road
+  ego_speed_kph: 50.0
+  duration_s: 5.0
+  expected_brake: false
+  expected_collision: false
+- id: ccrs_30
+  description: Xe mục tiêu đứng yên cùng làn, ego tiếp cận ở 30 km/h.
+  type: stationary_lead
+  ego_speed_kph: 30.0
+  target_speed_kph: 0.0
+  initial_gap_m: 28.0
+  duration_s: 8.0
+  expected_brake: true
+  expected_collision: false
+- id: ccrm_50_20
+  description: Ego 50 km/h tiếp cận xe mục tiêu chạy 20 km/h cùng làn.
+  type: moving_lead
+  ego_speed_kph: 50.0
+  target_speed_kph: 20.0
+  initial_gap_m: 32.0
+  duration_s: 10.0
+  expected_brake: true
+  expected_collision: false
+- id: ccrb_40_to_0
+  description: Hai xe cùng chạy 40 km/h, xe mục tiêu phanh gấp sau 1.5 giây.
+  type: braking_lead
+  ego_speed_kph: 40.0
+  target_speed_kph: 40.0
+  initial_gap_m: 22.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+  duration_s: 10.0
+  expected_brake: true
+  expected_collision: false
+- id: adjacent_stationary_30
+  description: Xe đứng yên ở làn kế bên, ego chạy 30 km/h và không được phanh nhầm.
+  type: adjacent_stationary
+  ego_speed_kph: 30.0
+  target_speed_kph: 0.0
+  initial_gap_m: 18.0
+  adjacent_lane: left
+  duration_s: 6.0
+  expected_brake: false
+  expected_collision: false

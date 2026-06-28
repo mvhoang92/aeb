@@ -55,10 +55,39 @@ Cần kiểm tra:
 
 ## Train Và Export
 
+Luồng train hiện tại tách thành ba bước để dễ theo dõi và dễ debug:
+
+1. Audit dataset.
+2. Train YOLO26n.
+3. Export ONNX để dùng trong UI/runtime CARLA.
+
+Các lệnh train/export dùng môi trường Python 3.10 `.venv_yolo310`, vì runtime
+CARLA 0.9.11 vẫn dùng Python 3.7 nhưng Ultralytics YOLO mới cần Python mới hơn.
+
+Audit dataset:
+
 ```bash
-cd /home/mvhoang/CARLA_0.9.11
-venv/bin/python aeb/scripts/train_yolo_pipeline.py --audit-only
+cd /home/mvhoang/CARLA_0.9.11/aeb
+.venv_yolo310/bin/python scripts/check_yolo_dataset.py
 ```
 
-Sau khi audit ổn mới train, test và export ONNX CUDA. Model chỉ nên thay vào UI
-demo/fusion khi đạt quality gate trên test split riêng.
+Train YOLO26n:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+.venv_yolo310/bin/python scripts/train_yolo26n.py
+```
+
+Export ONNX từ run mới nhất:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+.venv_yolo310/bin/python scripts/export_yolo26n_onnx.py
+```
+
+Model runtime hiện tại:
+
+- `models/yolo26n_aeb_v7.pt`: weight PyTorch sau khi train.
+- `models/yolo26n_aeb_v7.onnx`: model ONNX dùng cho UI YOLO/fusion.
+
+Model chỉ nên thay vào UI demo/fusion khi đạt quality gate trên test split riêng.

@@ -15,10 +15,10 @@ traffic:
   actor_filter: vehicle.*
   safe_blueprints: true
   car_lights_on: false
-  same_lane_vehicles_ahead: 10
-  same_lane_first_distance_m: 22.0
-  same_lane_spacing_m: 20.0
-  same_lane_following_distance_m: 8.0
+  same_lane_vehicles_ahead: 4
+  same_lane_first_distance_m: 30.0
+  same_lane_spacing_m: 35.0
+  same_lane_following_distance_m: 12.0
 
 ego:
   blueprint: vehicle.tesla.model3
@@ -35,21 +35,21 @@ camera:
   gamma: 2.2
   enable_postprocess_effects: true
   location:
-    x: 0.8
+    x: 0.43
     y: 0.0
-    z: 1.55
+    z: 1.35
   rotation:
     pitch: 0.0
     yaw: 0.0
     roll: 0.0
 
 dataset:
-  root: aeb/dataset_v3
+  root: aeb/dataset_v6
   split: train
   class_id: 0
   class_name: car
-  save_interval_frames_min: 5
-  save_interval_frames_max: 10
+  save_interval_frames_min: 40
+  save_interval_frames_max: 40
   max_samples: 2000
   settle_frames: 10
   save_empty_images: true
@@ -62,17 +62,26 @@ dataset:
 filter:
   actor_pattern: vehicle.*
   minimum_wheels: 4
-  max_distance_m: 80.0
+  max_distance_m: 110.0
   near_plane_m: 0.10
-  min_box_width_px: 14
-  min_box_height_px: 10
-  min_box_area_px: 180
-  max_truncation: 0.50
+  min_box_width_px: 5
+  min_box_height_px: 4
+  min_box_area_px: 25
+  max_truncation: 0.85
   use_depth_visibility: true
   use_semantic_visibility: true
   vehicle_semantic_tag: 10
-  depth_tolerance_m: 1.5
+  depth_tolerance_m: 2.5
   fit_box_to_visible_pixels: true
   visible_box_padding_px: 2
-  min_visible_pixels: 50
-  min_visible_ratio: 0.25
+  min_visible_pixels: 8
+  min_visible_ratio: 0.03
+  # Nếu xe bị che khuất mạnh, chỉ giữ label khi phần thật sự nhìn thấy
+  # vẫn đủ lớn. Cách này giữ được xe xa/nhỏ nhưng rõ, đồng thời bỏ các xe
+  # chỉ lộ một mẩu nhỏ sau vật cản.
+  heavy_occlusion_visible_ratio: 0.15
+  heavy_occlusion_min_visible_pixels: 300
+  heavy_occlusion_min_fitted_area_px: 1000
+  suppress_overlapping_boxes: true
+  overlap_suppression_iou: 0.55
+  overlap_suppression_containment: 0.75

@@ -93,6 +93,36 @@ __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ./CarlaUE4.sh -qual
 Không dùng thêm `-opengl` trên máy hiện tại, vì cờ này từng làm pygame/manual
 control render lỗi.
 
+## Launcher Giao Diện
+
+Launcher tập trung việc bật/tắt CARLA, chạy các app debug và chạy kiểm thử:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+python3 laucher.py
+```
+
+Launcher dùng `python3` hệ thống vì `venv` CARLA/YOLO trên máy hiện tại không có
+`tkinter`. Bên trong launcher vẫn tự gọi đúng `venv/bin/python` cho CARLA và
+`.venv_yolo310/bin/python` cho YOLO khi cần.
+
+Launcher có bốn tab:
+
+- `CARLA Server`: chọn quality, bật NVIDIA offload, bật/dừng server.
+- `Ứng dụng UI`: chạy final demo 3 màn, camera, radar, YOLO, fusion hoặc Radar
+  AEB live scenario. Có lựa chọn validation mode hoặc realistic mode
+  `phanh xong chạy tiếp`, và chọn loại phanh `binary`, `pid`, `pid_v2_comfort`
+  hoặc `staged_pid`.
+- `Kiểm thử`: chạy radar/fusion scenario batch, unit test hoặc audit dataset
+  YOLO.
+- `Quay video`: gọi script quay video UI final và sinh report video.
+
+Có thể kiểm tra dependency của launcher mà không mở cửa sổ:
+
+```bash
+python3 laucher.py --check
+```
+
 ## Chạy Các App Debug
 
 ```bash
@@ -115,7 +145,7 @@ venv/bin/python aeb/ui/radar_view.py --res 960x540
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
 ../venv/bin/python scripts/run_radar_aeb_scenarios.py \
-  --scenario-config configs/radar_only_validation.yaml \
+  --scenario-config configs/scenarios/suites/radar_only_regression.yaml \
   --control-mode physics \
   --load-map
 ```
@@ -123,16 +153,25 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
 Log sẽ được ghi vào `logs/<run_id>/`. Xem thêm
 `docs/official/07_SCENARIOS_AND_VALIDATION.md`.
 
+## Cấu Trúc Scenario Config
+
+Các scenario YAML được chia lại theo hai tầng:
+
+- `configs/scenarios/car_to_car/`: thư viện tình huống gốc, chia theo bản chất
+  bài test như CCRs xe trước đứng yên, CCRm xe trước chạy chậm, CCRb xe trước
+  phanh gấp, cut-in, cut-out, adjacent, curve và multi-actor.
+- `configs/scenarios/suites/`: bộ gom để chạy theo mục tiêu như smoke test,
+  radar-only regression, fusion regression, system-limit sweep và report demo.
+
+Launcher ưu tiên hiển thị các tên này thay vì bắt người dùng nhớ file YAML cũ.
+
 ## Thu Dataset Và Train YOLO
 
 ```bash
-cd /home/mvhoang/CARLA_0.9.11
-venv/bin/python aeb/scripts/collect_yolo_dataset.py \
-  --split train \
-  --session-id town04_train_01 \
-  --max-samples 500
-
-venv/bin/python aeb/scripts/train_yolo_pipeline.py --audit-only
+cd /home/mvhoang/CARLA_0.9.11/aeb
+.venv_yolo310/bin/python scripts/check_yolo_dataset.py
+.venv_yolo310/bin/python scripts/train_yolo26n.py
+.venv_yolo310/bin/python scripts/export_yolo26n_onnx.py
 ```
 
 Chi tiết nằm ở `docs/official/08_DATASET_AND_TRAINING.md`.

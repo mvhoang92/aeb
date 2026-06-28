@@ -9,6 +9,7 @@ __pycache__/
 .coverage
 htmlcov/
 .venv/
+.venv_yolo310/
 venv/
 
 # IDE and operating-system files
@@ -21,8 +22,7 @@ venv/
 # Generated datasets and training artifacts
 raw_dataset/
 dataset/
-dataset_v2/
-dataset_v3/
+dataset*/
 training_runs/
 outputs/
 weights/
@@ -33,6 +33,8 @@ logs/
 *.tmp
 
 # Future model archives and large exports
+/yolo*.pt
+/yolo*.onnx
 models/archive/
 models/*.engine
 models/*.plan

@@ -1,0 +1,71 @@
+runner:
+  map: Town04
+  spawn_index: 18
+  fixed_delta_seconds: 0.05
+  sensor_wait_timeout_s: 1.0
+  settle_ticks: 4
+  stop_speed_mps: 0.3
+  stop_hold_time_s: 0.2
+  target_blueprint: vehicle.audi.tt
+  control_mode: deterministic
+  physics_speed_kp: 0.2
+  physics_speed_ki: 0.03
+  physics_speed_integral_limit: 3.0
+  physics_speed_deadband_mps: 0.8
+  physics_throttle_feedforward: 0.45
+  physics_throttle_per_mps: 0.015
+  physics_throttle_limit: 1.0
+  physics_brake_limit: 0.6
+scenarios:
+- id: multi_adjacent_decoy_65
+  description: Xe mồi đứng gần ở làn trái, xe chậm cùng làn mới là hazard.
+  type: multi_actor
+  control_modes:
+  - physics
+  ego_speed_kph: 65.0
+  duration_s: 10.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: lead
+  expected_collision: false
+  actors:
+  - role: adjacent_decoy
+    hazard: false
+    motion: stationary
+    speed_kph: 0.0
+    initial_gap_m: 20.0
+    spawn_lane: left
+  - role: lead
+    hazard: true
+    motion: moving
+    speed_kph: 30.0
+    initial_gap_m: 48.0
+    spawn_lane: ego
+    lane_follow: true
+- id: multi_two_leads_80
+  description: Hai xe cùng làn, AEB phải chọn xe gần đang chạy chậm.
+  type: multi_actor
+  control_modes:
+  - physics
+  ego_speed_kph: 80.0
+  duration_s: 10.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: near_lead
+  expected_collision: false
+  actors:
+  - role: near_lead
+    hazard: true
+    motion: moving
+    speed_kph: 40.0
+    initial_gap_m: 42.0
+    spawn_lane: ego
+    lane_follow: true
+  - role: far_lead
+    hazard: false
+    motion: stationary
+    speed_kph: 0.0
+    initial_gap_m: 72.0
+    spawn_lane: ego

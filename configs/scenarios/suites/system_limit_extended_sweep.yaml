@@ -1,0 +1,1255 @@
+runner:
+  map: Town04
+  spawn_index: 81
+  fixed_delta_seconds: 0.05
+  sensor_wait_timeout_s: 1.0
+  settle_ticks: 4
+  stop_speed_mps: 0.3
+  stop_hold_time_s: 0.2
+  target_blueprint: vehicle.audi.tt
+  control_mode: physics
+  physics_speed_kp: 0.2
+  physics_speed_ki: 0.03
+  physics_speed_integral_limit: 3.0
+  physics_speed_deadband_mps: 0.8
+  physics_throttle_feedforward: 0.45
+  physics_throttle_per_mps: 0.015
+  physics_throttle_limit: 1.0
+  physics_brake_limit: 0.6
+scenarios:
+- id: ccrm_60_30_gap_20
+  description: System limit sweep - moving lead, ego 60 km/h, target 30 km/h, gap 20 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 60.0
+  duration_s: 7.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 30.0
+  initial_gap_m: 20.0
+- id: ccrm_60_30_gap_30
+  description: System limit sweep - moving lead, ego 60 km/h, target 30 km/h, gap 30 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 60.0
+  duration_s: 7.6
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 30.0
+  initial_gap_m: 30.0
+- id: ccrm_60_30_gap_40
+  description: System limit sweep - moving lead, ego 60 km/h, target 30 km/h, gap 40 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 60.0
+  duration_s: 8.8
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 30.0
+  initial_gap_m: 40.0
+- id: ccrm_60_30_gap_50
+  description: System limit sweep - moving lead, ego 60 km/h, target 30 km/h, gap 50 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 60.0
+  duration_s: 10.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 30.0
+  initial_gap_m: 50.0
+- id: ccrm_60_30_gap_60
+  description: System limit sweep - moving lead, ego 60 km/h, target 30 km/h, gap 60 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 60.0
+  duration_s: 11.2
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 30.0
+  initial_gap_m: 60.0
+- id: ccrm_60_30_gap_80
+  description: System limit sweep - moving lead, ego 60 km/h, target 30 km/h, gap 80 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 60.0
+  duration_s: 13.6
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 30.0
+  initial_gap_m: 80.0
+- id: ccrm_80_50_gap_20
+  description: System limit sweep - moving lead, ego 80 km/h, target 50 km/h, gap 20 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 7.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 50.0
+  initial_gap_m: 20.0
+- id: ccrm_80_50_gap_30
+  description: System limit sweep - moving lead, ego 80 km/h, target 50 km/h, gap 30 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 7.6
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 50.0
+  initial_gap_m: 30.0
+- id: ccrm_80_50_gap_40
+  description: System limit sweep - moving lead, ego 80 km/h, target 50 km/h, gap 40 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 8.8
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 50.0
+  initial_gap_m: 40.0
+- id: ccrm_80_50_gap_50
+  description: System limit sweep - moving lead, ego 80 km/h, target 50 km/h, gap 50 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 10.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 50.0
+  initial_gap_m: 50.0
+- id: ccrm_80_50_gap_60
+  description: System limit sweep - moving lead, ego 80 km/h, target 50 km/h, gap 60 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 11.2
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 50.0
+  initial_gap_m: 60.0
+- id: ccrm_80_50_gap_80
+  description: System limit sweep - moving lead, ego 80 km/h, target 50 km/h, gap 80 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 13.6
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 50.0
+  initial_gap_m: 80.0
+- id: ccrm_100_70_gap_20
+  description: System limit sweep - moving lead, ego 100 km/h, target 70 km/h, gap 20 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 100.0
+  duration_s: 7.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 70.0
+  initial_gap_m: 20.0
+- id: ccrm_100_70_gap_30
+  description: System limit sweep - moving lead, ego 100 km/h, target 70 km/h, gap 30 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 100.0
+  duration_s: 7.6
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 70.0
+  initial_gap_m: 30.0
+- id: ccrm_100_70_gap_40
+  description: System limit sweep - moving lead, ego 100 km/h, target 70 km/h, gap 40 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 100.0
+  duration_s: 8.8
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 70.0
+  initial_gap_m: 40.0
+- id: ccrm_100_70_gap_50
+  description: System limit sweep - moving lead, ego 100 km/h, target 70 km/h, gap 50 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 100.0
+  duration_s: 10.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 70.0
+  initial_gap_m: 50.0
+- id: ccrm_100_70_gap_60
+  description: System limit sweep - moving lead, ego 100 km/h, target 70 km/h, gap 60 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 100.0
+  duration_s: 11.2
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 70.0
+  initial_gap_m: 60.0
+- id: ccrm_100_70_gap_80
+  description: System limit sweep - moving lead, ego 100 km/h, target 70 km/h, gap 80 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 100.0
+  duration_s: 13.6
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 70.0
+  initial_gap_m: 80.0
+- id: ccrm_110_80_gap_20
+  description: System limit sweep - moving lead, ego 110 km/h, target 80 km/h, gap 20 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 110.0
+  duration_s: 7.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 80.0
+  initial_gap_m: 20.0
+- id: ccrm_110_80_gap_30
+  description: System limit sweep - moving lead, ego 110 km/h, target 80 km/h, gap 30 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 110.0
+  duration_s: 7.6
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 80.0
+  initial_gap_m: 30.0
+- id: ccrm_110_80_gap_40
+  description: System limit sweep - moving lead, ego 110 km/h, target 80 km/h, gap 40 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 110.0
+  duration_s: 8.8
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 80.0
+  initial_gap_m: 40.0
+- id: ccrm_110_80_gap_50
+  description: System limit sweep - moving lead, ego 110 km/h, target 80 km/h, gap 50 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 110.0
+  duration_s: 10.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 80.0
+  initial_gap_m: 50.0
+- id: ccrm_110_80_gap_60
+  description: System limit sweep - moving lead, ego 110 km/h, target 80 km/h, gap 60 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 110.0
+  duration_s: 11.2
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 80.0
+  initial_gap_m: 60.0
+- id: ccrm_110_80_gap_80
+  description: System limit sweep - moving lead, ego 110 km/h, target 80 km/h, gap 80 m.
+  type: moving_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 110.0
+  duration_s: 13.6
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 80.0
+  initial_gap_m: 80.0
+- id: ccrb_50_gap_20
+  description: System limit sweep - braking lead, both 50 km/h, target full brake after 1.5 s, gap 20
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 50.0
+  duration_s: 8.4
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 50.0
+  initial_gap_m: 20.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_50_gap_30
+  description: System limit sweep - braking lead, both 50 km/h, target full brake after 1.5 s, gap 30
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 50.0
+  duration_s: 9.2
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 50.0
+  initial_gap_m: 30.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_50_gap_40
+  description: System limit sweep - braking lead, both 50 km/h, target full brake after 1.5 s, gap 40
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 50.0
+  duration_s: 9.9
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 50.0
+  initial_gap_m: 40.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_50_gap_50
+  description: System limit sweep - braking lead, both 50 km/h, target full brake after 1.5 s, gap 50
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 50.0
+  duration_s: 10.6
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 50.0
+  initial_gap_m: 50.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_50_gap_60
+  description: System limit sweep - braking lead, both 50 km/h, target full brake after 1.5 s, gap 60
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 50.0
+  duration_s: 11.3
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 50.0
+  initial_gap_m: 60.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_50_gap_80
+  description: System limit sweep - braking lead, both 50 km/h, target full brake after 1.5 s, gap 80
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 50.0
+  duration_s: 12.8
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 50.0
+  initial_gap_m: 80.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_65_gap_20
+  description: System limit sweep - braking lead, both 65 km/h, target full brake after 1.5 s, gap 20
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 65.0
+  duration_s: 8.1
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 65.0
+  initial_gap_m: 20.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_65_gap_30
+  description: System limit sweep - braking lead, both 65 km/h, target full brake after 1.5 s, gap 30
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 65.0
+  duration_s: 8.7
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 65.0
+  initial_gap_m: 30.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_65_gap_40
+  description: System limit sweep - braking lead, both 65 km/h, target full brake after 1.5 s, gap 40
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 65.0
+  duration_s: 9.2
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 65.0
+  initial_gap_m: 40.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_65_gap_50
+  description: System limit sweep - braking lead, both 65 km/h, target full brake after 1.5 s, gap 50
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 65.0
+  duration_s: 9.8
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 65.0
+  initial_gap_m: 50.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_65_gap_60
+  description: System limit sweep - braking lead, both 65 km/h, target full brake after 1.5 s, gap 60
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 65.0
+  duration_s: 10.3
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 65.0
+  initial_gap_m: 60.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_65_gap_80
+  description: System limit sweep - braking lead, both 65 km/h, target full brake after 1.5 s, gap 80
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 65.0
+  duration_s: 11.4
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 65.0
+  initial_gap_m: 80.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_80_gap_20
+  description: System limit sweep - braking lead, both 80 km/h, target full brake after 1.5 s, gap 20
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 8.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 80.0
+  initial_gap_m: 20.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_80_gap_30
+  description: System limit sweep - braking lead, both 80 km/h, target full brake after 1.5 s, gap 30
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 8.3
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 80.0
+  initial_gap_m: 30.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_80_gap_40
+  description: System limit sweep - braking lead, both 80 km/h, target full brake after 1.5 s, gap 40
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 8.8
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 80.0
+  initial_gap_m: 40.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_80_gap_50
+  description: System limit sweep - braking lead, both 80 km/h, target full brake after 1.5 s, gap 50
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 9.2
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 80.0
+  initial_gap_m: 50.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_80_gap_60
+  description: System limit sweep - braking lead, both 80 km/h, target full brake after 1.5 s, gap 60
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 9.7
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 80.0
+  initial_gap_m: 60.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_80_gap_80
+  description: System limit sweep - braking lead, both 80 km/h, target full brake after 1.5 s, gap 80
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 10.6
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 80.0
+  initial_gap_m: 80.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_95_gap_20
+  description: System limit sweep - braking lead, both 95 km/h, target full brake after 1.5 s, gap 20
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 95.0
+  duration_s: 8.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 95.0
+  initial_gap_m: 20.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_95_gap_30
+  description: System limit sweep - braking lead, both 95 km/h, target full brake after 1.5 s, gap 30
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 95.0
+  duration_s: 8.1
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 95.0
+  initial_gap_m: 30.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_95_gap_40
+  description: System limit sweep - braking lead, both 95 km/h, target full brake after 1.5 s, gap 40
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 95.0
+  duration_s: 8.5
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 95.0
+  initial_gap_m: 40.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_95_gap_50
+  description: System limit sweep - braking lead, both 95 km/h, target full brake after 1.5 s, gap 50
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 95.0
+  duration_s: 8.9
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 95.0
+  initial_gap_m: 50.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_95_gap_60
+  description: System limit sweep - braking lead, both 95 km/h, target full brake after 1.5 s, gap 60
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 95.0
+  duration_s: 9.3
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 95.0
+  initial_gap_m: 60.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_95_gap_80
+  description: System limit sweep - braking lead, both 95 km/h, target full brake after 1.5 s, gap 80
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 95.0
+  duration_s: 10.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 95.0
+  initial_gap_m: 80.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_110_gap_20
+  description: System limit sweep - braking lead, both 110 km/h, target full brake after 1.5 s, gap 20
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 110.0
+  duration_s: 8.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 110.0
+  initial_gap_m: 20.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_110_gap_30
+  description: System limit sweep - braking lead, both 110 km/h, target full brake after 1.5 s, gap 30
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 110.0
+  duration_s: 8.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 110.0
+  initial_gap_m: 30.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_110_gap_40
+  description: System limit sweep - braking lead, both 110 km/h, target full brake after 1.5 s, gap 40
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 110.0
+  duration_s: 8.3
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 110.0
+  initial_gap_m: 40.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_110_gap_50
+  description: System limit sweep - braking lead, both 110 km/h, target full brake after 1.5 s, gap 50
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 110.0
+  duration_s: 8.6
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 110.0
+  initial_gap_m: 50.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_110_gap_60
+  description: System limit sweep - braking lead, both 110 km/h, target full brake after 1.5 s, gap 60
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 110.0
+  duration_s: 9.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 110.0
+  initial_gap_m: 60.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: ccrb_110_gap_80
+  description: System limit sweep - braking lead, both 110 km/h, target full brake after 1.5 s, gap 80
+    m.
+  type: braking_lead
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 110.0
+  duration_s: 9.6
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_collision: false
+  min_stop_gap_m: 0.5
+  target_speed_kph: 110.0
+  initial_gap_m: 80.0
+  target_brake_time_s: 1.5
+  target_brake: 1.0
+- id: cutin_60_40_gap_25
+  description: System limit sweep - cut-in, ego 60 km/h, cut-in 40 km/h, initial gap 25 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 60.0
+  duration_s: 9.5
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 40.0
+    initial_gap_m: 25.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
+- id: cutin_60_40_gap_35
+  description: System limit sweep - cut-in, ego 60 km/h, cut-in 40 km/h, initial gap 35 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 60.0
+  duration_s: 11.3
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 40.0
+    initial_gap_m: 35.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
+- id: cutin_60_40_gap_45
+  description: System limit sweep - cut-in, ego 60 km/h, cut-in 40 km/h, initial gap 45 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 60.0
+  duration_s: 13.1
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 40.0
+    initial_gap_m: 45.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
+- id: cutin_60_40_gap_60
+  description: System limit sweep - cut-in, ego 60 km/h, cut-in 40 km/h, initial gap 60 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 60.0
+  duration_s: 15.8
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 40.0
+    initial_gap_m: 60.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
+- id: cutin_80_50_gap_25
+  description: System limit sweep - cut-in, ego 80 km/h, cut-in 50 km/h, initial gap 25 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 8.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 50.0
+    initial_gap_m: 25.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
+- id: cutin_80_50_gap_35
+  description: System limit sweep - cut-in, ego 80 km/h, cut-in 50 km/h, initial gap 35 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 9.2
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 50.0
+    initial_gap_m: 35.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
+- id: cutin_80_50_gap_45
+  description: System limit sweep - cut-in, ego 80 km/h, cut-in 50 km/h, initial gap 45 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 10.4
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 50.0
+    initial_gap_m: 45.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
+- id: cutin_80_50_gap_60
+  description: System limit sweep - cut-in, ego 80 km/h, cut-in 50 km/h, initial gap 60 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 80.0
+  duration_s: 12.2
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 50.0
+    initial_gap_m: 60.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
+- id: cutin_100_60_gap_25
+  description: System limit sweep - cut-in, ego 100 km/h, cut-in 60 km/h, initial gap 25 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 100.0
+  duration_s: 8.0
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 60.0
+    initial_gap_m: 25.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
+- id: cutin_100_60_gap_35
+  description: System limit sweep - cut-in, ego 100 km/h, cut-in 60 km/h, initial gap 35 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 100.0
+  duration_s: 8.2
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 60.0
+    initial_gap_m: 35.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
+- id: cutin_100_60_gap_45
+  description: System limit sweep - cut-in, ego 100 km/h, cut-in 60 km/h, initial gap 45 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 100.0
+  duration_s: 9.1
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 60.0
+    initial_gap_m: 45.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
+- id: cutin_100_60_gap_60
+  description: System limit sweep - cut-in, ego 100 km/h, cut-in 60 km/h, initial gap 60 m.
+  type: cut_in
+  control_modes:
+  - physics
+  spawn_index: 81
+  ego_speed_kph: 100.0
+  duration_s: 10.4
+  lane_follow: true
+  max_lane_offset_m: 1.25
+  expected_brake: true
+  expected_brake_actor: cut_in
+  expected_collision: false
+  expected_hazard_initial_same_lane: false
+  expected_hazard_final_same_lane: true
+  min_stop_gap_m: 0.5
+  actors:
+  - role: cut_in
+    hazard: true
+    motion: moving
+    speed_kph: 60.0
+    initial_gap_m: 60.0
+    spawn_lane: left
+    lane_follow: true
+    lane_change:
+      start_s: 1.0
+      direction: right
+      lookahead_m: 15.0
