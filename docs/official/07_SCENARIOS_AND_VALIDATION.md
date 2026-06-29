@@ -3,6 +3,21 @@
 Validation dùng để trả lời hai câu hỏi: AEB có phanh khi cần không, và có tránh
 phanh nhầm khi không nguy hiểm không.
 
+## Liên Hệ Với NCAP
+
+Các kịch bản trong đồ án lấy cảm hứng từ nhóm bài toán AEB car-to-car của NCAP,
+đặc biệt là các tình huống:
+
+- `CCRs`: Car-to-Car Rear stationary, xe mục tiêu đứng yên phía trước.
+- `CCRm`: Car-to-Car Rear moving, xe mục tiêu chạy chậm hơn phía trước.
+- `CCRb`: Car-to-Car Rear braking, xe mục tiêu phía trước đang chạy rồi phanh.
+
+Đồ án không tuyên bố đây là bộ kiểm thử chứng nhận NCAP chính thức. Các điểm học
+theo NCAP là cách chia nhóm tình huống car-to-car, cách thay đổi vận tốc/khoảng
+cách ban đầu và cách quan sát kết quả có/không va chạm. Các bài cut-in, adjacent
+lane, multi-actor và curve được thêm vào để đánh giá khả năng chọn target và tìm
+giới hạn hệ thống trong mô phỏng.
+
 ## Nhóm Scenario
 
 - `clear_road`: đường trống, không được phanh.
@@ -21,13 +36,21 @@ phanh nhầm khi không nguy hiểm không.
 - `cut_out`: xe phía trước rời làn.
 - `multi_actor`: nhiều xe, cần chọn đúng target cùng làn/nguy hiểm nhất.
 
-Các tên lấy cảm hứng từ bài toán NCAP car-to-car, không tuyên bố là bài test
-NCAP chính thức.
+## Nhóm Đánh Giá
+
+Khi viết báo cáo nên tách kết quả thành hai nhóm:
+
+1. **Bộ test mục tiêu**: dải vận tốc/khoảng cách hệ thống được kỳ vọng hoạt động
+   tốt, ưu tiên 50-80 km/h trên cao tốc, only-car, thời tiết lý tưởng. Nhóm này
+   dùng để chứng minh hệ thống đạt mục tiêu thiết kế.
+2. **Bộ test giới hạn**: mở rộng vận tốc, giảm khoảng cách đầu hoặc dùng cut-in
+   khó hơn để tìm biên hoạt động của hệ thống. Nhóm này cho phép có trường hợp
+   không đạt; mục tiêu là chỉ ra giới hạn, không phải làm đẹp tỷ lệ đạt.
 
 ## Tiêu Chí PASS/FAIL
 
-- Scenario nguy hiểm: PASS nếu AEB phanh đúng lúc và không va chạm.
-- Scenario không nguy hiểm: PASS nếu không phanh sai.
+- Scenario nguy hiểm: đạt nếu AEB phanh đúng lúc và không va chạm.
+- Scenario không nguy hiểm: đạt nếu không phanh sai.
 - Kiểm tra thêm:
   - `min_gap_m`: khoảng cách nhỏ nhất.
   - `first_brake_time_s`: thời điểm phanh đầu tiên.
@@ -51,12 +74,22 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
 Log, ảnh và video nằm trong `logs/<run_id>/`. Nhật ký kết quả tổng hợp nằm ở
 `docs/log/EXPERIMENT_LOG.md`.
 
-## Kết Quả Gần Nhất
+## Kết Quả Final Evidence Hiện Tại
 
-Sau refactor cấu trúc code, smoke test trên CARLA đã chạy:
+Bộ final evidence dùng staged PID, camera YOLO ONNX và radar object pipeline.
+Kết quả tổng hợp:
 
-- `clear_road_50`: PASS, không phanh sai.
-- `ccrs_50`: PASS, AEB phanh và không va chạm.
+| Tổng case | Đạt | Không đạt | Tỷ lệ đạt |
+| ---: | ---: | ---: | ---: |
+| 66 | 63 | 3 | 95,45% |
 
-Đây là smoke test để xác nhận refactor không làm vỡ pipeline, chưa thay thế cho
-regression đầy đủ.
+Các trường hợp không đạt:
+
+| Scenario | Nhóm | Nhận xét |
+| --- | --- | --- |
+| `ccrb_95_gap_20` | CCRb giới hạn | Xe trước phanh gấp, tốc độ cao, khoảng cách đầu nhỏ |
+| `ccrb_110_gap_20` | CCRb giới hạn | Vượt dải vận tốc/khoảng cách an toàn hiện tại |
+| `cutin_100_60_gap_25` | Cut-in giới hạn | Xe nhập làn ở tốc độ cao và khoảng cách nhỏ |
+
+Khi viết báo cáo, không nên gộp ba case này vào kết luận “hệ thống lỗi”, mà nên
+giải thích đây là vùng giới hạn của hệ thống theo đúng tư duy đánh giá sản phẩm.

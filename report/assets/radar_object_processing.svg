@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#1f4e79"/>
+    </marker>
+    <style>
+      .title { font: 700 34px "DejaVu Sans", Arial, sans-serif; fill: #0f172a; }
+      .head { font: 700 26px "DejaVu Sans", Arial, sans-serif; fill: #ffffff; }
+      .text { font: 400 24px "DejaVu Sans", Arial, sans-serif; fill: #111827; }
+      .small { font: 400 20px "DejaVu Sans", Arial, sans-serif; fill: #334155; }
+      .box { fill: #eef4f9; stroke: #9fb6c9; stroke-width: 2; rx: 10; }
+      .header { fill: #3f7fb3; }
+      .arrow { stroke: #1f4e79; stroke-width: 5; fill: none; marker-end: url(#arrow); }
+      .dot { fill: #22c55e; stroke: #14532d; stroke-width: 1.5; }
+      .bad { fill: #94a3b8; stroke: #475569; stroke-width: 1.5; }
+      .cluster { fill: none; stroke: #16a34a; stroke-width: 4; stroke-dasharray: 8 8; }
+      .lane { fill: #ecfeff; stroke: #0891b2; stroke-width: 3; opacity: 0.7; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="760" fill="#ffffff"/>
+  <text class="title" x="800" y="60" text-anchor="middle">Quy trình xử lý radar từ điểm đo đến đối tượng</text>
+
+  <!-- boxes -->
+  <g transform="translate(40,120)">
+    <rect class="box" width="235" height="470"/>
+    <rect class="header" width="235" height="80" rx="10"/>
+    <rect class="header" y="42" width="235" height="38"/>
+    <text class="head" x="117" y="50" text-anchor="middle">Điểm radar</text>
+    <text class="text" x="117" y="125" text-anchor="middle">Depth</text>
+    <text class="text" x="117" y="165" text-anchor="middle">Azimuth</text>
+    <text class="text" x="117" y="205" text-anchor="middle">Altitude</text>
+    <text class="text" x="117" y="245" text-anchor="middle">Relative velocity</text>
+    <circle class="dot" cx="70" cy="325" r="7"/>
+    <circle class="dot" cx="105" cy="345" r="7"/>
+    <circle class="bad" cx="150" cy="320" r="7"/>
+    <circle class="dot" cx="125" cy="385" r="7"/>
+    <circle class="bad" cx="85" cy="405" r="7"/>
+  </g>
+
+  <g transform="translate(330,120)">
+    <rect class="box" width="235" height="470"/>
+    <rect class="header" width="235" height="80" rx="10"/>
+    <rect class="header" y="42" width="235" height="38"/>
+    <text class="head" x="117" y="50" text-anchor="middle">Đổi tọa độ</text>
+    <text class="text" x="117" y="150" text-anchor="middle">Radar frame</text>
+    <text class="text" x="117" y="195" text-anchor="middle">→ Ego frame</text>
+    <text class="small" x="117" y="275" text-anchor="middle">x_forward</text>
+    <text class="small" x="117" y="315" text-anchor="middle">y_right</text>
+    <text class="small" x="117" y="355" text-anchor="middle">z_up</text>
+    <path d="M55 405 H175 M175 405 l-20 -14 M175 405 l-20 14" stroke="#334155" stroke-width="4" fill="none"/>
+    <path d="M85 435 V365 M85 365 l-14 20 M85 365 l14 20" stroke="#334155" stroke-width="4" fill="none"/>
+  </g>
+
+  <g transform="translate(620,120)">
+    <rect class="box" width="235" height="470"/>
+    <rect class="header" width="235" height="80" rx="10"/>
+    <rect class="header" y="42" width="235" height="38"/>
+    <text class="head" x="117" y="50" text-anchor="middle">Lọc điểm</text>
+    <path class="lane" d="M85 125 L150 125 L205 420 L30 420 Z"/>
+    <text class="text" x="117" y="180" text-anchor="middle">Range</text>
+    <text class="text" x="117" y="225" text-anchor="middle">Độ cao</text>
+    <text class="text" x="117" y="270" text-anchor="middle">Hành lang</text>
+    <circle class="dot" cx="95" cy="330" r="7"/>
+    <circle class="dot" cx="120" cy="350" r="7"/>
+    <circle class="bad" cx="55" cy="300" r="7"/>
+    <circle class="bad" cx="185" cy="335" r="7"/>
+  </g>
+
+  <g transform="translate(910,120)">
+    <rect class="box" width="235" height="470"/>
+    <rect class="header" width="235" height="80" rx="10"/>
+    <rect class="header" y="42" width="235" height="38"/>
+    <text class="head" x="117" y="50" text-anchor="middle">Gom cụm</text>
+    <ellipse class="cluster" cx="112" cy="275" rx="58" ry="45"/>
+    <circle class="dot" cx="90" cy="255" r="7"/>
+    <circle class="dot" cx="118" cy="270" r="7"/>
+    <circle class="dot" cx="140" cy="295" r="7"/>
+    <text class="text" x="117" y="390" text-anchor="middle">Vị trí gần nhau</text>
+    <text class="text" x="117" y="430" text-anchor="middle">Vận tốc tương tự</text>
+  </g>
+
+  <g transform="translate(1200,120)">
+    <rect class="box" width="340" height="470"/>
+    <rect class="header" width="340" height="80" rx="10"/>
+    <rect class="header" y="42" width="340" height="38"/>
+    <text class="head" x="170" y="50" text-anchor="middle">RadarObjectList</text>
+    <text class="text" x="170" y="135" text-anchor="middle">Theo dõi nhiều khung hình</text>
+    <text class="text" x="170" y="190" text-anchor="middle">Khoảng cách dọc</text>
+    <text class="text" x="170" y="235" text-anchor="middle">Lệch ngang</text>
+    <text class="text" x="170" y="280" text-anchor="middle">Vận tốc tương đối</text>
+    <text class="text" x="170" y="325" text-anchor="middle">TTC</text>
+    <text class="text" x="170" y="370" text-anchor="middle">Độ tin cậy</text>
+    <text class="small" x="170" y="440" text-anchor="middle">Ứng viên mục tiêu AEB</text>
+  </g>
+
+  <path class="arrow" d="M280 355 H320"/>
+  <path class="arrow" d="M570 355 H610"/>
+  <path class="arrow" d="M860 355 H900"/>
+  <path class="arrow" d="M1150 355 H1190"/>
+</svg>

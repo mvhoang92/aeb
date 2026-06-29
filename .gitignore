@@ -26,19 +26,40 @@ dataset*/
 training_runs/
 outputs/
 weights/
+*.weights
+*.cache
 
 # Runtime logs and temporary files
 logs/
 *.log
 *.tmp
+tmp_*
+scratch/
+requiement_report.md
+requirement_report.md
 
 # Future model archives and large exports
 /yolo*.pt
 /yolo*.onnx
+models/*.pt
+models/*.onnx
 models/archive/
 models/*.engine
 models/*.plan
 models/*.trt
+
+# Generated report/video exports. Keep Markdown sources in git.
+report_exports/
+*.docx
+*.pdf
+*.pptx
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+*.gif
+!docs/templates/*.docx
 
 # Local secrets and machine-specific configuration
 .env

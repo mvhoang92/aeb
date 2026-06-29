@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#1f4e79"/>
+    </marker>
+    <style>
+      .title { font: 700 34px "DejaVu Sans", Arial, sans-serif; fill: #ffffff; }
+      .item { font: 400 27px "DejaVu Sans", Arial, sans-serif; fill: #111827; }
+      .small { font: 400 22px "DejaVu Sans", Arial, sans-serif; fill: #111827; }
+      .note { font: italic 25px "DejaVu Sans", Arial, sans-serif; fill: #111827; }
+      .red { fill: #b91c1c; font-weight: 700; }
+      .box { fill: #eef4f9; stroke: #b8c7d4; stroke-width: 2; }
+      .head { fill: #3f7fb3; }
+      .line { stroke: #1f4e79; stroke-width: 5; fill: none; marker-end: url(#arrow); }
+      .feedback { stroke: #1f4e79; stroke-width: 5; fill: none; marker-end: url(#arrow); }
+      .sep { stroke: #ffffff; stroke-width: 9; }
+      .emergency-box { stroke: #b91c1c; stroke-width: 3; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="900" fill="#ffffff"/>
+
+  <!-- Block 1 -->
+  <g transform="translate(50,120)">
+    <rect class="box" x="0" y="0" width="260" height="520" rx="10"/>
+    <rect class="head" x="0" y="0" width="260" height="112" rx="10"/>
+    <rect class="head" x="0" y="50" width="260" height="62"/>
+    <text class="title" x="130" y="70" text-anchor="middle">Cảm biến</text>
+    <line class="sep" x1="0" y1="220" x2="260" y2="220"/>
+    <line class="sep" x1="0" y1="360" x2="260" y2="360"/>
+    <text class="item" x="130" y="175" text-anchor="middle">Camera RGB</text>
+    <text class="item" x="130" y="315" text-anchor="middle">Radar phía trước</text>
+    <text class="item" x="130" y="450" text-anchor="middle">Trạng thái xe ego</text>
+    <text class="small" x="130" y="145" text-anchor="middle">📷</text>
+    <text class="small" x="130" y="285" text-anchor="middle">📡</text>
+  </g>
+
+  <!-- Block 2 -->
+  <g transform="translate(370,120)">
+    <rect class="box" x="0" y="0" width="260" height="520" rx="10"/>
+    <rect class="head" x="0" y="0" width="260" height="112" rx="10"/>
+    <rect class="head" x="0" y="50" width="260" height="62"/>
+    <text class="title" x="130" y="52" text-anchor="middle">Nhận thức</text>
+    <text class="title" x="130" y="90" text-anchor="middle">mục tiêu</text>
+    <line class="sep" x1="0" y1="235" x2="260" y2="235"/>
+    <line class="sep" x1="0" y1="365" x2="260" y2="365"/>
+    <text class="item" x="130" y="170" text-anchor="middle">YOLO</text>
+    <text class="item" x="130" y="205" text-anchor="middle">phát hiện xe</text>
+    <text class="item" x="130" y="305" text-anchor="middle">Xử lý radar</text>
+    <text class="item" x="130" y="340" text-anchor="middle">object-level</text>
+    <text class="item" x="130" y="430" text-anchor="middle">Lọc nhiễu, gom</text>
+    <text class="item" x="130" y="465" text-anchor="middle">cụm, theo dõi</text>
+  </g>
+
+  <!-- Block 3 -->
+  <g transform="translate(690,120)">
+    <rect class="box" x="0" y="0" width="260" height="520" rx="10"/>
+    <rect class="head" x="0" y="0" width="260" height="112" rx="10"/>
+    <rect class="head" x="0" y="50" width="260" height="62"/>
+    <text class="title" x="130" y="52" text-anchor="middle">Hợp nhất</text>
+    <text class="title" x="130" y="90" text-anchor="middle">dữ liệu</text>
+    <line class="sep" x1="0" y1="235" x2="260" y2="235"/>
+    <line class="sep" x1="0" y1="365" x2="260" y2="365"/>
+    <text class="item" x="130" y="170" text-anchor="middle">Chiếu radar lên</text>
+    <text class="item" x="130" y="205" text-anchor="middle">ảnh camera</text>
+    <text class="item" x="130" y="300" text-anchor="middle">Ghép với hộp</text>
+    <text class="item" x="130" y="335" text-anchor="middle">giới hạn YOLO</text>
+    <text class="item" x="130" y="450" text-anchor="middle">Tạo FusedTarget</text>
+  </g>
+
+  <!-- Block 4 -->
+  <g transform="translate(1010,120)">
+    <rect class="box" x="0" y="0" width="260" height="520" rx="10"/>
+    <rect class="head" x="0" y="0" width="260" height="112" rx="10"/>
+    <rect class="head" x="0" y="50" width="260" height="62"/>
+    <text class="title" x="130" y="70" text-anchor="middle">Đánh giá rủi ro</text>
+    <line class="sep" x1="0" y1="205" x2="260" y2="205"/>
+    <line class="sep" x1="0" y1="305" x2="260" y2="305"/>
+    <line class="sep" x1="0" y1="405" x2="260" y2="405"/>
+    <text class="item" x="130" y="160" text-anchor="middle">Chọn mục tiêu</text>
+    <text class="item" x="130" y="195" text-anchor="middle">nguy hiểm</text>
+    <text class="item" x="130" y="270" text-anchor="middle">Tính TTC</text>
+    <text class="item" x="130" y="360" text-anchor="middle">Tính khoảng</text>
+    <text class="item" x="130" y="395" text-anchor="middle">cách dừng</text>
+    <text class="item" x="130" y="475" text-anchor="middle">Xác định trạng</text>
+    <text class="item" x="130" y="510" text-anchor="middle">thái AEB</text>
+  </g>
+
+  <!-- Block 5 -->
+  <g transform="translate(1330,120)">
+    <rect class="box emergency-box" x="0" y="0" width="240" height="520" rx="10"/>
+    <rect class="head emergency-box" x="0" y="0" width="240" height="112" rx="10"/>
+    <rect class="head" x="2" y="52" width="236" height="58"/>
+    <text class="title" x="120" y="52" text-anchor="middle">Điều khiển</text>
+    <text class="title" x="120" y="90" text-anchor="middle">phanh</text>
+    <line class="sep" x1="0" y1="205" x2="240" y2="205"/>
+    <line class="sep" x1="0" y1="305" x2="240" y2="305"/>
+    <line class="sep" x1="0" y1="405" x2="240" y2="405"/>
+    <text class="item" x="120" y="175" text-anchor="middle">SAFE / WARNING</text>
+    <text class="item" x="120" y="270" text-anchor="middle">SOFT / HARD /</text>
+    <text class="item red" x="120" y="305" text-anchor="middle">EMERGENCY</text>
+    <text class="item" x="120" y="370" text-anchor="middle">Staged PID</text>
+    <text class="item red" x="120" y="460" text-anchor="middle">Lệnh phanh tới</text>
+    <text class="item red" x="120" y="495" text-anchor="middle">xe ego</text>
+  </g>
+
+  <!-- Forward arrows -->
+  <path class="line" d="M310 185 H360"/>
+  <path class="line" d="M630 185 H680"/>
+  <path class="line" d="M950 185 H1000"/>
+  <path class="line" d="M1270 185 H1320"/>
+  <path class="line" d="M310 330 H360"/>
+  <path class="line" d="M630 330 H680"/>
+  <path class="line" d="M950 330 H1000"/>
+  <path class="line" d="M1270 330 H1320"/>
+
+  <!-- Feedback arrow -->
+  <path class="feedback" d="M1450 640 V790 H135 V650"/>
+  <text class="note" x="800" y="840" text-anchor="middle">Chu kỳ xử lý lặp lại theo thời gian mô phỏng 20 Hz</text>
+</svg>

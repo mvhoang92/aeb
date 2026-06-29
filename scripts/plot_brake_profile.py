@@ -24,6 +24,19 @@ STAGE_COLORS = {
     "RELEASE": "#d7e3fc",
 }
 
+STAGE_LABELS = {
+    "SAFE": "SAFE - an toàn",
+    "NORMAL": "SAFE/NORMAL - an toàn",
+    "WARNING": "WARNING - cảnh báo",
+    "SOFT_BRAKE": "SOFT - phanh nhẹ",
+    "MEDIUM_BRAKE": "MEDIUM - phanh vừa",
+    "HARD_BRAKE": "HARD - phanh mạnh",
+    "EMERGENCY": "EMERGENCY - nguy hiểm/phanh khẩn cấp",
+    "HOLD_STOP": "HOLD_STOP - giữ xe dừng",
+    "STOPPED": "STOPPED - xe đã dừng",
+    "RELEASE": "RELEASE - nhả phanh",
+}
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -139,6 +152,8 @@ def import_matplotlib():
 
 def plot_one(csv_path, output_dir, dpi):
     plt = import_matplotlib()
+    from matplotlib.patches import Patch
+
     rows = read_rows(csv_path)
     if not rows:
         return None
@@ -162,8 +177,9 @@ def plot_one(csv_path, output_dir, dpi):
     )
     fig.suptitle("AEB brake profile - {}".format(scenario_id), fontsize=14)
 
+    spans = stage_spans(rows, times)
     for axis in axes:
-        for start, end, stage in stage_spans(rows, times):
+        for start, end, stage in spans:
             color = STAGE_COLORS.get(stage, "#eeeeee")
             axis.axvspan(start, end, color=color, alpha=0.22, linewidth=0)
         axis.grid(True, alpha=0.25)
@@ -192,12 +208,30 @@ def plot_one(csv_path, output_dir, dpi):
     axes[2].legend(loc="upper right")
 
     stage_labels = []
-    for _, _, stage in stage_spans(rows, times):
+    for _, _, stage in spans:
         if stage not in stage_labels:
             stage_labels.append(stage)
-    caption = "Stages: " + ", ".join(stage_labels)
-    fig.text(0.01, 0.01, caption, fontsize=9)
-    fig.tight_layout(rect=[0, 0.03, 1, 0.96])
+    handles = [
+        Patch(
+            facecolor=STAGE_COLORS.get(stage, "#eeeeee"),
+            edgecolor="none",
+            alpha=0.35,
+            label=STAGE_LABELS.get(stage, stage),
+        )
+        for stage in stage_labels
+    ]
+    if handles:
+        fig.legend(
+            handles=handles,
+            loc="lower center",
+            bbox_to_anchor=(0.5, 0.012),
+            ncol=min(4, len(handles)),
+            fontsize=8,
+            frameon=False,
+            title="Dải màu nền: trạng thái AEB theo thời gian",
+            title_fontsize=8,
+        )
+    fig.tight_layout(rect=[0, 0.08, 1, 0.96])
     fig.savefig(str(output_path), dpi=dpi)
     plt.close(fig)
     return output_path

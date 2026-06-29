@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="820" viewBox="0 0 1600 820">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#1f4e79"/>
+    </marker>
+    <style>
+      .title { font: 700 34px "DejaVu Sans", Arial, sans-serif; fill: #0f172a; }
+      .label { font: 400 26px "DejaVu Sans", Arial, sans-serif; fill: #111827; }
+      .small { font: 400 22px "DejaVu Sans", Arial, sans-serif; fill: #334155; }
+      .formula { font: 400 28px "DejaVu Sans", Arial, sans-serif; fill: #0f172a; }
+      .road { fill: #e5e7eb; stroke: #cbd5e1; stroke-width: 2; }
+      .car { fill: #2563eb; stroke: #1e3a8a; stroke-width: 3; }
+      .target { fill: #ef4444; stroke: #7f1d1d; stroke-width: 3; }
+      .line { stroke: #1f4e79; stroke-width: 5; fill: none; marker-end: url(#arrow); }
+      .measure { stroke: #f59e0b; stroke-width: 5; fill: none; marker-end: url(#arrow); }
+      .safe { fill: #ecfeff; stroke: #0891b2; stroke-width: 3; rx: 12; }
+      .box { fill: #f8fafc; stroke: #94a3b8; stroke-width: 2; rx: 12; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="820" fill="#ffffff"/>
+  <text class="title" x="800" y="60" text-anchor="middle">Mô hình TTC và khoảng cách dừng trong AEB</text>
+
+  <rect class="road" x="90" y="230" width="1420" height="270" rx="12"/>
+  <line x1="90" y1="365" x2="1510" y2="365" stroke="#ffffff" stroke-width="8" stroke-dasharray="60 45"/>
+
+  <!-- ego car -->
+  <g transform="translate(230,300)">
+    <rect class="car" x="0" y="0" width="170" height="85" rx="18"/>
+    <circle cx="35" cy="88" r="14" fill="#111827"/>
+    <circle cx="135" cy="88" r="14" fill="#111827"/>
+    <text class="label" x="85" y="-28" text-anchor="middle">Ego</text>
+    <text class="small" x="85" y="135" text-anchor="middle">v_ego</text>
+  </g>
+
+  <!-- target car -->
+  <g transform="translate(1030,300)">
+    <rect class="target" x="0" y="0" width="170" height="85" rx="18"/>
+    <circle cx="35" cy="88" r="14" fill="#111827"/>
+    <circle cx="135" cy="88" r="14" fill="#111827"/>
+    <text class="label" x="85" y="-28" text-anchor="middle">Mục tiêu</text>
+    <text class="small" x="85" y="135" text-anchor="middle">v_target</text>
+  </g>
+
+  <path class="line" d="M415 342 H575"/>
+  <text class="small" x="495" y="325" text-anchor="middle">hướng chuyển động</text>
+  <path class="line" d="M1215 342 H1375"/>
+
+  <path class="measure" d="M420 470 H1015"/>
+  <text class="label" x="720" y="545" text-anchor="middle">Khoảng cách hiện tại d</text>
+
+  <rect class="safe" x="200" y="610" width="540" height="150"/>
+  <text class="formula" x="470" y="655" text-anchor="middle">TTC = d / v_closing</text>
+  <text class="small" x="470" y="705" text-anchor="middle">v_closing &gt; 0 khi ego đang tiến gần mục tiêu</text>
+
+  <rect class="box" x="840" y="585" width="610" height="190"/>
+  <text class="formula" x="1145" y="630" text-anchor="middle">d_required = d_ego - d_target + d_offset</text>
+  <text class="small" x="1145" y="680" text-anchor="middle">d_ego = v_ego · t_response + v_ego² / (2a_ego)</text>
+  <text class="small" x="1145" y="725" text-anchor="middle">d_target = v_target² / (2a_target)</text>
+
+  <text class="label" x="800" y="150" text-anchor="middle">Nếu d nhỏ hơn d_required hoặc TTC xuống thấp, AEB tăng mức cảnh báo/phanh</text>
+</svg>

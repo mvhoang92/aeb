@@ -17,7 +17,35 @@ Radar object / radar point trong hệ ego
 
 CARLA không tự nói “điểm radar này thuộc pixel YOLO nào”. Project dùng toán học
 hình học: transform từ radar sang ego/world/camera rồi dùng ma trận nội tại
-camera để chiếu điểm 3D lên ảnh 2D.
+camera để chiếu điểm 3D lên ảnh 2D. Đây không phải là sử dụng ground truth để
+ra quyết định, vì pipeline online chỉ dùng dữ liệu từ radar, camera, transform
+cảm biến và kết quả YOLO.
+
+## Phép Chiếu Hình Học
+
+Ý tưởng toán học:
+
+```text
+p_radar = [x, y, z, 1]^T
+p_world = T_world_ego * T_ego_radar * p_radar
+p_camera = T_camera_world * p_world
+```
+
+Sau đó chiếu điểm 3D trong hệ camera lên mặt phẳng ảnh:
+
+```text
+u = fx * X / Z + cx
+v = fy * Y / Z + cy
+```
+
+Trong đó:
+
+- `(X, Y, Z)` là tọa độ điểm trong hệ camera.
+- `(u, v)` là pixel trên ảnh.
+- `fx, fy, cx, cy` là tham số nội tại camera.
+
+Nếu `Z <= 0`, điểm nằm sau camera và bị loại. Nếu `(u, v)` nằm ngoài ảnh, điểm
+không được dùng để ghép với YOLO.
 
 ## Association
 
@@ -27,6 +55,10 @@ Một radar object có thể được ghép với bbox nếu:
 - Khoảng cách radar hợp lý so với kích thước bbox.
 - Bbox thuộc class `car`.
 - Dữ liệu radar và camera không quá lệch timestamp.
+- Nếu nhiều bbox thỏa mãn, ưu tiên bbox có tâm gần điểm chiếu hơn hoặc có độ tin
+  cậy cao hơn.
+- Nếu nhiều radar object nằm trong cùng bbox, ưu tiên object có TTC thấp hơn và
+  đã được tracker xác nhận ổn định hơn.
 
 ## Đầu Ra Mong Muốn
 
@@ -39,8 +71,19 @@ Một radar object có thể được ghép với bbox nếu:
 - `ttc_s`: từ radar.
 - `confidence`: kết hợp confidence YOLO và radar track.
 
+## Vai Trò Của Từng Cảm Biến
+
+- Radar là nguồn chính cho khoảng cách, vận tốc tương đối và TTC.
+- Camera/YOLO là nguồn chính để xác nhận vật thể là xe.
+- Fusion giúp giảm phanh nhầm với lan can, cây, mặt đường hoặc xe ngoài hành
+  lang dự kiến.
+- Khi camera mất detection ngắn hạn, radar object đã tracking vẫn có thể làm
+  fallback nhưng mức tin cậy thấp hơn.
+- Khi YOLO thấy xe nhưng radar không có object hợp lệ, hệ thống không nên phanh
+  mạnh vì thiếu thông tin khoảng cách/vận tốc đáng tin cậy.
+
 ## Trạng Thái Hiện Tại
 
-Fusion hiện đã có debug view để xem bbox và thông số radar. Bước tiếp theo là
-biến fusion thành target chính thức cho AEB, đồng thời vẫn giữ radar-only làm
-fallback khi camera/model mất detection.
+Fusion đã được đưa vào final demo và smoke/final evidence. Radar-only vẫn được
+giữ làm baseline/fallback, nhưng bản đánh giá cuối cùng dùng camera YOLO ONNX
+kết hợp radar object pipeline để ra quyết định AEB.

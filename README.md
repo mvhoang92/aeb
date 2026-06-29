@@ -1,64 +1,88 @@
 # AEB CARLA 0.9.11
 
-Dự án mô phỏng hệ thống Autonomous Emergency Braking trên CARLA 0.9.11. Ego
-vehicle là `vehicle.tesla.model3`, chạy chủ yếu trên cao tốc `Town04`, dùng 1
-camera RGB sau kính lái và 1 radar ở mũi xe. Hướng phát triển là radar-only AEB
-ổn định trước, sau đó bổ sung YOLO, camera-radar fusion và điều khiển phanh PID.
+Dự án mô phỏng hệ thống phanh khẩn cấp tự động AEB (Autonomous Emergency
+Braking) trên CARLA 0.9.11. Xe ego là `vehicle.tesla.model3`, chạy chủ yếu trên
+cao tốc `Town04`, dùng một camera RGB đặt sau kính lái và một radar đặt ở mũi
+xe.
+
+Mục tiêu của dự án là xây dựng một pipeline AEB đủ rõ ràng để phục vụ đồ án:
+cảm biến, xử lý radar, YOLO, hợp nhất dữ liệu camera-radar, chọn mục tiêu, tính
+TTC/khoảng cách dừng, điều khiển phanh và đánh giá bằng log/biểu đồ/video.
+
+Repository: https://github.com/mvhoang92/aeb
 
 ## Trạng Thái Hiện Tại
 
-- Đã có giao diện 2 panel dựa trên `manual_control.py`: bên trái giữ manual
-  control, bên phải là camera/radar/model/fusion debug view.
-- Đã refactor code theo nhóm `ui/`, `scripts/`, `core/`, `perception/`,
-  `control/`, `configs/`, `tests/`.
-- Radar-only AEB đã chuyển từ chọn point đơn lẻ sang object list:
-  radar point -> lọc -> clustering/tracking -> `RadarObjectList` -> chọn target
-  -> TTC/khoảng cách dừng -> phanh.
-- Batch scenario radar-only đã có log, ảnh, video và test tự động.
-- Dataset collector YOLO một class `car` và pipeline train/export ONNX đã có
-  khung chạy, cần tiếp tục thu data, audit và train model riêng.
+- Đã refactor mã nguồn theo nhóm `configs/`, `control/`, `core/`,
+  `perception/`, `scripts/`, `ui/`, `tests/`.
+- Radar đã chuyển từ phanh theo điểm đo đơn lẻ sang xử lý mức đối tượng:
+  điểm đo -> lọc -> gom cụm -> theo dõi -> `RadarObjectList` -> chọn mục tiêu.
+- YOLO26n đã được train lại cho bài toán một lớp `car` bằng dataset
+  `dataset_v7_same_lane`.
+- Camera-radar fusion đã được tích hợp vào giao diện và pipeline kiểm thử.
+- Bộ phanh chính hiện tại là `staged_pid`, có nhiều tầng cảnh báo/phanh và có
+  PID trong từng tầng.
+- Final evidence hiện có 66 kịch bản system-limit, kết quả 63 đạt, 3 không đạt,
+  tỷ lệ đạt 95,45%.
+- Có launcher để bật CARLA, chạy UI, chạy kiểm thử và quay video.
+- Có `report_mini.md`, thư mục `report/` chứa bản thảo full tách theo chương
+  và hướng dẫn form/caption cho báo cáo đồ án.
 
-## Cấu Trúc Chính
+## Cấu Trúc Thư Mục
 
 ```text
 aeb/
-├── configs/              # cấu hình sensor, model, dataset, scenario
-├── control/              # logic phanh và AEB controller
-├── core/                 # pipeline, target selector, dữ liệu radar object
-├── perception/           # xử lý cảm biến, hiện có radar object tracker
-├── scripts/              # batch scenario, thu dataset, train model
-├── ui/                   # các app 2 panel dùng manual_control.py
-├── tests/                # unit test cho logic core và pipeline
+├── configs/              # sensor, model, dataset, scenario YAML
+│   └── scenarios/
+│       ├── car_to_car/   # tình huống gốc: CCRs, CCRm, CCRb, cut-in...
+│       └── suites/       # bộ gom để chạy smoke/regression/sweep/report demo
+├── control/              # logic phanh, AEB state, PID/staged PID
+├── core/                 # pipeline AEB, target selector, radar object data
+├── perception/           # radar tracker và xử lý cảm biến
+├── scripts/              # thu dataset, train/export model, chạy batch, video
+├── ui/                   # camera/radar/YOLO/fusion/final demo/launcher views
+├── tests/                # unit test cho logic core
 ├── docs/
-│   ├── official/         # tài liệu kỹ thuật chính thức của dự án
-│   ├── research/         # tài liệu nghiên cứu, so sánh repo/cảm biến/thực tế
-│   ├── log/              # nhật ký thử nghiệm và các lần làm-sai-sửa
-│   └── backup/           # tài liệu cũ được giữ lại để tra cứu
-└── logs/                 # log, ảnh, video sinh ra khi chạy scenario
+│   ├── official/         # tài liệu kỹ thuật chính thức
+│   ├── research/         # tài liệu tham khảo và so sánh repo/cảm biến
+│   ├── log/              # nhật ký thí nghiệm, kết quả, quyết định kỹ thuật
+│   └── backup/           # tài liệu cũ để tra cứu
+├── report/               # bản thảo báo cáo full, tách theo chương
+│   ├── chapters/         # từng chương để sửa cuốn chiếu
+│   ├── assets/           # ảnh riêng cho báo cáo
+│   ├── build_report.py   # ghép chương thành report/report.md
+│   └── report.md         # bản full đã ghép để chuyển sang DOCX
+└── report_mini.md        # bản báo cáo ngắn để duyệt nhanh
 ```
+
+Các thư mục sinh dữ liệu như `dataset*`, `logs/`, `outputs/`, `training_runs/`
+và các model artifact `models/*.pt`, `models/*.onnx` được giữ local và đã đưa
+vào `.gitignore`. Khi clone repo mới, cần train/export lại model hoặc đặt model
+đúng đường dẫn trong `configs/sensors.yaml`.
 
 ## Thứ Tự Đọc Tài Liệu
 
-1. `docs/official/00_PROJECT_INTRODUCTION.md`: mục tiêu, phạm vi và trạng thái.
-2. `docs/official/13_PROJECT_PROGRESS_REPORT.md`: báo cáo tiến độ tổng hợp,
-   gồm giới thiệu dự án, research đã tham khảo, pipeline dự kiến/hiện tại và
-   checklist đã làm/đang làm/sẽ làm.
-3. `docs/official/11_ENVIRONMENT_AND_INSTALLATION.md`: cấu hình máy, tải CARLA,
-   đặt thư mục `aeb/` và tạo môi trường Python.
-4. `docs/official/01_SYSTEM_ARCHITECTURE.md`: kiến trúc pipeline tổng thể.
-5. `docs/official/02_SENSOR_CONFIGURATION.md`: cấu hình camera/radar/ego car.
-6. `docs/official/03_RADAR_PROCESSING.md`: xử lý radar, object list và chọn target.
-7. `docs/official/06_AEB_DECISION_AND_BRAKING.md`: TTC, khoảng cách dừng và phanh.
-8. `docs/official/07_SCENARIOS_AND_VALIDATION.md`: scenario và cách đọc log.
-9. `docs/official/08_DATASET_AND_TRAINING.md`: thu data và train YOLO.
-10. `docs/research/00_ADAS_AEB_BACKGROUND.md`: nền tảng ADAS/AEB cho báo cáo.
-11. `docs/research/07_REPO_COMPARISON_SUMMARY.md`: so sánh Autoware, openpilot,
-   Apollo và hướng đang dùng trong project.
-12. `docs/official/12_AI_WORKFLOW.md`: quy trình giao việc cho AI, test, cập
-   nhật tài liệu và push GitHub.
-13. `docs/official/15_CONTRIBUTING_AND_TASK_WORKFLOW.md`: onboarding cho người
-   mới hoặc AI khác, gồm cách nhận task, sửa code, test và bàn giao.
-14. `docs/log/EXPERIMENT_LOG.md`: nhật ký thử nghiệm, kết quả và bằng chứng.
+1. `README.md`: tổng quan nhanh, cách chạy chính.
+2. `report_mini.md`: bản tóm tắt nội dung đồ án.
+3. `report/report.md`: bản thảo báo cáo full đã ghép.
+4. `report/chapters/*.md`: nguồn sửa từng chương của báo cáo.
+5. `docs/official/16_REPORT_FORMAT_AND_CAPTIONS.md`: quy ước form báo cáo,
+   tên hình và tên bảng.
+6. `docs/official/00_PROJECT_INTRODUCTION.md`: mục tiêu, phạm vi, kết quả hiện
+   tại.
+7. `docs/official/01_SYSTEM_ARCHITECTURE.md`: kiến trúc hệ thống.
+8. `docs/official/02_SENSOR_CONFIGURATION.md`: cấu hình ego, camera, radar.
+9. `docs/official/03_RADAR_PROCESSING.md`: xử lý radar từ điểm đo đến đối tượng.
+10. `docs/official/04_CAMERA_YOLO_PROCESSING.md`: camera và YOLO.
+11. `docs/official/05_CAMERA_RADAR_FUSION.md`: hợp nhất dữ liệu camera-radar.
+12. `docs/official/06_AEB_DECISION_AND_BRAKING.md`: TTC, khoảng cách dừng,
+    staged PID.
+13. `docs/official/07_SCENARIOS_AND_VALIDATION.md`: kịch bản kiểm thử và cách
+    đánh giá.
+14. `docs/official/08_DATASET_AND_TRAINING.md`: dataset v7 same-lane và train
+    YOLO26n.
+15. `docs/log/FINAL_EVIDENCE_PACK_20260628.md`: kết quả final evidence.
+16. `docs/log/REPORT_REWORK_TASKS.md`: task list cho lần viết lại báo cáo.
 
 ## Cài Đặt Nhanh
 
@@ -70,7 +94,7 @@ cd /home/mvhoang/CARLA_0.9.11
 git clone https://github.com/mvhoang92/aeb.git aeb
 ```
 
-Project hiện dùng Python 3.7 và `venv/` ở thư mục gốc CARLA:
+Môi trường CARLA dùng Python 3.7 ở thư mục gốc CARLA:
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11
@@ -79,118 +103,126 @@ source venv/bin/activate
 pip install numpy==1.21.6 pygame PyYAML opencv-python
 ```
 
-Xem đầy đủ tại `docs/official/11_ENVIRONMENT_AND_INSTALLATION.md`.
+Môi trường YOLO dùng Python 3.10 riêng trong `aeb/.venv_yolo310`.
 
 ## Chạy CARLA
-
-Từ thư mục gốc CARLA:
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11
 __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ./CarlaUE4.sh -quality-level=Low
 ```
 
-Không dùng thêm `-opengl` trên máy hiện tại, vì cờ này từng làm pygame/manual
-control render lỗi.
+Không dùng thêm `-opengl` trên máy hiện tại vì từng gây lỗi render Pygame/manual
+control.
 
-## Launcher Giao Diện
-
-Launcher tập trung việc bật/tắt CARLA, chạy các app debug và chạy kiểm thử:
+## Chạy Launcher
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
 python3 laucher.py
 ```
 
-Launcher dùng `python3` hệ thống vì `venv` CARLA/YOLO trên máy hiện tại không có
-`tkinter`. Bên trong launcher vẫn tự gọi đúng `venv/bin/python` cho CARLA và
-`.venv_yolo310/bin/python` cho YOLO khi cần.
+Launcher có các tab chính:
 
-Launcher có bốn tab:
+- `CARLA Server`: bật/tắt CARLA với NVIDIA offload và quality Low.
+- `Ứng dụng UI`: chạy final demo 3 màn, camera, radar, YOLO, fusion hoặc radar
+  AEB live scenario.
+- `Kiểm thử`: chạy scenario batch, unit test, audit dataset.
+- `Quay video`: quay video từ giao diện final demo và sinh report video.
 
-- `CARLA Server`: chọn quality, bật NVIDIA offload, bật/dừng server.
-- `Ứng dụng UI`: chạy final demo 3 màn, camera, radar, YOLO, fusion hoặc Radar
-  AEB live scenario. Có lựa chọn validation mode hoặc realistic mode
-  `phanh xong chạy tiếp`, và chọn loại phanh `binary`, `pid`, `pid_v2_comfort`
-  hoặc `staged_pid`.
-- `Kiểm thử`: chạy radar/fusion scenario batch, unit test hoặc audit dataset
-  YOLO.
-- `Quay video`: gọi script quay video UI final và sinh report video.
-
-Có thể kiểm tra dependency của launcher mà không mở cửa sổ:
+Kiểm tra dependency launcher:
 
 ```bash
 python3 laucher.py --check
 ```
 
-## Chạy Các App Debug
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11
-venv/bin/python aeb/ui/camera_view.py
-venv/bin/python aeb/ui/radar_view.py
-venv/bin/python aeb/ui/radar_aeb_view.py -a
-venv/bin/python aeb/ui/yolo_view.py
-venv/bin/python aeb/ui/fusion_view.py
-```
-
-Nếu cửa sổ quá lớn:
-
-```bash
-venv/bin/python aeb/ui/radar_view.py --res 960x540
-```
-
-## Chạy Radar-Only Scenario
+## Chạy Final Demo 3 Màn
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
-../venv/bin/python scripts/run_radar_aeb_scenarios.py \
-  --scenario-config configs/scenarios/suites/radar_only_regression.yaml \
+../venv/bin/python ui/aeb_demo_view.py \
+  --res 1600x900 \
+  --map-name Town04 \
+  --scenario-config configs/scenarios/suites/system_limit_extended_sweep.yaml \
+  --scenario cutin_80_50_gap_25 \
+  --control-mode physics \
+  --scenario-warmup-s 2
+```
+
+Giao diện gồm:
+
+- camera + YOLO + fusion;
+- manual/chase view;
+- radar bird-eye, target, TTC, trạng thái AEB và lệnh phanh.
+
+## Chạy Batch Final Evidence
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+../venv/bin/python scripts/run_fusion_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/system_limit_extended_sweep.yaml \
   --control-mode physics \
   --load-map
 ```
 
-Log sẽ được ghi vào `logs/<run_id>/`. Xem thêm
-`docs/official/07_SCENARIOS_AND_VALIDATION.md`.
+Kết quả quan trọng hiện nằm ở:
 
-## Cấu Trúc Scenario Config
+```text
+logs/final_evidence_staged_pid_20260628/
+outputs/scenario_videos/final_evidence_videos_20260628_internal/
+```
 
-Các scenario YAML được chia lại theo hai tầng:
+## Dataset Và Train YOLO
 
-- `configs/scenarios/car_to_car/`: thư viện tình huống gốc, chia theo bản chất
-  bài test như CCRs xe trước đứng yên, CCRm xe trước chạy chậm, CCRb xe trước
-  phanh gấp, cut-in, cut-out, adjacent, curve và multi-actor.
-- `configs/scenarios/suites/`: bộ gom để chạy theo mục tiêu như smoke test,
-  radar-only regression, fusion regression, system-limit sweep và report demo.
-
-Launcher ưu tiên hiển thị các tên này thay vì bắt người dùng nhớ file YAML cũ.
-
-## Thu Dataset Và Train YOLO
+Kiểm tra dataset:
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
 .venv_yolo310/bin/python scripts/check_yolo_dataset.py
+```
+
+Train YOLO26n:
+
+```bash
 .venv_yolo310/bin/python scripts/train_yolo26n.py
+```
+
+Export ONNX:
+
+```bash
 .venv_yolo310/bin/python scripts/export_yolo26n_onnx.py
 ```
 
-Chi tiết nằm ở `docs/official/08_DATASET_AND_TRAINING.md`.
+Model đang dùng:
 
-## Kiểm Tra Nhanh
+```text
+models/yolo26n_aeb_v7.pt
+models/yolo26n_aeb_v7.onnx
+```
+
+## Unit Test
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
 ../venv/bin/python -m unittest discover -s tests -p 'test_*.py'
 ```
 
-Sau refactor cấu trúc code, unit test đã chạy qua `28/28 PASS` và smoke test
-CARLA radar-only với `clear_road_50`, `ccrs_50` đã đạt `2/2 PASS`.
+## Báo Cáo
 
-## Hướng Phát Triển
+- `report_mini.md`: bản đọc nhanh.
+- `report/chapters/*.md`: nguồn sửa từng chương, dùng để làm cuốn chiếu.
+- `report/report.md`: bản thảo full đã ghép, dùng để đọc tổng thể hoặc chuyển
+  sang `.docx`.
+- `report/build_report.py`: script ghép các chương sau khi chỉnh sửa.
+- `docs/official/16_REPORT_FORMAT_AND_CAPTIONS.md`: quy ước tên hình/bảng để
+  chuyển sang `.docx`.
 
-- Chốt radar-only AEB ở dải 50-80 km/h với false positive thấp.
-- Thu và audit dataset camera, ưu tiên xe cùng làn và các case car-to-car.
-- Train YOLO model riêng, export ONNX CUDA.
-- Hoàn thiện fusion camera-radar để xác nhận target trước khi phanh.
-- Thay binary brake bằng PID hoặc brake profile mượt hơn.
-# documents
+Sau khi sửa một chương, ghép lại bản full bằng:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb/report
+python3 build_report.py
+```
+
+Khi hoàn thiện báo cáo, link GitHub và link Google Drive video sẽ được đưa vào
+phụ lục thay vì liệt kê toàn bộ đường dẫn local trong nội dung chính.

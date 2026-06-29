@@ -59,44 +59,43 @@ Nội dung nên có:
 - Phạm vi và giới hạn của hệ thống.
 - Các hướng tiếp cận trong thực tế và repo tham khảo.
 
-### Chương 2: Cơ Sở Lý Thuyết Và Thuật Toán
+### Chương 2: Thiết Lập Môi Trường Mô Phỏng
 
-Đây là chương cần viết kỹ vì người đọc sẽ quan tâm hệ thống quyết định phanh bằng cách nào.
-
-Nội dung nên có:
-
-- Cảm biến trong AEB: camera, radar, lidar, ultrasonic.
-- Nguyên lý radar ô tô ngoài đời và radar trong CARLA.
-- Xử lý tín hiệu radar: lọc điểm, gom cụm, chọn mục tiêu, tạo object list.
-- Tính TTC.
-- Tính khoảng cách dừng.
-- Xử lý camera và YOLO.
-- Fusion camera-radar.
-- Logic cảnh báo và phanh nhiều tầng.
-- Điều khiển phanh: binary brake, PID, staged PID.
-- Chỉ số đánh giá: khoảng cách dừng, va chạm, vận tốc còn lại, gia tốc, jerk.
-
-### Chương 3: Thiết Kế Và Triển Khai Hệ Thống Trên CARLA
+Đây là chương làm rõ đồ án được dựng trên môi trường nào, dùng cảm biến nào và
+cảm biến được cấu hình ra sao trong CARLA.
 
 Nội dung nên có:
 
-- Môi trường phần cứng/phần mềm.
-- CARLA 0.9.11 và cách đặt thư mục `aeb`.
-- Kiến trúc thư mục mã nguồn.
+- CARLA 0.9.11, Town04 và lý do chọn môi trường mô phỏng.
+- Cấu hình máy, môi trường Python/CARLA.
+- Cơ sở lựa chọn cảm biến trong ADAS/AEB: camera, radar, LiDAR, ultrasonic, IMU/wheel speed.
 - Cấu hình xe ego Tesla Model 3.
 - Cấu hình camera sau kính lái.
 - Cấu hình radar ở mũi xe.
-- Pipeline chạy online.
-- UI kiểm thử 3 màn: camera/YOLO/fusion, manual control, radar bird-eye.
-- Launcher và các lệnh chạy.
+- Synchronous mode 20 Hz.
+- UI quan sát 3 màn và launcher.
 
-### Chương 4: Thực Nghiệm, Dataset Và Đánh Giá
+### Chương 3: Triển Khai Thuật Toán AEB
 
 Nội dung nên có:
 
+- Kiến trúc thư mục mã nguồn.
+- Kiến trúc thuật toán AEB.
+- Nguyên lý radar ô tô ngoài đời và radar trong CARLA.
+- Xử lý tín hiệu radar: lọc điểm, gom cụm, theo dõi, tạo object list.
+- Tính TTC và khoảng cách dừng.
+- Xử lý camera, YOLO, NMS và bounding box.
 - Quy trình tạo dataset bằng ground truth CARLA.
 - Dataset v7 same-lane.
-- Huấn luyện YOLO26n.
+- Huấn luyện, đánh giá và export YOLO26n ONNX.
+- Fusion camera-radar.
+- Chọn target, xử lý trùng.
+- Logic cảnh báo/phanh nhiều tầng và staged PID.
+
+### Chương 4: Kiểm Thử Và Đánh Giá
+
+Nội dung nên có:
+
 - Các nhóm kịch bản kiểm thử: đường trống, car-to-car đứng yên, xe phía trước chạy chậm, xe cắt làn, nhiều xe gây nhiễu.
 - Điều kiện pass/fail.
 - Kết quả kiểm thử từng nhóm.
@@ -170,7 +169,7 @@ Danh sách này là khung ban đầu, có thể chỉnh khi viết báo cáo ful
 | Hình 3.4 | Tầm phủ camera và radar theo góc nhìn từ trên xuống | `outputs/sensor_coverage` |
 | Hình 3.5 | Giao diện kiểm thử 3 màn của hệ thống | Screenshot UI |
 | Hình 3.6 | Launcher dùng để chạy demo, test và quay video | Screenshot launcher |
-| Hình 4.1 | Cấu trúc dataset YOLO v7 same-lane | Screenshot hoặc cây thư mục |
+| Hình 4.1 | Ví dụ dữ liệu phiên bản v7 same-lane cho huấn luyện YOLO26n | Screenshot ảnh preview dataset |
 | Hình 4.2 | Ví dụ ảnh dataset có bounding box | `dataset_v7_same_lane/previews` |
 | Hình 4.3 | Biểu đồ thống kê số ảnh và số nhãn trong dataset | Tạo từ script thống kê |
 | Hình 4.4 | Kết quả huấn luyện YOLO26n | `training_runs/.../results.png` |
@@ -294,5 +293,4 @@ Cần trình bày:
   - `07_SCENARIOS_AND_VALIDATION.md`
   - `08_DATASET_AND_TRAINING.md`
   - `11_ENVIRONMENT_AND_INSTALLATION.md`
-- Khi có hình/video/log mới, cập nhật danh sách hình/bảng trong tài liệu này hoặc đưa trực tiếp vào `report.md`.
-
+- Khi có hình/video/log mới, cập nhật danh sách hình/bảng trong tài liệu này hoặc đưa trực tiếp vào chương tương ứng trong `report/chapters/`.

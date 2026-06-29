@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#1f5f8b"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#2e9d63"/>
+    </marker>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #17324d; }
+      .h { font: 700 21px Arial, sans-serif; fill: #17324d; }
+      .txt { font: 18px Arial, sans-serif; fill: #263238; }
+      .small { font: 15px Arial, sans-serif; fill: #37474f; }
+      .mono { font: 16px "DejaVu Sans Mono", monospace; fill: #263238; }
+      .panel { fill: #f7fbff; stroke: #9bb7cc; stroke-width: 2; rx: 18; }
+      .ego { fill: #26384f; stroke: #102033; stroke-width: 2; rx: 8; }
+      .cam { fill: #29a9e8; stroke: #ffffff; stroke-width: 4; }
+      .radar { fill: #ff7043; stroke: #ffffff; stroke-width: 4; }
+      .obj { fill: #e53935; stroke: #a21313; stroke-width: 2; }
+      .bbox { fill: rgba(76, 175, 80, 0.08); stroke: #35b96b; stroke-width: 5; }
+      .plane { fill: #111820; stroke: #5e7f99; stroke-width: 2; rx: 14; }
+      .road { fill: #d8dde3; stroke: #b5c1cc; stroke-width: 1; }
+      .lane { stroke: #ffffff; stroke-width: 4; stroke-dasharray: 28 22; }
+      .eq { fill: #fff7e6; stroke: #f0b45a; stroke-width: 2; rx: 14; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="620" fill="#ffffff"/>
+  <text x="600" y="45" text-anchor="middle" class="title">Hợp nhất camera-radar bằng phép chiếu hình học</text>
+
+  <rect x="40" y="85" width="330" height="365" class="panel"/>
+  <text x="205" y="120" text-anchor="middle" class="h">Không gian ego / world</text>
+  <rect x="70" y="320" width="270" height="80" class="road"/>
+  <line x1="70" y1="360" x2="340" y2="360" class="lane"/>
+  <rect x="175" y="270" width="60" height="105" class="ego"/>
+  <text x="205" y="393" text-anchor="middle" class="small" fill="#ffffff">ego</text>
+  <circle cx="205" cy="270" r="11" class="radar"/>
+  <text x="225" y="267" class="small">Radar</text>
+  <circle cx="198" cy="248" r="10" class="cam"/>
+  <text x="218" y="245" class="small">Camera</text>
+  <circle cx="205" cy="170" r="15" class="obj"/>
+  <text x="227" y="176" class="txt">RadarObject</text>
+  <line x1="205" y1="270" x2="205" y2="185" stroke="#ff7043" stroke-width="4" stroke-dasharray="8 8"/>
+  <text x="78" y="210" class="mono">P_w = (x,y,z,1)</text>
+  <text x="78" y="236" class="small">Có world_location và vận tốc tương đối</text>
+
+  <rect x="435" y="120" width="300" height="260" class="panel"/>
+  <text x="585" y="155" text-anchor="middle" class="h">Biến đổi tọa độ</text>
+  <rect x="470" y="190" width="230" height="52" class="eq"/>
+  <text x="585" y="223" text-anchor="middle" class="mono">P_c = T_cw P_w</text>
+  <rect x="470" y="270" width="230" height="52" class="eq"/>
+  <text x="585" y="303" text-anchor="middle" class="mono">[u v 1]^T ~ K P_c</text>
+  <text x="585" y="355" text-anchor="middle" class="small">World -&gt; camera -&gt; pixel ảnh</text>
+
+  <line x1="370" y1="250" x2="430" y2="250" stroke="#1f5f8b" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="735" y1="250" x2="795" y2="250" stroke="#1f5f8b" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="810" y="85" width="340" height="365" class="panel"/>
+  <text x="980" y="120" text-anchor="middle" class="h">Ảnh camera và YOLO</text>
+  <rect x="845" y="150" width="270" height="205" class="plane"/>
+  <rect x="905" y="205" width="145" height="95" class="bbox"/>
+  <text x="978" y="195" text-anchor="middle" class="small" fill="#35b96b">bbox YOLO: car</text>
+  <circle cx="974" cy="252" r="10" fill="#ff7043" stroke="#ffffff" stroke-width="3"/>
+  <text x="990" y="257" class="small" fill="#ffffff">radar pixel</text>
+  <line x1="974" y1="252" x2="1048" y2="300" stroke="#35b96b" stroke-width="4" marker-end="url(#arrowGreen)"/>
+  <text x="850" y="387" class="mono">x1 &lt;= u &lt;= x2</text>
+  <text x="850" y="413" class="mono">y1 &lt;= v &lt;= y2</text>
+
+  <rect x="180" y="485" width="840" height="80" class="eq"/>
+  <text x="600" y="515" text-anchor="middle" class="txt">Nếu pixel chiếu từ radar nằm trong bbox YOLO lớp car:</text>
+  <text x="600" y="545" text-anchor="middle" class="mono">fusion_confirmed = True, radar target được phép tham gia quyết định phanh</text>
+</svg>
