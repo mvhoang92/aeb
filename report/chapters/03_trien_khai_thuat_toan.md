@@ -923,10 +923,7 @@ $$
 \tilde{u} \\
 \tilde{v} \\
 \tilde{w}
-\end{bmatrix}
-=
-K
-\begin{bmatrix}
+\end{bmatrix} = K \begin{bmatrix}
 X_c \\
 Y_c \\
 Z_c
