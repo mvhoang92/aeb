@@ -36,102 +36,13 @@ tiếp vào repository, mà được lưu trong một thư mục Google Drive ch
 | Video, log và biểu đồ đánh giá | https://drive.google.com/drive/folders/12cPKJKFeiSwI8vx67RviL3VIx_lmOstq?usp=drive_link |
 | File báo cáo `.docx` sau khi chuyển từ Markdown | Cập nhật đường dẫn trong bản nộp cuối |
 
-# Phụ Lục B. Các Thư Mục Minh Chứng Chính Trong Dự Án
+# Phụ Lục B. Khả Năng Tái Lập Kết Quả
 
-Các thư mục dưới đây là nơi lưu dữ liệu minh chứng đã dùng để viết Chương 4.
-Khi kiểm tra lại kết quả, nên ưu tiên các thư mục cuối cùng thay vì các log thử
-nghiệm trung gian.
-
-| Thành phần | Đường dẫn trong dự án | Nội dung |
-|---|---|---|
-| Log đánh giá staged PID cuối cùng | `logs/final_evidence_staged_pid_20260628/` | File CSV từng scenario, `summary.csv`, `aggregate_summary.json`, heatmap và biểu đồ phanh. |
-| Biểu đồ phanh PID | `logs/final_evidence_staged_pid_20260628/plots/` | Biểu đồ lực phanh, vận tốc, khoảng cách, TTC và dải màu trạng thái AEB. |
-| Log so sánh PID/staged PID trước đó | `logs/staged_pid_validation_full_20260627_02/` | Dữ liệu trung gian dùng để so sánh quá trình tune phanh. |
-| Video minh họa cuối cùng | `outputs/scenario_videos/final_evidence_videos_20260628_internal/` | Video màn hình 3 vùng và ảnh đại diện một số scenario tiêu biểu. |
-| Ảnh và sơ đồ dùng trong báo cáo | `report/assets/` | Hình minh họa AEB, CARLA, radar, fusion, quỹ đạo dự đoán. |
-| Bộ dữ liệu v7 same-lane cho YOLO | `dataset_v7_same_lane/` | Ảnh, nhãn và file `dataset.yaml` dùng fine-tune YOLO26n. |
-| Kết quả huấn luyện YOLO | `training_runs/detect/yolo26n_aeb_20260619_011359/` | Trọng số, biểu đồ huấn luyện và kết quả đánh giá mô hình. |
-
-# Phụ Lục C. Lệnh Chạy Chính
-
-## C.1. Chạy CARLA server
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11
-__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ./CarlaUE4.sh -quality-level=Low
-```
-
-Lệnh trên dùng GPU NVIDIA offload và quality Low. Trong quá trình thử nghiệm,
-cờ `-opengl` đã được bỏ vì có thể làm cửa sổ Pygame/manual control hiển thị
-không ổn định trên máy dùng Ubuntu.
-
-## C.2. Chạy giao diện khởi chạy
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb
-python3 laucher.py
-```
-
-Launcher dùng để chọn nhóm kịch bản, scenario cụ thể, chế độ điều khiển, loại
-phanh và mở nhanh giao diện minh họa hoặc chạy test.
-
-## C.3. Chạy minh họa cuối cùng bằng dòng lệnh
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb
-../venv/bin/python ui/aeb_demo_view.py \
-  --res 1600x900 \
-  --map-name Town04 \
-  --scenario-config configs/scenarios/suites/system_limit_extended_sweep.yaml \
-  --scenario cutin_80_50_gap_25 \
-  --control-mode physics \
-  --scenario-warmup-s 2
-```
-
-Giao diện minh họa cuối cùng gồm ba vùng: camera + YOLO/fusion, góc nhìn manual
-control và bird-eye radar. Giao diện này dùng để quan sát trực quan trạng thái
-AEB, target được chọn, lực phanh và các điểm radar trong thời gian chạy.
-
-## C.4. Kiểm tra dataset YOLO
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb
-.venv_yolo310/bin/python scripts/check_yolo_dataset.py
-```
-
-## C.5. Fine-tune YOLO26n
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb
-.venv_yolo310/bin/python scripts/train_yolo26n.py
-```
-
-## C.6. Export YOLO26n sang ONNX
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb
-.venv_yolo310/bin/python scripts/export_yolo26n_onnx.py
-```
-
-## C.7. Tạo lại biểu đồ phanh PID
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb
-python3 scripts/plot_brake_profile.py \
-  --run-dir logs/final_evidence_staged_pid_20260628 \
-  --output-dir logs/final_evidence_staged_pid_20260628/plots
-```
-
-## C.8. Build lại báo cáo Markdown tổng
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb/report
-python3 build_report.py
-```
-
-Lệnh này ghép các file trong `report/chapters/` thành `report/report.md`.
-
-# Phụ Lục D. Các File Cấu Hình Và Mã Nguồn Quan Trọng
+Mã nguồn, cấu hình kịch bản, cấu hình cảm biến và hướng dẫn tái lập được quản
+lý cùng dự án. Bộ dữ liệu, video và nhật ký đầy đủ có dung lượng lớn được cung
+cấp qua liên kết tại Phụ lục A. Bảng dưới đây nêu các thành phần cần thiết để
+kiểm tra lại các kết quả trong báo cáo; cú pháp lệnh chi tiết được duy trì trong
+README để tránh phụ lục mang tính nhật ký vận hành.
 
 | File/Thư mục | Vai trò |
 |---|---|
@@ -143,13 +54,13 @@ Lệnh này ghép các file trong `report/chapters/` thành `report/report.md`.
 | `control/brake.py` | Các thuật toán phanh: binary, PID v1/v2 và staged PID. |
 | `core/radar_aeb_pipeline.py` | Pipeline AEB từ radar/object/fusion tới trạng thái phanh. |
 | `perception/radar/` | Các module xử lý radar, gom cụm, theo dõi và chọn mục tiêu. |
-| `perception/fusion/` | Hợp nhất camera-radar và tạo mục tiêu hợp nhất. |
+| `ui/fusion_view.py` | Chiếu điểm radar sang ảnh, ghép với bounding box YOLO và hiển thị fusion. |
 | `ui/aeb_demo_view.py` | Giao diện minh họa cuối cùng 3 màn. |
 | `scripts/run_fusion_aeb_scenarios.py` | Chạy batch scenario cho AEB/fusion và sinh log. |
 | `scripts/record_scenario_videos.py` | Quay video minh họa scenario. |
 | `scripts/plot_brake_profile.py` | Sinh biểu đồ phanh, vận tốc, khoảng cách, TTC và dải trạng thái AEB. |
 
-# Phụ Lục E. Ghi Chú Khi Chuyển Sang DOCX
+# Phụ Lục C. Ghi Chú Khi Chuyển Sang DOCX
 
 - Các dòng bắt đầu bằng `Hình x.y:` nên được chuyển thành Caption hình trong
   Word để tạo danh mục hình tự động.

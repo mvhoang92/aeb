@@ -32,7 +32,7 @@ thống cần có vùng hoạt động tốt, đồng thời phải chỉ ra vù
 
 | Nhóm kiểm thử | Mục đích | Kết quả | Nhận xét |
 |---|---:|---:|---|
-| Dải thiết kế | Đánh giá vùng hoạt động mong muốn của đồ án | 38/38 PASS | Hệ thống hoạt động ổn định trong các tình huống cao tốc, only-car, thời tiết lý tưởng, vận tốc chủ yếu 50-80 km/h. |
+| Dải thiết kế | Đánh giá vùng hoạt động mong muốn của đồ án | 38/38 PASS | Hệ thống hoạt động ổn định trong các tình huống cao tốc, chỉ xét ô tô, thời tiết lý tưởng, vận tốc chủ yếu 50-80 km/h. |
 | Stress test/tìm giới hạn | Mở rộng tốc độ, khoảng cách và tình huống khó hơn | 25/28 PASS | Ba trường hợp không đạt dùng để xác định giới hạn hiện tại của hệ thống. |
 | Tổng toàn bộ | Đánh giá chung trên 66 kịch bản | 63/66 PASS | Tỷ lệ đạt 95,45%, nhưng kết luận chính vẫn dựa trên dải thiết kế và phân tích giới hạn. |
 
@@ -106,9 +106,9 @@ Từ kết quả hiện tại, các hướng phát triển tiếp theo gồm:
 
 ## 5.5. Kết Luận Chung
 
-Với phạm vi cao tốc, only-car và thời tiết lý tưởng, hệ thống AEB mô phỏng đã
+Với phạm vi cao tốc, chỉ xét ô tô và thời tiết lý tưởng, hệ thống AEB mô phỏng đã
 đạt mục tiêu chính của đồ án. Pipeline cuối cùng có đầy đủ các khối quan trọng:
-cảm biến camera-radar, xử lý radar object-level, YOLO26n, hợp nhất dữ liệu, dự
+cảm biến camera-radar, xử lý radar ở mức đối tượng, YOLO26n, hợp nhất dữ liệu, dự
 đoán quỹ đạo, tính TTC/khoảng cách dừng và phanh staged PID. Kết quả kiểm thử
 cho thấy hệ thống đạt toàn bộ dải thiết kế mong muốn và xác định được một số
 giới hạn khi tăng độ khó của kịch bản.

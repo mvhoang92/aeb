@@ -22,7 +22,7 @@ trước khi dùng PID, cần có baseline phanh đơn giản để so sánh.
 | Gắn camera và radar lên Tesla Model 3 | Kiểm tra vị trí camera sau kính lái và radar ở mũi xe | Phát hiện và chỉnh nhiều lần vị trí cảm biến bằng side view/top-down view |
 | Chạy YOLO26n ban đầu | Kiểm tra khả năng nhận diện xe từ camera trước khi huấn luyện riêng | YOLO pretrained chạy được nhưng chưa tối ưu cho góc nhìn, môi trường và dữ liệu CARLA của dự án |
 | Radar-only AEB | Xây dựng baseline chỉ dùng radar để tính mục tiêu, TTC và phanh | Phát hiện vấn đề phanh nhầm do điểm radar từ mặt đường, lan can, xe làn bên |
-| Xử lý radar object-level | Lọc điểm, gom cụm, theo dõi và chọn target ổn định | Giảm nhiễu radar, chuyển từ điểm đo rời rạc sang danh sách đối tượng |
+| Xử lý radar ở mức đối tượng | Lọc điểm, gom cụm, theo dõi và chọn mục tiêu ổn định | Giảm nhiễu radar, chuyển từ điểm đo rời rạc sang danh sách đối tượng |
 | Thu bộ dữ liệu v7 và fine-tune YOLO26n | Tạo mô hình nhận diện `car` phù hợp với camera của dự án | YOLO sau fine-tuning dùng để xác nhận mục tiêu trong fusion |
 | Fusion camera-radar | Ghép radar object với bounding box camera bằng chiếu hình học | Radar giữ vai trò đo khoảng cách/vận tốc, camera xác nhận mục tiêu là xe |
 | Binary brake | Có nguy hiểm thì phanh 1.0 | Dễ kiểm chứng nhưng phanh gắt, chưa giống hành vi thực tế |
@@ -134,7 +134,7 @@ aeb/
 | `configs/scenarios/car_to_car/*.yaml` | Các nhóm kịch bản car-to-car như đường trống, CCRs, CCRm, CCRb, cut-in, cut-out |
 | `configs/scenarios/suites/*.yaml` | Các bộ kiểm thử tổng hợp dùng cho kiểm tra nhanh, kiểm thử hồi quy và bộ minh chứng cuối cùng |
 | `core/radar_aeb_pipeline.py` | Ghép các bước radar filtering, predicted path, chọn target và gọi logic phanh |
-| `core/radar_object.py` | Định nghĩa object-level radar target dùng trong pipeline |
+| `core/radar_object.py` | Định nghĩa đối tượng radar dùng trong pipeline |
 | `core/target_selector.py` | Chọn mục tiêu AEB từ danh sách radar object |
 | `perception/radar/radar_object_tracker.py` | Gom cụm, theo dõi và xác nhận radar object qua nhiều frame |
 | `control/brake.py` | Tính TTC/khoảng cách dừng, máy trạng thái AEB, PID và override phanh |
@@ -167,7 +167,7 @@ của vật thể. Chuỗi xử lý radar thực tế có thể gồm FFT, phát
 CARLA `sensor.other.radar` không trả tín hiệu radar thô như radar thật. Nó trả
 các điểm phát hiện đã được mô phỏng sẵn. Mỗi điểm có độ sâu, góc phương vị, góc
 cao và vận tốc tương đối. Vì vậy, đồ án bắt đầu từ đầu ra radar mức điểm đo của
-CARLA, sau đó xây dựng tầng xử lý gần với object-level radar của xe thật.
+CARLA, sau đó xây dựng tầng xử lý gần với đầu ra radar ở mức đối tượng của xe thật.
 
 Nếu dùng trực tiếp toàn bộ điểm radar để tính TTC, hệ thống dễ phanh nhầm do
 radar có thể nhận điểm từ mặt đường, lan can, cây, biển báo hoặc xe ở làn bên.
@@ -751,15 +751,11 @@ Hạn chế của dataset:
 
 ### 3.5.5. Quá Trình Fine-Tune YOLO26n
 
-YOLO26n được fine-tune bằng môi trường Python 3.10 `.venv_yolo310`, vì CARLA
-0.9.11 dùng Python 3.7 còn Ultralytics mới cần Python mới hơn. Luồng train được
-tách thành ba bước:
-
-```bash
-.venv_yolo310/bin/python scripts/check_yolo_dataset.py
-.venv_yolo310/bin/python scripts/train_yolo26n.py
-.venv_yolo310/bin/python scripts/export_yolo26n_onnx.py
-```
+YOLO26n được fine-tune bằng môi trường Python 3.10 tách riêng, vì CARLA 0.9.11
+dùng Python 3.7 còn phiên bản Ultralytics sử dụng trong đồ án cần Python mới
+hơn. Quy trình gồm ba bước: kiểm tra chất lượng bộ dữ liệu, fine-tune mô hình
+và xuất trọng số tốt nhất sang ONNX để suy luận thời gian chạy. Tên môi trường
+và các lệnh tái lập được lưu trong README của dự án.
 
 **Bảng 3.7: Cấu hình fine-tune YOLO26n.**
 
@@ -1076,7 +1072,7 @@ Hạn chế:
 - nếu bbox quá nhỏ hoặc target bị che khuất, điểm radar có thể không nằm trong
   bbox;
 - thuật toán hiện mới là fusion hình học/gating, chưa phải tracking đa cảm biến
-  đầy đủ kiểu Kalman filter hoặc object-level fusion xác suất.
+  đầy đủ kiểu Kalman filter hoặc hợp nhất xác suất ở mức đối tượng.
 
 Với phạm vi đồ án hiện tại, cách fusion này đủ phù hợp vì bài toán chỉ xét ô tô
 trên cao tốc, thời tiết lý tưởng và mục tiêu chính là giảm phanh nhầm của
@@ -1370,13 +1366,23 @@ Hàm `select_aeb_target()` chọn mục tiêu theo thứ tự:
 5. nếu TTC không hữu hạn hoặc tương đương, ưu tiên object có khoảng cách dọc nhỏ
    hơn.
 
-Có thể mô tả hàm ưu tiên:
+Có thể mô tả khóa ưu tiên bằng biến chỉ báo $q_i$:
 
 $$
-target = \arg\min_i \left(has\_finite\_ttc_i,\ TTC_i,\ x_i\right)
+q_i =
+\begin{cases}
+0, & TTC_i < \infty \\
+1, & TTC_i = \infty
+\end{cases}
 $$
 
-Trong đó object có TTC hữu hạn được ưu tiên hơn object có $TTC=\infty$.
+$$
+target = \arg\min_i \left(q_i,\ TTC_i,\ x_i\right)
+$$
+
+Trong đó phép tối thiểu được hiểu theo thứ tự từ điển: object có TTC hữu hạn
+($q_i=0$) được ưu tiên; sau đó chọn TTC nhỏ nhất và cuối cùng là khoảng cách dọc
+nhỏ nhất. Quy ước này khớp với hàm `select_aeb_target()` trong mã nguồn.
 
 Ở bản có fusion, target radar còn phải được camera/YOLO xác nhận. Nếu radar
 target không chiếu vào bbox `car`, fusion gate có thể chặn lệnh phanh để giảm

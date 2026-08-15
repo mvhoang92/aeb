@@ -1,15 +1,14 @@
 # Xây Dựng Hệ Thống Phanh Khẩn Cấp Tự Động AEB Trên CARLA 0.9.11
 
-> Bản thảo báo cáo full dạng Markdown. File này được viết để sau này chuyển sang
-> `.docx` theo mẫu của Trường Cơ khí - Đại học Bách khoa Hà Nội. Công thức được
-> viết bằng cú pháp LaTeX trong Markdown; tên hình và tên bảng được ghi sẵn để
-> khi đưa sang Word có thể chuyển sang Caption tự động.
+> Bản thảo được soạn bằng Markdown để thuận tiện quản lý phiên bản và chuyển
+> sang `.docx` theo mẫu của Trường Cơ khí - Đại học Bách khoa Hà Nội. Công thức
+> dùng cú pháp LaTeX; các hình và bảng có caption để có thể tạo danh mục tự động
+> trong Word.
 
 ## Thông Tin Bìa Dự Kiến
 
-- Trường: Đại học Bách khoa Hà Nội
-- Đơn vị: Trường Cơ khí
-- Trường Công nghệ Thông tin và Truyền thông
+- Cơ sở đào tạo: Đại học Bách khoa Hà Nội
+- Đơn vị: Trường Cơ khí; Trường Công nghệ Thông tin và Truyền thông
 - Chuyên ngành: Kỹ thuật ô tô số
 - Tên đề tài: Xây dựng hệ thống phanh khẩn cấp tự động AEB trên CARLA
 - Sinh viên thực hiện: Mai Việt Hoàng
@@ -49,6 +48,23 @@ thống đạt 38/38 trường hợp trong dải thiết kế; với nhóm stres
 95,45%. Các trường hợp không đạt được giữ lại để xác định giới hạn hoạt động của
 hệ thống, tránh làm sai lệch nhận xét đánh giá.
 
+**Từ khóa:** AEB, ADAS, CARLA, radar, YOLO, hợp nhất camera-radar, TTC,
+điều khiển phanh staged PID.
+
+## Danh Mục Từ Viết Tắt
+
+| Từ viết tắt | Diễn giải |
+|---|---|
+| AEB | Autonomous/Automatic Emergency Braking – phanh khẩn cấp tự động |
+| ADAS | Advanced Driver Assistance Systems – hệ thống hỗ trợ lái xe nâng cao |
+| TTC | Time To Collision – thời gian dự kiến đến va chạm |
+| CCRs | Car-to-Car Rear Stationary – xe phía trước đứng yên |
+| CCRm | Car-to-Car Rear Moving – xe phía trước chạy chậm hơn |
+| CCRb | Car-to-Car Rear Braking – xe phía trước phanh |
+| FOV | Field of View – trường nhìn của cảm biến |
+| NMS | Non-Maximum Suppression – loại bỏ khung bao chồng lấn |
+| ODD | Operational Design Domain – miền điều kiện vận hành |
+
 ## Mục Lục
 
 > Khi chuyển sang Word, mục này nên được tạo lại bằng Table of Contents tự động
@@ -61,6 +77,9 @@ hệ thống, tránh làm sai lệch nhận xét đánh giá.
 - Chương 5. Kết luận và hướng phát triển
 - Tài liệu tham khảo
 - Phụ lục
+
+> Danh mục từ viết tắt, mục lục, danh mục hình và danh mục bảng sẽ được tạo tự
+> động từ heading/caption khi chuyển sang Word.
 
 ## Danh Mục Hình Vẽ
 

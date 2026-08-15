@@ -195,7 +195,7 @@ phát hiện -> gom cụm/theo dõi/đối tượng -> dự đoán rủi ro -> �
 |---|---|---|
 | Autoware | Xét vật cản nằm trên đường đi dự kiến, dùng khoảng cách dừng | Dùng hành lang dự kiến thay vì toàn bộ quạt radar |
 | openpilot | Theo dõi radar kết hợp với đối tượng dẫn đường từ camera | Theo dõi radar và dùng camera để xác nhận mục tiêu |
-| Apollo | Nhận thức môi trường và hợp nhất dữ liệu ở mức đối tượng | Chuẩn hóa `RadarObject`/`FusedTarget` trước khi ra quyết định |
+| Apollo | Nhận thức môi trường và hợp nhất dữ liệu ở mức đối tượng | Chuẩn hóa `RadarObject` và kết quả ghép camera-radar trước khi ra quyết định |
 | CARLA examples | Điều khiển thủ công, cảm biến, điều khiển actor | Mở rộng giao diện điều khiển thủ công và kịch bản trong CARLA |
 
 Autoware là một nền tảng phần mềm mã nguồn mở cho xe tự hành, trong đó nhiều
@@ -209,8 +209,8 @@ openpilot và Apollo đại diện cho hướng hệ thống thực tế hơn: d
 được đưa về các đối tượng có trạng thái, được theo dõi theo thời gian và sau đó
 mới dùng cho lập kế hoạch/điều khiển. Điều này dẫn tới quyết định thiết kế của
 đồ án: radar không chỉ là tập điểm rời rạc, YOLO không chỉ là các bounding box
-độc lập, mà cả hai cần được đưa về mức `RadarObject` và `FusedTarget` trước khi
-ra quyết định phanh.
+độc lập. Radar được chuẩn hóa thành `RadarObject`; kết quả ghép hình học với
+bounding box YOLO được dùng để xác nhận mục tiêu trước khi ra quyết định phanh.
 
 CARLA examples, đặc biệt là `manual_control.py`, được dùng như nền tảng giao
 diện và điều khiển ban đầu. Cách làm này giúp giữ nguyên cảm giác điều khiển xe

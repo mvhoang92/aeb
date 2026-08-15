@@ -60,9 +60,8 @@ Bộ đánh giá cuối cùng dùng:
 - nhận thức môi trường/hợp nhất dữ liệu: camera YOLO ONNX + quy trình xử lý đối tượng radar;
 - phanh: `staged_pid`;
 - cấu hình kịch bản: `configs/scenarios/suites/system_limit_extended_sweep.yaml`;
-- nhật ký dữ liệu: `../../logs/final_evidence_staged_pid_20260628`;
-- video minh họa, log chi tiết và biểu đồ: lưu trong thư mục Google Drive chung
-  ở Phụ lục A.
+- nhật ký dữ liệu: gói minh chứng cuối `final_evidence_staged_pid_20260628`;
+- video minh họa, log chi tiết và biểu đồ: lưu tại liên kết trong Phụ lục A.
 
 **Bảng 4.2: Kết quả tổng quan của staged PID trên 66 kịch bản.**
 

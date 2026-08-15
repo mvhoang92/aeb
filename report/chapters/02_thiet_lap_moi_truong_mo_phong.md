@@ -39,28 +39,23 @@ làn và phù hợp với bài toán cao tốc. Xe ego được chọn là Tesla
 | Python CARLA | Python 3.7.17 |
 | Python YOLO | Python 3.10 trong `.venv_yolo310` |
 
-Dự án được đặt trực tiếp trong thư mục gốc CARLA:
+Dự án được đặt cạnh thư mục cài đặt CARLA để sử dụng thuận tiện Python API và
+các ví dụ đi kèm. Cấu trúc triển khai tổng quát là:
 
 ```text
-/home/mvhoang/CARLA_0.9.11/
+<CARLA_ROOT>/
 ├── CarlaUE4.sh
 ├── PythonAPI/
 ├── venv/
 └── aeb/
 ```
 
-Lệnh chạy CARLA ổn định trên máy hiện tại:
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11
-__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ./CarlaUE4.sh -quality-level=Low
-```
-
-Không dùng cờ `-opengl` vì trong quá trình phát triển từng gây lỗi render với
-Pygame/manual control. Việc đặt thư mục `aeb/` trong thư mục CARLA giúp dự án
-dễ truy cập PythonAPI, ví dụ mẫu, virtual environment và file thực thi của
-CARLA. Khi đưa lên GitHub, chỉ thư mục `aeb/` được quản lý như một dự án riêng;
-dataset, video, log lớn và model archive được loại khỏi Git bằng `.gitignore`.
+CARLA được chạy với cấu hình đồ họa phù hợp GPU thử nghiệm; cờ `-opengl` không
+được dùng vì từng gây mất ổn định khi hiển thị Pygame/manual control. Hướng dẫn
+cài đặt và lệnh chạy chi tiết được tách sang `README.md` để báo cáo tập trung vào
+thiết kế và kết quả kỹ thuật. Khi đưa lên GitHub, chỉ thư mục `aeb/` được quản
+lý như một dự án riêng; dataset, video, log lớn và model archive được loại khỏi
+Git bằng `.gitignore`.
 
 ## 2.2. Cấu Hình Xe Và Cảm Biến
 

@@ -1,15 +1,14 @@
 # Xây Dựng Hệ Thống Phanh Khẩn Cấp Tự Động AEB Trên CARLA 0.9.11
 
-> Bản thảo báo cáo full dạng Markdown. File này được viết để sau này chuyển sang
-> `.docx` theo mẫu của Trường Cơ khí - Đại học Bách khoa Hà Nội. Công thức được
-> viết bằng cú pháp LaTeX trong Markdown; tên hình và tên bảng được ghi sẵn để
-> khi đưa sang Word có thể chuyển sang Caption tự động.
+> Bản thảo được soạn bằng Markdown để thuận tiện quản lý phiên bản và chuyển
+> sang `.docx` theo mẫu của Trường Cơ khí - Đại học Bách khoa Hà Nội. Công thức
+> dùng cú pháp LaTeX; các hình và bảng có caption để có thể tạo danh mục tự động
+> trong Word.
 
 ## Thông Tin Bìa Dự Kiến
 
-- Trường: Đại học Bách khoa Hà Nội
-- Đơn vị: Trường Cơ khí
-- Trường Công nghệ Thông tin và Truyền thông
+- Cơ sở đào tạo: Đại học Bách khoa Hà Nội
+- Đơn vị: Trường Cơ khí; Trường Công nghệ Thông tin và Truyền thông
 - Chuyên ngành: Kỹ thuật ô tô số
 - Tên đề tài: Xây dựng hệ thống phanh khẩn cấp tự động AEB trên CARLA
 - Sinh viên thực hiện: Mai Việt Hoàng
@@ -49,6 +48,23 @@ thống đạt 38/38 trường hợp trong dải thiết kế; với nhóm stres
 95,45%. Các trường hợp không đạt được giữ lại để xác định giới hạn hoạt động của
 hệ thống, tránh làm sai lệch nhận xét đánh giá.
 
+**Từ khóa:** AEB, ADAS, CARLA, radar, YOLO, hợp nhất camera-radar, TTC,
+điều khiển phanh staged PID.
+
+## Danh Mục Từ Viết Tắt
+
+| Từ viết tắt | Diễn giải |
+|---|---|
+| AEB | Autonomous/Automatic Emergency Braking – phanh khẩn cấp tự động |
+| ADAS | Advanced Driver Assistance Systems – hệ thống hỗ trợ lái xe nâng cao |
+| TTC | Time To Collision – thời gian dự kiến đến va chạm |
+| CCRs | Car-to-Car Rear Stationary – xe phía trước đứng yên |
+| CCRm | Car-to-Car Rear Moving – xe phía trước chạy chậm hơn |
+| CCRb | Car-to-Car Rear Braking – xe phía trước phanh |
+| FOV | Field of View – trường nhìn của cảm biến |
+| NMS | Non-Maximum Suppression – loại bỏ khung bao chồng lấn |
+| ODD | Operational Design Domain – miền điều kiện vận hành |
+
 ## Mục Lục
 
 > Khi chuyển sang Word, mục này nên được tạo lại bằng Table of Contents tự động
@@ -61,6 +77,9 @@ hệ thống, tránh làm sai lệch nhận xét đánh giá.
 - Chương 5. Kết luận và hướng phát triển
 - Tài liệu tham khảo
 - Phụ lục
+
+> Danh mục từ viết tắt, mục lục, danh mục hình và danh mục bảng sẽ được tạo tự
+> động từ heading/caption khi chuyển sang Word.
 
 ## Danh Mục Hình Vẽ
 
@@ -329,7 +348,7 @@ phát hiện -> gom cụm/theo dõi/đối tượng -> dự đoán rủi ro -> �
 |---|---|---|
 | Autoware | Xét vật cản nằm trên đường đi dự kiến, dùng khoảng cách dừng | Dùng hành lang dự kiến thay vì toàn bộ quạt radar |
 | openpilot | Theo dõi radar kết hợp với đối tượng dẫn đường từ camera | Theo dõi radar và dùng camera để xác nhận mục tiêu |
-| Apollo | Nhận thức môi trường và hợp nhất dữ liệu ở mức đối tượng | Chuẩn hóa `RadarObject`/`FusedTarget` trước khi ra quyết định |
+| Apollo | Nhận thức môi trường và hợp nhất dữ liệu ở mức đối tượng | Chuẩn hóa `RadarObject` và kết quả ghép camera-radar trước khi ra quyết định |
 | CARLA examples | Điều khiển thủ công, cảm biến, điều khiển actor | Mở rộng giao diện điều khiển thủ công và kịch bản trong CARLA |
 
 Autoware là một nền tảng phần mềm mã nguồn mở cho xe tự hành, trong đó nhiều
@@ -343,8 +362,8 @@ openpilot và Apollo đại diện cho hướng hệ thống thực tế hơn: d
 được đưa về các đối tượng có trạng thái, được theo dõi theo thời gian và sau đó
 mới dùng cho lập kế hoạch/điều khiển. Điều này dẫn tới quyết định thiết kế của
 đồ án: radar không chỉ là tập điểm rời rạc, YOLO không chỉ là các bounding box
-độc lập, mà cả hai cần được đưa về mức `RadarObject` và `FusedTarget` trước khi
-ra quyết định phanh.
+độc lập. Radar được chuẩn hóa thành `RadarObject`; kết quả ghép hình học với
+bounding box YOLO được dùng để xác nhận mục tiêu trước khi ra quyết định phanh.
 
 CARLA examples, đặc biệt là `manual_control.py`, được dùng như nền tảng giao
 diện và điều khiển ban đầu. Cách làm này giúp giữ nguyên cảm giác điều khiển xe
@@ -447,28 +466,23 @@ làn và phù hợp với bài toán cao tốc. Xe ego được chọn là Tesla
 | Python CARLA | Python 3.7.17 |
 | Python YOLO | Python 3.10 trong `.venv_yolo310` |
 
-Dự án được đặt trực tiếp trong thư mục gốc CARLA:
+Dự án được đặt cạnh thư mục cài đặt CARLA để sử dụng thuận tiện Python API và
+các ví dụ đi kèm. Cấu trúc triển khai tổng quát là:
 
 ```text
-/home/mvhoang/CARLA_0.9.11/
+<CARLA_ROOT>/
 ├── CarlaUE4.sh
 ├── PythonAPI/
 ├── venv/
 └── aeb/
 ```
 
-Lệnh chạy CARLA ổn định trên máy hiện tại:
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11
-__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ./CarlaUE4.sh -quality-level=Low
-```
-
-Không dùng cờ `-opengl` vì trong quá trình phát triển từng gây lỗi render với
-Pygame/manual control. Việc đặt thư mục `aeb/` trong thư mục CARLA giúp dự án
-dễ truy cập PythonAPI, ví dụ mẫu, virtual environment và file thực thi của
-CARLA. Khi đưa lên GitHub, chỉ thư mục `aeb/` được quản lý như một dự án riêng;
-dataset, video, log lớn và model archive được loại khỏi Git bằng `.gitignore`.
+CARLA được chạy với cấu hình đồ họa phù hợp GPU thử nghiệm; cờ `-opengl` không
+được dùng vì từng gây mất ổn định khi hiển thị Pygame/manual control. Hướng dẫn
+cài đặt và lệnh chạy chi tiết được tách sang `README.md` để báo cáo tập trung vào
+thiết kế và kết quả kỹ thuật. Khi đưa lên GitHub, chỉ thư mục `aeb/` được quản
+lý như một dự án riêng; dataset, video, log lớn và model archive được loại khỏi
+Git bằng `.gitignore`.
 
 ## 2.2. Cấu Hình Xe Và Cảm Biến
 
@@ -624,7 +638,7 @@ trước khi dùng PID, cần có baseline phanh đơn giản để so sánh.
 | Gắn camera và radar lên Tesla Model 3 | Kiểm tra vị trí camera sau kính lái và radar ở mũi xe | Phát hiện và chỉnh nhiều lần vị trí cảm biến bằng side view/top-down view |
 | Chạy YOLO26n ban đầu | Kiểm tra khả năng nhận diện xe từ camera trước khi huấn luyện riêng | YOLO pretrained chạy được nhưng chưa tối ưu cho góc nhìn, môi trường và dữ liệu CARLA của dự án |
 | Radar-only AEB | Xây dựng baseline chỉ dùng radar để tính mục tiêu, TTC và phanh | Phát hiện vấn đề phanh nhầm do điểm radar từ mặt đường, lan can, xe làn bên |
-| Xử lý radar object-level | Lọc điểm, gom cụm, theo dõi và chọn target ổn định | Giảm nhiễu radar, chuyển từ điểm đo rời rạc sang danh sách đối tượng |
+| Xử lý radar ở mức đối tượng | Lọc điểm, gom cụm, theo dõi và chọn mục tiêu ổn định | Giảm nhiễu radar, chuyển từ điểm đo rời rạc sang danh sách đối tượng |
 | Thu bộ dữ liệu v7 và fine-tune YOLO26n | Tạo mô hình nhận diện `car` phù hợp với camera của dự án | YOLO sau fine-tuning dùng để xác nhận mục tiêu trong fusion |
 | Fusion camera-radar | Ghép radar object với bounding box camera bằng chiếu hình học | Radar giữ vai trò đo khoảng cách/vận tốc, camera xác nhận mục tiêu là xe |
 | Binary brake | Có nguy hiểm thì phanh 1.0 | Dễ kiểm chứng nhưng phanh gắt, chưa giống hành vi thực tế |
@@ -736,7 +750,7 @@ aeb/
 | `configs/scenarios/car_to_car/*.yaml` | Các nhóm kịch bản car-to-car như đường trống, CCRs, CCRm, CCRb, cut-in, cut-out |
 | `configs/scenarios/suites/*.yaml` | Các bộ kiểm thử tổng hợp dùng cho kiểm tra nhanh, kiểm thử hồi quy và bộ minh chứng cuối cùng |
 | `core/radar_aeb_pipeline.py` | Ghép các bước radar filtering, predicted path, chọn target và gọi logic phanh |
-| `core/radar_object.py` | Định nghĩa object-level radar target dùng trong pipeline |
+| `core/radar_object.py` | Định nghĩa đối tượng radar dùng trong pipeline |
 | `core/target_selector.py` | Chọn mục tiêu AEB từ danh sách radar object |
 | `perception/radar/radar_object_tracker.py` | Gom cụm, theo dõi và xác nhận radar object qua nhiều frame |
 | `control/brake.py` | Tính TTC/khoảng cách dừng, máy trạng thái AEB, PID và override phanh |
@@ -769,7 +783,7 @@ của vật thể. Chuỗi xử lý radar thực tế có thể gồm FFT, phát
 CARLA `sensor.other.radar` không trả tín hiệu radar thô như radar thật. Nó trả
 các điểm phát hiện đã được mô phỏng sẵn. Mỗi điểm có độ sâu, góc phương vị, góc
 cao và vận tốc tương đối. Vì vậy, đồ án bắt đầu từ đầu ra radar mức điểm đo của
-CARLA, sau đó xây dựng tầng xử lý gần với object-level radar của xe thật.
+CARLA, sau đó xây dựng tầng xử lý gần với đầu ra radar ở mức đối tượng của xe thật.
 
 Nếu dùng trực tiếp toàn bộ điểm radar để tính TTC, hệ thống dễ phanh nhầm do
 radar có thể nhận điểm từ mặt đường, lan can, cây, biển báo hoặc xe ở làn bên.
@@ -1353,15 +1367,11 @@ Hạn chế của dataset:
 
 ### 3.5.5. Quá Trình Fine-Tune YOLO26n
 
-YOLO26n được fine-tune bằng môi trường Python 3.10 `.venv_yolo310`, vì CARLA
-0.9.11 dùng Python 3.7 còn Ultralytics mới cần Python mới hơn. Luồng train được
-tách thành ba bước:
-
-```bash
-.venv_yolo310/bin/python scripts/check_yolo_dataset.py
-.venv_yolo310/bin/python scripts/train_yolo26n.py
-.venv_yolo310/bin/python scripts/export_yolo26n_onnx.py
-```
+YOLO26n được fine-tune bằng môi trường Python 3.10 tách riêng, vì CARLA 0.9.11
+dùng Python 3.7 còn phiên bản Ultralytics sử dụng trong đồ án cần Python mới
+hơn. Quy trình gồm ba bước: kiểm tra chất lượng bộ dữ liệu, fine-tune mô hình
+và xuất trọng số tốt nhất sang ONNX để suy luận thời gian chạy. Tên môi trường
+và các lệnh tái lập được lưu trong README của dự án.
 
 **Bảng 3.7: Cấu hình fine-tune YOLO26n.**
 
@@ -1678,7 +1688,7 @@ Hạn chế:
 - nếu bbox quá nhỏ hoặc target bị che khuất, điểm radar có thể không nằm trong
   bbox;
 - thuật toán hiện mới là fusion hình học/gating, chưa phải tracking đa cảm biến
-  đầy đủ kiểu Kalman filter hoặc object-level fusion xác suất.
+  đầy đủ kiểu Kalman filter hoặc hợp nhất xác suất ở mức đối tượng.
 
 Với phạm vi đồ án hiện tại, cách fusion này đủ phù hợp vì bài toán chỉ xét ô tô
 trên cao tốc, thời tiết lý tưởng và mục tiêu chính là giảm phanh nhầm của
@@ -1972,13 +1982,23 @@ Hàm `select_aeb_target()` chọn mục tiêu theo thứ tự:
 5. nếu TTC không hữu hạn hoặc tương đương, ưu tiên object có khoảng cách dọc nhỏ
    hơn.
 
-Có thể mô tả hàm ưu tiên:
+Có thể mô tả khóa ưu tiên bằng biến chỉ báo $q_i$:
 
 $$
-target = \arg\min_i \left(has\_finite\_ttc_i,\ TTC_i,\ x_i\right)
+q_i =
+\begin{cases}
+0, & TTC_i < \infty \\
+1, & TTC_i = \infty
+\end{cases}
 $$
 
-Trong đó object có TTC hữu hạn được ưu tiên hơn object có $TTC=\infty$.
+$$
+target = \arg\min_i \left(q_i,\ TTC_i,\ x_i\right)
+$$
+
+Trong đó phép tối thiểu được hiểu theo thứ tự từ điển: object có TTC hữu hạn
+($q_i=0$) được ưu tiên; sau đó chọn TTC nhỏ nhất và cuối cùng là khoảng cách dọc
+nhỏ nhất. Quy ước này khớp với hàm `select_aeb_target()` trong mã nguồn.
 
 Ở bản có fusion, target radar còn phải được camera/YOLO xác nhận. Nếu radar
 target không chiếu vào bbox `car`, fusion gate có thể chặn lệnh phanh để giảm
@@ -2292,9 +2312,8 @@ Bộ đánh giá cuối cùng dùng:
 - nhận thức môi trường/hợp nhất dữ liệu: camera YOLO ONNX + quy trình xử lý đối tượng radar;
 - phanh: `staged_pid`;
 - cấu hình kịch bản: `configs/scenarios/suites/system_limit_extended_sweep.yaml`;
-- nhật ký dữ liệu: `../logs/final_evidence_staged_pid_20260628`;
-- video minh họa, log chi tiết và biểu đồ: lưu trong thư mục Google Drive chung
-  ở Phụ lục A.
+- nhật ký dữ liệu: gói minh chứng cuối `final_evidence_staged_pid_20260628`;
+- video minh họa, log chi tiết và biểu đồ: lưu tại liên kết trong Phụ lục A.
 
 **Bảng 4.2: Kết quả tổng quan của staged PID trên 66 kịch bản.**
 
@@ -2614,7 +2633,7 @@ thống cần có vùng hoạt động tốt, đồng thời phải chỉ ra vù
 
 | Nhóm kiểm thử | Mục đích | Kết quả | Nhận xét |
 |---|---:|---:|---|
-| Dải thiết kế | Đánh giá vùng hoạt động mong muốn của đồ án | 38/38 PASS | Hệ thống hoạt động ổn định trong các tình huống cao tốc, only-car, thời tiết lý tưởng, vận tốc chủ yếu 50-80 km/h. |
+| Dải thiết kế | Đánh giá vùng hoạt động mong muốn của đồ án | 38/38 PASS | Hệ thống hoạt động ổn định trong các tình huống cao tốc, chỉ xét ô tô, thời tiết lý tưởng, vận tốc chủ yếu 50-80 km/h. |
 | Stress test/tìm giới hạn | Mở rộng tốc độ, khoảng cách và tình huống khó hơn | 25/28 PASS | Ba trường hợp không đạt dùng để xác định giới hạn hiện tại của hệ thống. |
 | Tổng toàn bộ | Đánh giá chung trên 66 kịch bản | 63/66 PASS | Tỷ lệ đạt 95,45%, nhưng kết luận chính vẫn dựa trên dải thiết kế và phân tích giới hạn. |
 
@@ -2688,9 +2707,9 @@ Từ kết quả hiện tại, các hướng phát triển tiếp theo gồm:
 
 ## 5.5. Kết Luận Chung
 
-Với phạm vi cao tốc, only-car và thời tiết lý tưởng, hệ thống AEB mô phỏng đã
+Với phạm vi cao tốc, chỉ xét ô tô và thời tiết lý tưởng, hệ thống AEB mô phỏng đã
 đạt mục tiêu chính của đồ án. Pipeline cuối cùng có đầy đủ các khối quan trọng:
-cảm biến camera-radar, xử lý radar object-level, YOLO26n, hợp nhất dữ liệu, dự
+cảm biến camera-radar, xử lý radar ở mức đối tượng, YOLO26n, hợp nhất dữ liệu, dự
 đoán quỹ đạo, tính TTC/khoảng cách dừng và phanh staged PID. Kết quả kiểm thử
 cho thấy hệ thống đạt toàn bộ dải thiết kế mong muốn và xác định được một số
 giới hạn khi tăng độ khó của kịch bản.
@@ -2740,102 +2759,13 @@ tiếp vào repository, mà được lưu trong một thư mục Google Drive ch
 | Video, log và biểu đồ đánh giá | https://drive.google.com/drive/folders/12cPKJKFeiSwI8vx67RviL3VIx_lmOstq?usp=drive_link |
 | File báo cáo `.docx` sau khi chuyển từ Markdown | Cập nhật đường dẫn trong bản nộp cuối |
 
-# Phụ Lục B. Các Thư Mục Minh Chứng Chính Trong Dự Án
+# Phụ Lục B. Khả Năng Tái Lập Kết Quả
 
-Các thư mục dưới đây là nơi lưu dữ liệu minh chứng đã dùng để viết Chương 4.
-Khi kiểm tra lại kết quả, nên ưu tiên các thư mục cuối cùng thay vì các log thử
-nghiệm trung gian.
-
-| Thành phần | Đường dẫn trong dự án | Nội dung |
-|---|---|---|
-| Log đánh giá staged PID cuối cùng | `logs/final_evidence_staged_pid_20260628/` | File CSV từng scenario, `summary.csv`, `aggregate_summary.json`, heatmap và biểu đồ phanh. |
-| Biểu đồ phanh PID | `logs/final_evidence_staged_pid_20260628/plots/` | Biểu đồ lực phanh, vận tốc, khoảng cách, TTC và dải màu trạng thái AEB. |
-| Log so sánh PID/staged PID trước đó | `logs/staged_pid_validation_full_20260627_02/` | Dữ liệu trung gian dùng để so sánh quá trình tune phanh. |
-| Video minh họa cuối cùng | `outputs/scenario_videos/final_evidence_videos_20260628_internal/` | Video màn hình 3 vùng và ảnh đại diện một số scenario tiêu biểu. |
-| Ảnh và sơ đồ dùng trong báo cáo | `report/assets/` | Hình minh họa AEB, CARLA, radar, fusion, quỹ đạo dự đoán. |
-| Bộ dữ liệu v7 same-lane cho YOLO | `dataset_v7_same_lane/` | Ảnh, nhãn và file `dataset.yaml` dùng fine-tune YOLO26n. |
-| Kết quả huấn luyện YOLO | `training_runs/detect/yolo26n_aeb_20260619_011359/` | Trọng số, biểu đồ huấn luyện và kết quả đánh giá mô hình. |
-
-# Phụ Lục C. Lệnh Chạy Chính
-
-## C.1. Chạy CARLA server
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11
-__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ./CarlaUE4.sh -quality-level=Low
-```
-
-Lệnh trên dùng GPU NVIDIA offload và quality Low. Trong quá trình thử nghiệm,
-cờ `-opengl` đã được bỏ vì có thể làm cửa sổ Pygame/manual control hiển thị
-không ổn định trên máy dùng Ubuntu.
-
-## C.2. Chạy giao diện khởi chạy
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb
-python3 laucher.py
-```
-
-Launcher dùng để chọn nhóm kịch bản, scenario cụ thể, chế độ điều khiển, loại
-phanh và mở nhanh giao diện minh họa hoặc chạy test.
-
-## C.3. Chạy minh họa cuối cùng bằng dòng lệnh
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb
-../venv/bin/python ui/aeb_demo_view.py \
-  --res 1600x900 \
-  --map-name Town04 \
-  --scenario-config configs/scenarios/suites/system_limit_extended_sweep.yaml \
-  --scenario cutin_80_50_gap_25 \
-  --control-mode physics \
-  --scenario-warmup-s 2
-```
-
-Giao diện minh họa cuối cùng gồm ba vùng: camera + YOLO/fusion, góc nhìn manual
-control và bird-eye radar. Giao diện này dùng để quan sát trực quan trạng thái
-AEB, target được chọn, lực phanh và các điểm radar trong thời gian chạy.
-
-## C.4. Kiểm tra dataset YOLO
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb
-.venv_yolo310/bin/python scripts/check_yolo_dataset.py
-```
-
-## C.5. Fine-tune YOLO26n
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb
-.venv_yolo310/bin/python scripts/train_yolo26n.py
-```
-
-## C.6. Export YOLO26n sang ONNX
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb
-.venv_yolo310/bin/python scripts/export_yolo26n_onnx.py
-```
-
-## C.7. Tạo lại biểu đồ phanh PID
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb
-python3 scripts/plot_brake_profile.py \
-  --run-dir logs/final_evidence_staged_pid_20260628 \
-  --output-dir logs/final_evidence_staged_pid_20260628/plots
-```
-
-## C.8. Build lại báo cáo Markdown tổng
-
-```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb/report
-python3 build_report.py
-```
-
-Lệnh này ghép các file trong `report/chapters/` thành `report/report.md`.
-
-# Phụ Lục D. Các File Cấu Hình Và Mã Nguồn Quan Trọng
+Mã nguồn, cấu hình kịch bản, cấu hình cảm biến và hướng dẫn tái lập được quản
+lý cùng dự án. Bộ dữ liệu, video và nhật ký đầy đủ có dung lượng lớn được cung
+cấp qua liên kết tại Phụ lục A. Bảng dưới đây nêu các thành phần cần thiết để
+kiểm tra lại các kết quả trong báo cáo; cú pháp lệnh chi tiết được duy trì trong
+README để tránh phụ lục mang tính nhật ký vận hành.
 
 | File/Thư mục | Vai trò |
 |---|---|
@@ -2847,13 +2777,13 @@ Lệnh này ghép các file trong `report/chapters/` thành `report/report.md`.
 | `control/brake.py` | Các thuật toán phanh: binary, PID v1/v2 và staged PID. |
 | `core/radar_aeb_pipeline.py` | Pipeline AEB từ radar/object/fusion tới trạng thái phanh. |
 | `perception/radar/` | Các module xử lý radar, gom cụm, theo dõi và chọn mục tiêu. |
-| `perception/fusion/` | Hợp nhất camera-radar và tạo mục tiêu hợp nhất. |
+| `ui/fusion_view.py` | Chiếu điểm radar sang ảnh, ghép với bounding box YOLO và hiển thị fusion. |
 | `ui/aeb_demo_view.py` | Giao diện minh họa cuối cùng 3 màn. |
 | `scripts/run_fusion_aeb_scenarios.py` | Chạy batch scenario cho AEB/fusion và sinh log. |
 | `scripts/record_scenario_videos.py` | Quay video minh họa scenario. |
 | `scripts/plot_brake_profile.py` | Sinh biểu đồ phanh, vận tốc, khoảng cách, TTC và dải trạng thái AEB. |
 
-# Phụ Lục E. Ghi Chú Khi Chuyển Sang DOCX
+# Phụ Lục C. Ghi Chú Khi Chuyển Sang DOCX
 
 - Các dòng bắt đầu bằng `Hình x.y:` nên được chuyển thành Caption hình trong
   Word để tạo danh mục hình tự động.
