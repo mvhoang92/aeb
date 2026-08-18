@@ -25,6 +25,9 @@
   một hồ sơ tiếng Việt: `HO_SO_NGHIEN_CUU_VA_PHAN_BIEN.md`.
 - Tăng validation trong `build.sh`: fail khi citation/reference chưa resolve,
   thiếu PDF hoặc bản tiếng Anh không đúng 6 trang.
+- Bổ sung kế hoạch hoàn thiện paper trên máy CARLA: repeated baseline,
+  radar-only/camera-gated ablation, negative regression, controller ablation,
+  simulation-time synchronization và checklist artifact cho `paper_v4`.
 
 ## paper_v2 — 2026-08-17
 

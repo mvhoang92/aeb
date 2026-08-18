@@ -289,7 +289,407 @@ Build bằng pdfLaTeX + BibTeX ngày 18/08/2026.
 
 ---
 
-## 7. Kết Luận Hồ Sơ
+## 7. Kế Hoạch Hoàn Thiện Paper Trên Máy CARLA
+
+Phần này là checklist thực nghiệm để tiếp tục nâng `paper_v3`. Nguyên tắc quan
+trọng là **chạy lại baseline hiện tại trước khi sửa thuật toán**, sau đó mới thực
+hiện ablation hoặc thay đổi đồng bộ. Nếu sửa code trước, kết quả mới sẽ không còn
+so sánh trực tiếp được với evidence 63/66 đang dùng trong paper.
+
+### 7.1. Đồng bộ repository và ghi lại môi trường
+
+Trên máy có CARLA:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+git pull origin main
+git rev-parse HEAD
+```
+
+Commit dùng để tạo một bộ evidence phải được lưu vào report của run. Trước khi
+chạy, ghi lại môi trường:
+
+```bash
+mkdir -p outputs/paper_v3_reproduction/environment
+
+uname -a \
+  > outputs/paper_v3_reproduction/environment/uname.txt
+nvidia-smi \
+  > outputs/paper_v3_reproduction/environment/nvidia_smi.txt
+../venv/bin/python --version \
+  > outputs/paper_v3_reproduction/environment/python_carla.txt
+.venv_yolo310/bin/python --version \
+  > outputs/paper_v3_reproduction/environment/python_yolo.txt
+git rev-parse HEAD \
+  > outputs/paper_v3_reproduction/environment/git_commit.txt
+git status --short \
+  > outputs/paper_v3_reproduction/environment/git_status.txt
+../venv/bin/pip freeze \
+  > outputs/paper_v3_reproduction/environment/requirements_carla.txt
+.venv_yolo310/bin/pip freeze \
+  > outputs/paper_v3_reproduction/environment/requirements_yolo.txt
+```
+
+Kiểm tra model và lưu hash:
+
+```bash
+ls -lh models/yolo26n_aeb_v7.pt models/yolo26n_aeb_v7.onnx
+sha256sum models/yolo26n_aeb_v7.pt models/yolo26n_aeb_v7.onnx \
+  > outputs/paper_v3_reproduction/environment/model_sha256.txt
+```
+
+Nếu model không có, cần khôi phục đúng artifact đã tạo final evidence trước khi
+chạy. Không nên train model mới rồi vẫn gọi kết quả là reproduction của baseline.
+Model mới phải có version, hash và một nhóm kết quả riêng.
+
+### 7.2. Kiểm tra trước khi chạy batch
+
+Khởi động CARLA 0.9.11 bằng cấu hình ổn định của dự án:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11
+__NV_PRIME_RENDER_OFFLOAD=1 \
+__GLX_VENDOR_LIBRARY_NAME=nvidia \
+./CarlaUE4.sh -quality-level=Low
+```
+
+Trong terminal khác:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+python3 laucher.py --check
+../venv/bin/python -m unittest discover -s tests -p 'test_*.py'
+```
+
+Chỉ chạy batch khi:
+
+- CARLA server vào được Town04;
+- model ONNX load thành công;
+- unit test PASS;
+- working tree và commit đã được ghi lại;
+- còn đủ dung lượng cho log/video.
+
+### 7.3. Thí nghiệm A -- lặp lại final fusion baseline
+
+Đây là thí nghiệm ưu tiên cao nhất. Giữ nguyên:
+
+- `configs/sensors.yaml`;
+- YOLO ONNX hiện tại;
+- `staged_pid`;
+- physics control;
+- final 66-case suite.
+
+Chạy mỗi scenario ít nhất 5 lần:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+
+../venv/bin/python scripts/run_fusion_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/system_limit_extended_sweep.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_fusion_repeat5 \
+  --load-map
+```
+
+Runner trả exit code khác 0 nếu trong batch có bất kỳ case FAIL nào, kể cả khi
+batch đã chạy xong. Vì final suite vốn có ba case fail, cần kiểm tra các file
+summary thay vì coi exit code 1 là server crash. Phải phân biệt:
+
+- batch hoàn tất nhưng có scenario FAIL;
+- CARLA hoặc Python dừng giữa batch;
+- scenario bị missing do server mất kết nối.
+
+Kết quả mong muốn cần trả lời:
+
+1. Ba case cũ có collision ở cả 5 lần không?
+2. Có case PASS cũ nào trở thành FAIL không?
+3. First-brake time, brake gap và minimum gap dao động bao nhiêu?
+4. Có scenario nào thiếu run không?
+
+Không ghi `63/66 = 95.45% reliability`. Sau khi lặp, nên báo cáo theo hai tầng:
+
+- số scenario có kết quả ổn định qua toàn bộ lần chạy;
+- phân bố outcome trên tổng số run, kèm số lần lặp và độ phân tán.
+
+### 7.4. Thí nghiệm B -- radar-only đối xứng
+
+Dùng cùng final 66 case, cùng staged PID và cùng số lần lặp, nhưng chạy pipeline
+radar-only:
+
+```bash
+../venv/bin/python scripts/run_radar_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/system_limit_extended_sweep.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_radar_only_repeat5 \
+  --load-map
+```
+
+So sánh với Thí nghiệm A theo từng scenario, không chỉ so sánh tổng pass rate.
+Các chỉ số tối thiểu:
+
+- collision rate;
+- false/missing brake;
+- first-brake time;
+- brake gap;
+- minimum bumper gap;
+- target-confirmed rate;
+- target--hazard match rate nếu logger có dữ liệu;
+- maximum deceleration và raw jerk chỉ dùng so sánh nội bộ.
+
+Ablation này mới cho phép thảo luận camera permission đã thay đổi hành vi ở đâu.
+Nếu final 66 case chỉ có hazard, chưa được kết luận camera làm giảm false brake.
+
+### 7.5. Thí nghiệm C -- negative và target-selection regression
+
+Dùng `fusion_regression.yaml` để bổ sung clear-road, adjacent-lane và curve case
+vào cùng cấu hình camera-gated:
+
+```bash
+../venv/bin/python scripts/run_fusion_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/fusion_regression.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_fusion_negative_repeat5 \
+  --load-map
+```
+
+Suite này có các case không kỳ vọng phanh như:
+
+- `false_clear_90`;
+- `false_adjacent_90`;
+- `false_curve_clear_90`;
+- các `false_curve_adjacent_*`.
+
+Ngoài ra, có thể chạy regression rộng hơn cho radar-only:
+
+```bash
+../venv/bin/python scripts/run_radar_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/radar_only_regression.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_radar_regression_repeat5 \
+  --load-map
+```
+
+Kết quả negative phải được báo cáo riêng:
+
+```text
+false-brake rate = số run phanh khi expected_brake=False
+                   / tổng run expected_brake=False
+```
+
+Chỉ sau thí nghiệm này mới có thể thảo luận định lượng về unnecessary braking.
+
+### 7.6. Thí nghiệm D -- controller ablation
+
+Ưu tiên so sánh tối thiểu hai controller:
+
+1. `binary`;
+2. `staged_pid`.
+
+Tạo các sensor config độc lập, ví dụ:
+
+```text
+configs/ablation/sensors_binary.yaml
+configs/ablation/sensors_staged_pid.yaml
+```
+
+Mỗi file phải giữ nguyên sensor, radar tracker, target gate, YOLO và fusion;
+chỉ thay `brake.brake_mode` cùng các tham số controller liên quan. Không sửa trực
+tiếp `configs/sensors.yaml` giữa hai run vì rất khó truy vết.
+
+Chạy cùng một scenario suite và cùng số lần lặp:
+
+```bash
+../venv/bin/python scripts/run_fusion_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/system_limit_extended_sweep.yaml \
+  --sensor-config configs/ablation/sensors_binary.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_binary_repeat5 \
+  --load-map
+
+../venv/bin/python scripts/run_fusion_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/system_limit_extended_sweep.yaml \
+  --sensor-config configs/ablation/sensors_staged_pid.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_staged_pid_repeat5 \
+  --load-map
+```
+
+Không nên kết luận staged PID ``êm hơn'' chỉ từ một giá trị jerk lớn nhất. Cần
+so sánh ít nhất:
+
+- collision;
+- minimum gap;
+- thời điểm bắt đầu phanh;
+- profile lệnh phanh;
+- maximum/mean deceleration;
+- raw jerk distribution;
+- số lần brake command đổi tầng;
+- thời gian xe nằm ở emergency brake.
+
+### 7.7. Sửa đồng bộ camera theo simulation time
+
+Baseline hiện tại giữ camera confirmation 0.35 s bằng `time.monotonic()`. Tải GPU
+hoặc tốc độ chạy batch có thể làm 0.35 s wall time tương ứng với số tick mô phỏng
+khác nhau.
+
+Thứ tự đúng:
+
+1. hoàn thành và lưu Thí nghiệm A với code hiện tại;
+2. tạo commit riêng sửa camera hold theo `sim_time_s` hoặc sensor timestamp;
+3. thêm `fusion.confirmation_hold_s: 0.35` rõ ràng vào YAML;
+4. viết unit/integration test cho thời điểm hết hold;
+5. chạy lại cùng final suite với run ID mới;
+6. không trộn kết quả trước và sau sửa đồng bộ trong cùng một bảng mà thiếu nhãn.
+
+Run đề xuất sau khi sửa:
+
+```text
+paper_v3_fusion_simtime_repeat5
+```
+
+Nếu kết quả thay đổi, paper phải mô tả bản simulation-time là cấu hình mới, không
+được dùng lại evidence cũ như thể thuật toán không đổi.
+
+### 7.8. Controlled seed và tính lặp
+
+Runner hiện chưa có tùy chọn `--seed`. Trước khi claim ``seed-controlled'', cần
+bổ sung seed cho các thành phần có randomness:
+
+- Python `random`;
+- NumPy nếu được dùng;
+- CARLA Traffic Manager nếu scenario dùng Traffic Manager;
+- quá trình chọn blueprint/spawn nếu có ngẫu nhiên.
+
+Seed phải được ghi vào từng summary. Nếu scenario hoàn toàn tất định, vẫn cần lặp
+để đo dao động do physics/server/sensor scheduling, nhưng không được gọi đó là
+random-seed study.
+
+Một thiết kế gọn có thể dùng:
+
+```text
+seeds = 2026, 2027, 2028, 2029, 2030
+```
+
+Sau khi code hỗ trợ, mỗi result row phải chứa cả `scenario_id`, `run_index` và
+`seed`.
+
+### 7.9. Cấu trúc artifact cần giữ
+
+Mỗi experiment nên có thư mục độc lập:
+
+```text
+logs/
+├── paper_v3_fusion_repeat5/
+├── paper_v3_radar_only_repeat5/
+├── paper_v3_fusion_negative_repeat5/
+├── paper_v3_radar_regression_repeat5/
+├── paper_v3_binary_repeat5/
+├── paper_v3_staged_pid_repeat5/
+└── paper_v3_fusion_simtime_repeat5/
+```
+
+Mỗi thư mục tối thiểu phải giữ:
+
+- per-tick CSV;
+- per-case summary CSV/JSON;
+- aggregate summary;
+- scenario config snapshot;
+- sensor config snapshot;
+- git commit;
+- model SHA-256;
+- command đã chạy;
+- timestamp bắt đầu/kết thúc;
+- danh sách missing/crashed run;
+- plot dùng trong paper.
+
+Có thể nén evidence để chuyển máy hoặc upload release:
+
+```bash
+tar -czf outputs/paper_v3_reproduction_$(date +%Y%m%d).tar.gz \
+  outputs/paper_v3_reproduction \
+  logs/paper_v3_fusion_repeat5 \
+  logs/paper_v3_radar_only_repeat5 \
+  logs/paper_v3_fusion_negative_repeat5
+```
+
+Không nên commit hàng GB log/video trực tiếp vào Git. Có thể đưa file nén lên
+GitHub Release hoặc Drive, sau đó ghi URL và SHA-256 vào repository.
+
+### 7.10. Bảng kết quả cần tạo sau khi chạy
+
+#### Bảng 1 -- Repeated final outcomes
+
+| Family | Scenario | Runs | Pass | Collision | Mean min gap | Std min gap |
+|---|---|---:|---:|---:|---:|---:|
+
+#### Bảng 2 -- Radar-only so với camera-gated
+
+| Config | Hazard collision rate | Missed-brake rate | Negative false-brake rate | Mean first-brake time |
+|---|---:|---:|---:|---:|
+
+#### Bảng 3 -- Controller ablation
+
+| Controller | Pass/collision | Mean min gap | Max/mean deceleration | Raw jerk statistic |
+|---|---:|---:|---:|---:|
+
+#### Bảng 4 -- Boundary stability
+
+| Scenario biên | Kết quả từng run | Brake gap range | Min gap range | Nhận xét |
+|---|---|---:|---:|---|
+
+Không gộp intended-range và stress thành một con số duy nhất nếu việc gộp làm mất
+thông tin về vùng hoạt động.
+
+### 7.11. Điều kiện cập nhật lại claim trong paper
+
+Chỉ nâng claim khi có đúng evidence tương ứng:
+
+| Claim muốn viết | Evidence bắt buộc |
+|---|---|
+| Camera gate giảm false brake | Matched radar-only/camera-gated trên cùng negative suite, nhiều lần lặp |
+| Staged PID tốt hơn binary | Controller ablation giữ nguyên perception/scenario, có nhiều chỉ số và lặp |
+| Hệ thống ổn định | Repeated runs, không missing, báo cáo phân bố và seed/config |
+| Hoạt động real-time | Đo end-to-end latency và deadline miss, không dùng FPS video thay thế |
+| Có khả năng tổng quát | Test map, thời tiết, ánh sáng, vehicle shape hoặc dataset ngoài domain |
+| An toàn/đạt chuẩn | Quy trình tiêu chuẩn và validation xe thật; mô phỏng hiện tại không đủ |
+
+Nếu kết quả lặp không giữ được 38/38 intended-range, phải sửa abstract, bảng kết
+quả và conclusion theo dữ liệu mới; không được chọn riêng run đẹp nhất.
+
+### 7.12. Checklist hoàn tất trước khi tạo `paper_v4`
+
+- [ ] Baseline fusion hiện tại đã chạy lặp và không thiếu run.
+- [ ] Radar-only chạy cùng final suite và cùng số lần lặp.
+- [ ] Negative fusion regression đã có false-brake statistics.
+- [ ] Binary và staged PID được so sánh đối xứng.
+- [ ] Camera hold đã có baseline wall-time và bản simulation-time riêng.
+- [ ] Seed hoặc nguồn không tất định được mô tả rõ.
+- [ ] Raw CSV/JSON, config snapshot, command, commit và model hash được lưu.
+- [ ] Bảng aggregate được sinh tự động, không chép tay.
+- [ ] Case fail vẫn được giữ nguyên trong report.
+- [ ] Claim mới có ablation hoặc evidence trực tiếp.
+- [ ] `SOURCE_MAP`/hồ sơ truy vết được cập nhật theo artifact mới.
+- [ ] Paper tiếng Anh build đúng 6 trang, bản Việt build thành công.
+- [ ] Không có citation/reference chưa resolve hoặc overfull box.
+- [ ] PDF và evidence archive có SHA-256.
+
+Sau khi hoàn thành checklist, nên tạo `paper/paper_v4/` thay vì ghi đè
+`paper_v3`. `paper_v3` phải tiếp tục đại diện đúng cho evidence single-run hiện
+tại.
+
+---
+
+## 8. Kết Luận Hồ Sơ
 
 `paper_v3` có thể bảo vệ tốt nhất khi được trình bày như một nghiên cứu tích hợp
 hệ thống trong mô phỏng với phạm vi rõ, execution chain có thể truy vết và cách
