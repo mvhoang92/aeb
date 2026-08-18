@@ -52,6 +52,11 @@ aeb/
 │   ├── assets/           # ảnh riêng cho báo cáo
 │   ├── build_report.py   # ghép chương thành report/report.md
 │   └── report.md         # bản full đã ghép để chuyển sang DOCX
+├── paper/                # các phiên bản paper IEEE song ngữ
+│   ├── README.md         # quy tắc bắt buộc build PDF Anh và Việt
+│   ├── paper_v1/         # manuscript song ngữ đầu tiên
+│   ├── paper_v2/         # bản nhấn mạnh đóng góp tích hợp hệ thống
+│   └── paper_v3/         # bản hiện tại: research-audited, có hồ sơ phản biện
 └── report_mini.md        # bản báo cáo ngắn để duyệt nhanh
 ```
 

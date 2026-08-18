@@ -52,6 +52,9 @@ models/*.trt
 report_exports/
 *.docx
 *.pdf
+# IEEE paper versions intentionally keep their required bilingual PDFs.
+!paper/paper_v*/aeb_ieee_6page.pdf
+!paper/paper_v*/aeb_ieee_6page_vi.pdf
 *.pptx
 *.mp4
 *.avi
