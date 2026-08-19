@@ -932,3 +932,97 @@ docs/log/repeatability/artifacts/paper_v3_fusion_regression_repeat5_noreload.tar
 docs/log/repeatability/artifacts/paper_v3_radar_only_regression_repeat5_noreload.tar.gz
 docs/log/repeatability/artifacts/paper_v3_fusion_on_radar_regression_repeat5_noreload.tar.gz
 ```
+
+## 2026-08-19 — Fusion-benefit synthetic radar false-object stress
+
+### Rationale
+
+Negative regression bình thường chưa tạo được false brake cho radar-only, nên chưa làm bật lợi ích của camera gate. Để kiểm thử đúng cơ chế YOLO gate, đã bổ sung stress suite có inject synthetic radar false object trên đường trống:
+
+```text
+configs/scenarios/suites/fusion_benefit_stress.yaml
+```
+
+Runner được mở rộng bằng field `synthetic_radar_points`. Field này chỉ hoạt động khi scenario khai báo rõ; các scenario CARLA-radar bình thường không bị thay đổi.
+
+### Radar-only stress x5
+
+Lệnh:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/run_radar_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/fusion_benefit_stress.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_radar_only_fusion_benefit_stress_repeat5_noreload \
+  --load-map \
+  --scenario-cooldown-s 1.0 \
+  --reload-world-every 0 \
+  --reload-world-wait-s 2.0
+```
+
+Kết quả:
+
+| Chỉ số | Giá trị |
+|---|---:|
+| Scenarios | 6 |
+| Runs | 30 |
+| PASS | 0 |
+| FAIL | 30 |
+| Collision | 0 |
+| Brake activated | 30 |
+| False brake | 30 |
+
+Radar-only phanh nhầm trong toàn bộ `30/30` runs vì synthetic false object được chọn như radar target hợp lệ.
+
+### Fusion stress x5
+
+Lệnh:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/run_fusion_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/fusion_benefit_stress.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_fusion_benefit_stress_repeat5_noreload \
+  --load-map \
+  --scenario-cooldown-s 1.0 \
+  --reload-world-every 0 \
+  --reload-world-wait-s 2.0
+```
+
+Kết quả:
+
+| Chỉ số | Giá trị |
+|---|---:|
+| Scenarios | 6 |
+| Runs | 30 |
+| PASS | 30 |
+| FAIL | 0 |
+| Collision | 0 |
+| Brake activated | 0 |
+| False brake | 0 |
+
+Fusion chặn toàn bộ provisional BRAKE do radar đưa ra. Tick-level reason chính: `fusion_blocked_brake:no_yolo_detection`.
+
+### Diễn giải cho paper v4
+
+Có thể viết:
+
+> Trong một stress suite inject synthetic radar false-object, camera-gated fusion loại bỏ toàn bộ false brake của radar-only: radar-only phanh nhầm 30/30 runs, trong khi fusion không phanh nhầm 0/30 runs.
+
+Không nên viết quá tay rằng kết quả này chứng minh false-brake rate thực tế của CARLA thấp hơn, vì negative regression bình thường vẫn cho radar-only false brake 0%. Đây là evidence riêng cho fault-containment/robustness trước radar false-positive được gắn nhãn.
+
+Artifact đã track:
+
+```text
+docs/log/repeatability/fusion_benefit_stress_repeat5_comparison.md
+docs/log/repeatability/paper_v3_radar_only_fusion_benefit_stress_repeat5_noreload/
+docs/log/repeatability/paper_v3_fusion_benefit_stress_repeat5_noreload/
+docs/log/repeatability/artifacts/paper_v3_radar_only_fusion_benefit_stress_repeat5_noreload_raw_logs.tar.gz
+docs/log/repeatability/artifacts/paper_v3_fusion_benefit_stress_repeat5_noreload_raw_logs.tar.gz
+```

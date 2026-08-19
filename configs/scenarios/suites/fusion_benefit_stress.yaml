@@ -1,0 +1,114 @@
+# Stress suite designed to expose the benefit and risk of camera-gated fusion.
+# These scenarios inject synthetic radar-only false objects in front of ego while
+# the camera view contains no CARLA vehicle at that projected location. Radar-only
+# is expected to brake unnecessarily; camera-gated fusion is expected to block
+# the provisional BRAKE because YOLO cannot confirm a car box.
+#
+# The synthetic injection is intentionally explicit and should not be mixed with
+# normal CARLA-radar evidence without labeling it as radar false-object stress.
+map: Town04
+fixed_delta_seconds: 0.05
+spawn_index: 18
+settle_ticks: 4
+sensor_wait_timeout_s: 1.0
+stop_speed_mps: 0.30
+stop_hold_time_s: 0.5
+physics_velocity_lock: true
+physics_speed_kp: 0.35
+physics_speed_ki: 0.0
+physics_speed_integral_limit: 3.0
+physics_throttle_feedforward: 0.18
+physics_throttle_per_mps: 0.0
+physics_throttle_limit: 0.70
+physics_brake_limit: 0.40
+physics_speed_deadband_mps: 0.4
+scenarios:
+  - id: synthetic_false_object_60_18
+    description: Synthetic radar false object at 18 m, ego 60 km/h; camera should block false BRAKE.
+    type: clear_road
+    ego_speed_kph: 60.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - x_forward_m: 18.0
+        y_right_m: 0.0
+        z_up_m: 0.8
+        relative_velocity_mps: -16.7
+        count: 4
+        spacing_m: 0.18
+
+  - id: synthetic_false_object_80_22
+    description: Synthetic radar false object at 22 m, ego 80 km/h; camera should block false BRAKE.
+    type: clear_road
+    ego_speed_kph: 80.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - x_forward_m: 22.0
+        y_right_m: 0.0
+        z_up_m: 0.8
+        relative_velocity_mps: -22.2
+        count: 4
+        spacing_m: 0.18
+
+  - id: synthetic_false_object_90_28
+    description: Synthetic radar false object at 28 m, ego 90 km/h; camera should block false BRAKE.
+    type: clear_road
+    ego_speed_kph: 90.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - x_forward_m: 28.0
+        y_right_m: 0.0
+        z_up_m: 0.8
+        relative_velocity_mps: -25.0
+        count: 4
+        spacing_m: 0.18
+
+  - id: synthetic_false_object_near_left_80_20
+    description: Synthetic radar false object near left corridor edge, ego 80 km/h; camera should block false BRAKE.
+    type: clear_road
+    ego_speed_kph: 80.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - x_forward_m: 20.0
+        y_right_m: -0.9
+        z_up_m: 0.8
+        relative_velocity_mps: -22.2
+        count: 4
+        spacing_m: 0.18
+
+  - id: synthetic_false_object_near_right_80_20
+    description: Synthetic radar false object near right corridor edge, ego 80 km/h; camera should block false BRAKE.
+    type: clear_road
+    ego_speed_kph: 80.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - x_forward_m: 20.0
+        y_right_m: 0.9
+        z_up_m: 0.8
+        relative_velocity_mps: -22.2
+        count: 4
+        spacing_m: 0.18
+
+  - id: synthetic_false_object_low_height_80_18
+    description: Synthetic low non-ground radar false object, ego 80 km/h; camera should block false BRAKE.
+    type: clear_road
+    ego_speed_kph: 80.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - x_forward_m: 18.0
+        y_right_m: 0.0
+        z_up_m: 0.35
+        relative_velocity_mps: -22.2
+        count: 4
+        spacing_m: 0.18

@@ -111,6 +111,38 @@ artifacts/paper_v3_radar_only_regression_repeat5_noreload.tar.gz
 artifacts/paper_v3_fusion_on_radar_regression_repeat5_noreload.tar.gz
 ```
 
+### Fusion-benefit stress repeat5
+
+Run IDs:
+
+```text
+paper_v3_radar_only_fusion_benefit_stress_repeat5_noreload
+paper_v3_fusion_benefit_stress_repeat5_noreload
+```
+
+Suite:
+
+```text
+configs/scenarios/suites/fusion_benefit_stress.yaml
+```
+
+Tracked summaries/comparison:
+
+```text
+paper_v3_radar_only_fusion_benefit_stress_repeat5_noreload/
+paper_v3_fusion_benefit_stress_repeat5_noreload/
+fusion_benefit_stress_repeat5_comparison.md
+```
+
+Raw log archives:
+
+```text
+artifacts/paper_v3_radar_only_fusion_benefit_stress_repeat5_noreload_raw_logs.tar.gz
+artifacts/paper_v3_fusion_benefit_stress_repeat5_noreload_raw_logs.tar.gz
+```
+
+Lưu ý: đây là stress suite có inject synthetic radar false object, dùng để chứng minh camera gate chặn radar false-positive được gắn nhãn, không thay thế negative regression CARLA bình thường.
+
 ### Boundary probes x10
 
 Raw log archives:
@@ -173,4 +205,4 @@ Nếu chạy trên máy khác, thay path Python bằng venv CARLA tương ứng.
 
 ## Ghi chú
 
-Archive hiện còn nhỏ: fusion full66 repeat3 khoảng 2.2 MB, fusion full66 repeat5 khoảng 3.6 MB, radar-only full66 repeat5 khoảng 2.9 MB; regression archives khoảng 0.8--1.2 MB sau nén. Nếu sau này chạy repeat10 hoặc nhiều ablation và artifact quá lớn, nên đưa raw archive lên GitHub Release/Drive rồi chỉ commit bảng summary + URL + SHA-256.
+Archive hiện còn nhỏ: fusion full66 repeat3 khoảng 2.2 MB, fusion full66 repeat5 khoảng 3.6 MB, radar-only full66 repeat5 khoảng 2.9 MB; regression archives khoảng 0.8--1.2 MB sau nén; fusion-benefit stress archives khoảng 0.2 MB sau nén. Nếu sau này chạy repeat10 hoặc nhiều ablation và artifact quá lớn, nên đưa raw archive lên GitHub Release/Drive rồi chỉ commit bảng summary + URL + SHA-256.

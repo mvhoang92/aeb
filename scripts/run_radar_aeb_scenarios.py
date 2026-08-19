@@ -24,7 +24,7 @@ if str(AEB_ROOT) not in sys.path:
 
 from control.brake import AEBState, BinaryBrakeConfig, apply_brake_override, as_bool
 from core.radar_aeb_pipeline import RadarAEBPipeline
-from ui.manual_control_common import RadarSensor, carla, load_yaml
+from ui.manual_control_common import RadarPoint, RadarSensor, carla, load_yaml
 
 
 DEFAULT_SENSOR_CONFIG = AEB_ROOT / "configs" / "sensors.yaml"
@@ -576,6 +576,7 @@ class ScenarioRunner(object):
                 self._wait_for_radar(system, frame)
                 if evidence is not None:
                     evidence.wait_for_frame(frame)
+                self._inject_synthetic_radar_points(system, scenario)
                 system.tick()
                 snapshot = self.world.get_snapshot()
                 elapsed_s = snapshot.timestamp.elapsed_seconds - start_time_s
@@ -792,6 +793,75 @@ class ScenarioRunner(object):
             "target_lane_id": target_lane_id,
             "lane_change_completed_s": None,
         }
+
+    def _inject_synthetic_radar_points(self, system, scenario):
+        """Append configured synthetic radar returns before AEB processing.
+
+        This is used only by explicit stress scenarios to emulate radar false
+        objects without adding a camera-visible vehicle. It helps test whether
+        camera-gated fusion can suppress radar-only false braking. Real CARLA
+        radar detections remain unchanged for all normal scenarios.
+        """
+
+        specs = scenario.get("synthetic_radar_points") or []
+        if not specs or getattr(system, "radar", None) is None:
+            return
+        radar = system.radar
+        if radar.frame is None:
+            return
+
+        points = list(getattr(radar, "points", []) or [])
+        for spec in specs:
+            points.extend(self._make_synthetic_radar_points(system, spec))
+        radar.points = points
+
+    def _make_synthetic_radar_points(self, system, spec):
+        count = max(1, int(spec.get("count", 3)))
+        x_forward = float(spec.get("x_forward_m", spec.get("distance_m", 18.0)))
+        y_right = float(spec.get("y_right_m", 0.0))
+        z_up = float(spec.get("z_up_m", 0.8))
+        relative_velocity = float(spec.get("relative_velocity_mps", -20.0))
+        spacing = float(spec.get("spacing_m", 0.18))
+        velocity_step = float(spec.get("velocity_step_mps", 0.0))
+
+        radar_transform = (
+            system.radar.sensor.get_transform()
+            if getattr(system.radar, "sensor", None) is not None
+            else system.ego.get_transform()
+        )
+        origin = radar_transform.location
+        forward = radar_transform.get_forward_vector()
+        right = carla.Vector3D(x=-forward.y, y=forward.x, z=0.0)
+
+        points = []
+        for index in range(count):
+            offset_index = index - 0.5 * (count - 1)
+            px = x_forward + offset_index * spacing
+            py = y_right + offset_index * 0.05
+            pz = z_up
+            world_location = carla.Location(
+                x=origin.x + forward.x * px + right.x * py,
+                y=origin.y + forward.y * px + right.y * py,
+                z=origin.z + forward.z * px + pz,
+            )
+            depth = math.sqrt(px * px + py * py + pz * pz)
+            azimuth = math.atan2(py, max(0.001, px))
+            altitude = math.atan2(pz, max(0.001, math.hypot(px, py)))
+            velocity = relative_velocity + offset_index * velocity_step
+            points.append(
+                RadarPoint(
+                    depth_m=depth,
+                    x_forward_m=px,
+                    y_right_m=py,
+                    z_up_m=pz,
+                    relative_velocity_mps=velocity,
+                    velocity_towards_sensor_mps=velocity,
+                    azimuth_rad=azimuth,
+                    altitude_rad=altitude,
+                    world_location=world_location,
+                )
+            )
+        return points
 
     def _maintain_ego_speed(self, ego, target_speed_mps, scenario):
         steer = self._lane_follow_steer(ego, scenario)
