@@ -12,6 +12,7 @@ Thư mục này chứa bản báo cáo được tách theo chương để dễ c
 - `chapters/05_ket_luan.md`: Chương 5.
 - `chapters/99_tai_lieu_tham_khao_phu_luc.md`: tài liệu tham khảo và phụ lục.
 - `assets/`: ảnh dùng riêng cho báo cáo.
+- `exports/`: bản DOCX/PPTX/PDF/ảnh đã xuất để duyệt nhanh; xem `exports/README.md` trước khi dùng.
 - `build_report.py`: ghép các chương thành `report.md`.
 
 ## Cách làm việc
