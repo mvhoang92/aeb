@@ -521,19 +521,22 @@ class ScenarioRunner(object):
             for _ in range(settle_ticks):
                 ego.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
                 for entry in scenario_actors:
-                    entry["actor"].apply_control(
-                        carla.VehicleControl(throttle=0.0, brake=1.0)
-                    )
+                    actor = entry["actor"]
+                    if is_vehicle_actor(actor):
+                        actor.apply_control(
+                            carla.VehicleControl(throttle=0.0, brake=1.0)
+                        )
                 frame = self.world.tick()
                 self._wait_for_radar(system, frame)
                 system.tick()
 
             self._set_vehicle_speed(ego, ego_speed_mps)
             for entry in scenario_actors:
-                self._set_vehicle_speed(
-                    entry["actor"],
-                    kph_to_mps(entry["spec"].get("speed_kph", 0.0)),
-                )
+                if is_vehicle_actor(entry["actor"]):
+                    self._set_vehicle_speed(
+                        entry["actor"],
+                        kph_to_mps(entry["spec"].get("speed_kph", 0.0)),
+                    )
             self._reset_system_control_state(system)
             self.speed_control_integral = {}
             start_snapshot = self.world.get_snapshot()
@@ -773,9 +776,17 @@ class ScenarioRunner(object):
                 target_waypoint,
                 spawn_lane,
             )
-        target.set_transform(raised_transform(target_waypoint.transform))
-        target.set_target_velocity(carla.Vector3D())
-        target.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
+        target_transform = offset_transform(
+            raised_transform(target_waypoint.transform),
+            lateral_m=float(spec.get("lateral_offset_m", 0.0)),
+            forward_m=float(spec.get("forward_offset_m", 0.0)),
+            z_m=float(spec.get("z_offset_m", 0.0)),
+            yaw_deg=float(spec.get("yaw_offset_deg", 0.0)),
+        )
+        target.set_transform(target_transform)
+        if is_vehicle_actor(target):
+            target.set_target_velocity(carla.Vector3D())
+            target.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
         lane_change = spec.get("lane_change") or {}
         target_lane_id = None
         if lane_change:
@@ -943,6 +954,8 @@ class ScenarioRunner(object):
     def _apply_scenario_actor_control(self, entry, scenario, elapsed_s):
         actor = entry["actor"]
         spec = entry["spec"]
+        if not is_vehicle_actor(actor):
+            return
         motion = str(spec.get("motion", "moving"))
         if motion == "stationary":
             actor.apply_control(
@@ -1721,6 +1734,30 @@ def raised_transform(transform):
         carla.Location(x=location.x, y=location.y, z=location.z + 0.30),
         transform.rotation,
     )
+
+
+def offset_transform(transform, lateral_m=0.0, forward_m=0.0, z_m=0.0, yaw_deg=0.0):
+    """Return a transform offset in the local forward/right/up frame."""
+
+    forward = transform.get_forward_vector()
+    right = carla.Vector3D(x=-forward.y, y=forward.x, z=0.0)
+    location = transform.location
+    return carla.Transform(
+        carla.Location(
+            x=location.x + forward.x * forward_m + right.x * lateral_m,
+            y=location.y + forward.y * forward_m + right.y * lateral_m,
+            z=location.z + forward.z * forward_m + z_m,
+        ),
+        carla.Rotation(
+            pitch=transform.rotation.pitch,
+            yaw=transform.rotation.yaw + yaw_deg,
+            roll=transform.rotation.roll,
+        ),
+    )
+
+
+def is_vehicle_actor(actor):
+    return str(getattr(actor, "type_id", "")).startswith("vehicle.")
 
 
 def normalized_angle_degrees(value):

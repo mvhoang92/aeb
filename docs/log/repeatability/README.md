@@ -111,7 +111,39 @@ artifacts/paper_v3_radar_only_regression_repeat5_noreload.tar.gz
 artifacts/paper_v3_fusion_on_radar_regression_repeat5_noreload.tar.gz
 ```
 
-### Fusion-benefit stress repeat5
+### Physical false-positive stress repeat5
+
+Run IDs:
+
+```text
+paper_v4_radar_only_physical_false_positive_repeat5_noreload
+paper_v4_fusion_physical_false_positive_repeat5_noreload
+```
+
+Suite:
+
+```text
+configs/scenarios/suites/fusion_physical_false_positive.yaml
+```
+
+Tracked summaries/comparison:
+
+```text
+paper_v4_radar_only_physical_false_positive_repeat5_noreload/
+paper_v4_fusion_physical_false_positive_repeat5_noreload/
+physical_false_positive_repeat5_comparison.md
+```
+
+Raw log archives:
+
+```text
+artifacts/paper_v4_radar_only_physical_false_positive_repeat5_noreload_raw_logs.tar.gz
+artifacts/paper_v4_fusion_physical_false_positive_repeat5_noreload_raw_logs.tar.gz
+```
+
+Kết quả chính: radar-only phanh nhầm 10/10 với traffic cone vật lý gần mép đường; fusion không phanh nhầm 0/10 và không collision.
+
+### Fusion-benefit synthetic stress repeat5
 
 Run IDs:
 

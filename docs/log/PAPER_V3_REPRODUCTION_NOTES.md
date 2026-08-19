@@ -1026,3 +1026,95 @@ docs/log/repeatability/paper_v3_fusion_benefit_stress_repeat5_noreload/
 docs/log/repeatability/artifacts/paper_v3_radar_only_fusion_benefit_stress_repeat5_noreload_raw_logs.tar.gz
 docs/log/repeatability/artifacts/paper_v3_fusion_benefit_stress_repeat5_noreload_raw_logs.tar.gz
 ```
+
+## 2026-08-19 — Physical false-positive stress với CARLA props
+
+Sau khi xác nhận synthetic radar false-object chỉ là fault injection, đã tạo thêm physical stress suite đúng hơn: spawn traffic cone vật lý trong CARLA gần mép ego path, không inject radar point giả.
+
+Suite:
+
+```text
+configs/scenarios/suites/fusion_physical_false_positive.yaml
+```
+
+Runner được mở rộng để hỗ trợ static props/non-vehicle actors và `lateral_offset_m`. Các case cũ dùng vehicle actors vẫn giữ hành vi cũ.
+
+### Radar-only x5
+
+Lệnh:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/run_radar_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/fusion_physical_false_positive.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v4_radar_only_physical_false_positive_repeat5_noreload \
+  --load-map \
+  --scenario-cooldown-s 0.5 \
+  --reload-world-every 0 \
+  --reload-world-wait-s 2.0
+```
+
+Kết quả:
+
+| Chỉ số | Giá trị |
+|---|---:|
+| Scenarios | 2 |
+| Runs | 10 |
+| PASS | 0 |
+| FAIL | 10 |
+| Collision | 0 |
+| Brake activated | 10 |
+| False brake | 10 |
+
+Radar-only phanh nhầm 10/10 dù không có collision với cone.
+
+### Fusion x5
+
+Lệnh:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/run_fusion_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/fusion_physical_false_positive.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v4_fusion_physical_false_positive_repeat5_noreload \
+  --load-map \
+  --scenario-cooldown-s 0.5 \
+  --reload-world-every 0 \
+  --reload-world-wait-s 2.0
+```
+
+Kết quả:
+
+| Chỉ số | Giá trị |
+|---|---:|
+| Scenarios | 2 |
+| Runs | 10 |
+| PASS | 10 |
+| FAIL | 0 |
+| Collision | 0 |
+| Brake activated | 0 |
+| False brake | 0 |
+
+### Diễn giải cho paper v4
+
+Đây là evidence mạnh hơn synthetic injection: radar return đến từ traffic cone vật lý trong CARLA, không phải điểm radar giả. Có thể viết:
+
+> In a physical false-positive stress suite with real CARLA traffic cones placed near the ego path, radar-only produced false AEB activations in 10/10 runs, whereas camera-gated fusion suppressed braking in 10/10 runs with no recorded collisions.
+
+Caveat: `minimum_bumper_gap_m` có thể âm trong pass-by static-prop scenarios vì metric này thiết kế cho lead vehicle cùng làn, không phải clearance metric tốt cho cone gần mép đường. Dùng `collision=False`, `brake_activated`, và scenario label non-hazard làm evidence chính.
+
+Artifact đã track:
+
+```text
+docs/log/repeatability/physical_false_positive_repeat5_comparison.md
+docs/log/repeatability/paper_v4_radar_only_physical_false_positive_repeat5_noreload/
+docs/log/repeatability/paper_v4_fusion_physical_false_positive_repeat5_noreload/
+docs/log/repeatability/artifacts/paper_v4_radar_only_physical_false_positive_repeat5_noreload_raw_logs.tar.gz
+docs/log/repeatability/artifacts/paper_v4_fusion_physical_false_positive_repeat5_noreload_raw_logs.tar.gz
+```

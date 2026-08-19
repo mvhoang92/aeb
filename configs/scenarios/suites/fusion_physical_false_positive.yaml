@@ -1,0 +1,52 @@
+# Physical false-positive stress suite for camera-gated fusion.
+# These cases spawn real CARLA static traffic cones near—but not intended to be
+# in—the ego collision path. They are labelled non-hazards because ego can pass
+# without a collision when AEB does not brake. Radar-only may still interpret the
+# physical cone radar return as an AEB target. Camera-gated fusion should
+# suppress the BRAKE when YOLO does not confirm a vehicle at the radar target.
+map: Town04
+fixed_delta_seconds: 0.05
+spawn_index: 18
+settle_ticks: 4
+sensor_wait_timeout_s: 1.0
+stop_speed_mps: 0.30
+stop_hold_time_s: 0.5
+physics_velocity_lock: true
+physics_speed_kp: 0.35
+physics_speed_ki: 0.0
+physics_speed_integral_limit: 3.0
+physics_throttle_feedforward: 0.18
+physics_throttle_per_mps: 0.0
+physics_throttle_limit: 0.70
+physics_brake_limit: 0.40
+physics_speed_deadband_mps: 0.4
+scenarios:
+  - id: physical_right_cone_60_20_offset_1p45
+    description: Real traffic cone near right edge; radar-only false-brake candidate, ego passes without collision when fusion blocks.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - role: roadside_cone_right
+        blueprint: static.prop.trafficcone01
+        initial_gap_m: 20.0
+        lateral_offset_m: 1.45
+        motion: stationary
+        hazard: false
+
+  - id: physical_left_cone_60_20_offset_1p40
+    description: Real traffic cone near left edge; radar-only false-brake candidate, ego passes without collision when fusion blocks.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - role: roadside_cone_left
+        blueprint: static.prop.trafficcone01
+        initial_gap_m: 20.0
+        lateral_offset_m: -1.40
+        motion: stationary
+        hazard: false
