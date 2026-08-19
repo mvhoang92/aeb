@@ -55,6 +55,35 @@ Raw log archive:
 artifacts/paper_v3_fusion_full66_repeat5_noreload.tar.gz
 ```
 
+### Radar-only full suite repeat5
+
+Run ID:
+
+```text
+paper_v3_radar_only_full66_repeat5_noreload
+```
+
+Bảng đã track:
+
+```text
+paper_v3_radar_only_full66_repeat5_noreload/repeatability_summary.md
+paper_v3_radar_only_full66_repeat5_noreload/repeatability_by_family.csv
+paper_v3_radar_only_full66_repeat5_noreload/repeatability_by_scenario.csv
+```
+
+Raw log archive:
+
+```text
+artifacts/paper_v3_radar_only_full66_repeat5_noreload.tar.gz
+```
+
+### Fusion vs radar-only repeat5 comparison
+
+```text
+fusion_vs_radar_only_repeat5_comparison.md
+fusion_vs_radar_only_repeat5_comparison.csv
+```
+
 ### Boundary probes x10
 
 Raw log archives:
@@ -117,4 +146,4 @@ Nếu chạy trên máy khác, thay path Python bằng venv CARLA tương ứng.
 
 ## Ghi chú
 
-Archive hiện còn nhỏ: full66 repeat3 khoảng 2.2 MB, full66 repeat5 khoảng 3.6 MB sau nén. Nếu sau này chạy repeat10 hoặc nhiều ablation và artifact quá lớn, nên đưa raw archive lên GitHub Release/Drive rồi chỉ commit bảng summary + URL + SHA-256.
+Archive hiện còn nhỏ: fusion full66 repeat3 khoảng 2.2 MB, fusion full66 repeat5 khoảng 3.6 MB, radar-only full66 repeat5 khoảng 2.9 MB sau nén. Nếu sau này chạy repeat10 hoặc nhiều ablation và artifact quá lớn, nên đưa raw archive lên GitHub Release/Drive rồi chỉ commit bảng summary + URL + SHA-256.

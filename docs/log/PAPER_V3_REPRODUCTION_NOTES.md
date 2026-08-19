@@ -689,3 +689,116 @@ Hash archive đã cập nhật trong:
 ```text
 docs/log/repeatability/artifacts/SHA256SUMS.txt
 ```
+
+## 2026-08-19 — Radar-only 66 case x5 đối xứng
+
+Mục tiêu: chạy cùng final 66-case suite, cùng repeat5 và cùng `staged_pid`, nhưng bỏ camera-gated fusion để có ablation đối xứng với full fusion repeat5.
+
+Lệnh:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/run_radar_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/system_limit_extended_sweep.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_radar_only_full66_repeat5_noreload \
+  --load-map \
+  --scenario-cooldown-s 1.0 \
+  --reload-world-every 0 \
+  --reload-world-wait-s 2.0
+```
+
+Run ID:
+
+```text
+paper_v3_radar_only_full66_repeat5_noreload
+```
+
+Exit code:
+
+```text
+1
+```
+
+Diễn giải exit code: batch hoàn tất đủ 330/330 run nhưng trả 1 vì có các scenario FAIL theo PASS criteria. Đây không phải crash.
+
+Tổng quan:
+
+| Chỉ số | Giá trị |
+|---|---:|
+| Scenario cấu hình | 66 |
+| Repeat mỗi scenario | 5 |
+| Tổng run | 330 |
+| PASS run | 315 |
+| FAIL run | 15 |
+| Collision run | 15 |
+| Brake activated | 330/330 |
+| Scenario all-PASS | 63 |
+| Scenario all-FAIL | 3 |
+| Scenario mixed PASS/FAIL | 0 |
+| Missing run | 0 |
+
+Theo family:
+
+| Family | Runs | PASS | FAIL | Collision |
+|---|---:|---:|---:|---:|
+| CCRm | 120 | 120 | 0 | 0 |
+| CCRb | 150 | 140 | 10 | 10 |
+| Cut-in | 60 | 55 | 5 | 5 |
+
+Ba scenario all-FAIL, giống fusion repeat5:
+
+```text
+ccrb_95_gap_20
+ccrb_110_gap_20
+cutin_100_60_gap_25
+```
+
+### So sánh fusion repeat5 với radar-only repeat5
+
+Paired comparison trên 330 cặp `(scenario_id, run_index)`:
+
+| Paired check | Result |
+|---|---:|
+| Same status | 330/330 |
+| Same collision flag | 330/330 |
+| Fusion PASS/FAIL | 315/15 |
+| Radar-only PASS/FAIL | 315/15 |
+
+Bảng so sánh đã track:
+
+```text
+docs/log/repeatability/fusion_vs_radar_only_repeat5_comparison.md
+docs/log/repeatability/fusion_vs_radar_only_repeat5_comparison.csv
+```
+
+Nhận xét cho paper v4:
+
+- Trên final 66-case hazardous suite, camera-gated fusion và radar-only cho cùng outcome map trong toàn bộ 330 paired runs.
+- Do final suite chỉ có hazard case, kết quả này **không chứng minh camera gate giảm false brake**.
+- Điều có thể viết: camera gate không làm thay đổi outcome của hazardous final suite trong cấu hình này; claim lợi ích camera cần negative/adjacent-lane regression đối xứng.
+- Bước tiếp theo để bàn về camera benefit là chạy `fusion_regression.yaml` và `radar_only_regression.yaml` với repeat5.
+
+### Bảng và artifact đã sinh cho radar-only x5
+
+Bảng Git-tracked:
+
+```text
+docs/log/repeatability/paper_v3_radar_only_full66_repeat5_noreload/repeatability_summary.md
+docs/log/repeatability/paper_v3_radar_only_full66_repeat5_noreload/repeatability_by_family.csv
+docs/log/repeatability/paper_v3_radar_only_full66_repeat5_noreload/repeatability_by_scenario.csv
+```
+
+Raw log archive Git-tracked:
+
+```text
+docs/log/repeatability/artifacts/paper_v3_radar_only_full66_repeat5_noreload.tar.gz
+```
+
+Hash archive đã cập nhật trong:
+
+```text
+docs/log/repeatability/artifacts/SHA256SUMS.txt
+```
