@@ -548,4 +548,22 @@ docs/log/repeatability/paper_v3_fusion_full66_repeat3_noreload/repeatability_by_
 docs/log/repeatability/paper_v3_fusion_full66_repeat3_noreload/repeatability_by_scenario.csv
 ```
 
-Raw per-tick CSV vẫn để local/ignored vì dung lượng lớn; chỉ commit summary/table đã dẫn xuất. Khi chạy x5/x10, dùng cùng script với run directory tương ứng rồi copy summary nhẹ sang `docs/log/repeatability/<run-id>/` trước khi đưa vào paper.
+Raw per-tick CSV của các run quan trọng đã được nén và commit trong:
+
+```text
+docs/log/repeatability/artifacts/
+```
+
+Cụ thể đã lưu archive cho full66 repeat3 và bốn boundary probe repeat10. Hash nằm tại:
+
+```text
+docs/log/repeatability/artifacts/SHA256SUMS.txt
+```
+
+Thông tin môi trường reproduction cũng đã copy từ `outputs/paper_v3_reproduction/environment/` sang:
+
+```text
+docs/log/repeatability/environment_20260818/
+```
+
+Như vậy khi clone/pull sang máy khác, có thể đọc bảng ngay trong `docs/log/repeatability/` hoặc giải nén archive để phân tích lại raw CSV. Khi chạy x5/x10, dùng cùng script với run directory tương ứng rồi copy summary nhẹ sang `docs/log/repeatability/<run-id>/`; nếu archive còn nhỏ thì commit vào `docs/log/repeatability/artifacts/`, nếu quá lớn thì đưa lên Release/Drive và commit URL + SHA-256.
