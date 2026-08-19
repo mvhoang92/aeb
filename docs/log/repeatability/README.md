@@ -84,6 +84,33 @@ fusion_vs_radar_only_repeat5_comparison.md
 fusion_vs_radar_only_repeat5_comparison.csv
 ```
 
+### Negative/regression repeat5
+
+Run IDs:
+
+```text
+paper_v3_fusion_regression_repeat5_noreload
+paper_v3_radar_only_regression_repeat5_noreload
+paper_v3_fusion_on_radar_regression_repeat5_noreload
+```
+
+Tracked summaries:
+
+```text
+paper_v3_fusion_regression_repeat5_noreload/
+paper_v3_radar_only_regression_repeat5_noreload/
+paper_v3_fusion_on_radar_regression_repeat5_noreload/
+negative_regression_repeat5_comparison.md
+```
+
+Raw log archives:
+
+```text
+artifacts/paper_v3_fusion_regression_repeat5_noreload.tar.gz
+artifacts/paper_v3_radar_only_regression_repeat5_noreload.tar.gz
+artifacts/paper_v3_fusion_on_radar_regression_repeat5_noreload.tar.gz
+```
+
 ### Boundary probes x10
 
 Raw log archives:
@@ -146,4 +173,4 @@ Nếu chạy trên máy khác, thay path Python bằng venv CARLA tương ứng.
 
 ## Ghi chú
 
-Archive hiện còn nhỏ: fusion full66 repeat3 khoảng 2.2 MB, fusion full66 repeat5 khoảng 3.6 MB, radar-only full66 repeat5 khoảng 2.9 MB sau nén. Nếu sau này chạy repeat10 hoặc nhiều ablation và artifact quá lớn, nên đưa raw archive lên GitHub Release/Drive rồi chỉ commit bảng summary + URL + SHA-256.
+Archive hiện còn nhỏ: fusion full66 repeat3 khoảng 2.2 MB, fusion full66 repeat5 khoảng 3.6 MB, radar-only full66 repeat5 khoảng 2.9 MB; regression archives khoảng 0.8--1.2 MB sau nén. Nếu sau này chạy repeat10 hoặc nhiều ablation và artifact quá lớn, nên đưa raw archive lên GitHub Release/Drive rồi chỉ commit bảng summary + URL + SHA-256.

@@ -1,0 +1,10 @@
+family,runs,pass,fail,collision,brake
+CCRb,15,15,0,0,15
+CCRm,15,15,0,0,15
+CCRs,25,25,0,0,25
+adjacent,15,15,0,0,0
+clear,15,15,0,0,0
+curve,20,20,0,0,5
+cut,25,20,5,0,10
+multi,10,10,0,0,10
+non,5,5,0,0,0

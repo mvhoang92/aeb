@@ -802,3 +802,133 @@ Hash archive đã cập nhật trong:
 ```text
 docs/log/repeatability/artifacts/SHA256SUMS.txt
 ```
+
+## 2026-08-19 — Negative/regression repeat5
+
+Mục tiêu: kiểm tra false brake và đánh giá liệu camera gate có tạo khác biệt so với radar-only ở các case clear-road, adjacent-lane, curve, non-closing và cut-out.
+
+### Fusion regression suite
+
+Lệnh:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/run_fusion_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/fusion_regression.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_fusion_regression_repeat5_noreload \
+  --load-map \
+  --scenario-cooldown-s 1.0 \
+  --reload-world-every 0 \
+  --reload-world-wait-s 2.0
+```
+
+Kết quả:
+
+| Chỉ số | Giá trị |
+|---|---:|
+| Scenarios | 25 |
+| Runs | 125 |
+| PASS | 125 |
+| FAIL | 0 |
+| Negative runs | 35 |
+| False brake | 0 |
+| Positive runs | 90 |
+| Missed brake | 0 |
+
+### Radar-only regression suite
+
+Lệnh:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/run_radar_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/radar_only_regression.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_radar_only_regression_repeat5_noreload \
+  --load-map \
+  --scenario-cooldown-s 1.0 \
+  --reload-world-every 0 \
+  --reload-world-wait-s 2.0
+```
+
+Kết quả:
+
+| Chỉ số | Giá trị |
+|---|---:|
+| Scenarios | 29 |
+| Runs | 145 |
+| PASS | 141 |
+| FAIL | 4 |
+| Negative runs | 60 |
+| False brake | 0 |
+| Positive runs | 85 |
+| Missed brake | 4 |
+
+Bốn FAIL đều ở `cut_out_late_65_35` run 1--4: expected brake nhưng actual brake=False, collision=False, min gap âm theo metric scorer.
+
+### Fusion trên radar-only regression suite
+
+Để có paired comparison trên cùng scenario IDs, chạy thêm fusion runner với `radar_only_regression.yaml`.
+
+Lệnh:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/run_fusion_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/radar_only_regression.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_fusion_on_radar_regression_repeat5_noreload \
+  --load-map \
+  --scenario-cooldown-s 1.0 \
+  --reload-world-every 0 \
+  --reload-world-wait-s 2.0
+```
+
+Kết quả:
+
+| Chỉ số | Giá trị |
+|---|---:|
+| Scenarios | 29 |
+| Runs | 145 |
+| PASS | 140 |
+| FAIL | 5 |
+| Negative runs | 60 |
+| False brake | 0 |
+| Positive runs | 85 |
+| Missed brake | 5 |
+
+`cut_out_late_65_35` all-FAIL trong fusion-on-radar-regression.
+
+### So sánh và diễn giải
+
+Bảng so sánh đã track:
+
+```text
+docs/log/repeatability/negative_regression_repeat5_comparison.md
+```
+
+Kết luận:
+
+- Các negative subsets hiện tại đều có false-brake rate 0% cho cả fusion và radar-only.
+- Vì radar-only cũng không phanh nhầm trong các negative case này, chưa có evidence để claim camera gate giảm false brake.
+- Paired comparison trên `radar_only_regression.yaml` gần như giống nhau: 144/145 paired rows cùng status/brake flag.
+- Khác biệt duy nhất là `cut_out_late_65_35` run 5: radar-only PASS do có phanh, fusion FAIL do camera gate không cho phanh. Điều này cho thấy camera gate có thể quá bảo thủ ở một edge case late cut-out.
+- Nếu muốn claim lợi ích camera, cần thiết kế case radar false-positive khó hơn, nơi radar-only thực sự phanh nhầm và fusion chặn được.
+
+Artifact đã track:
+
+```text
+docs/log/repeatability/paper_v3_fusion_regression_repeat5_noreload/
+docs/log/repeatability/paper_v3_radar_only_regression_repeat5_noreload/
+docs/log/repeatability/paper_v3_fusion_on_radar_regression_repeat5_noreload/
+docs/log/repeatability/artifacts/paper_v3_fusion_regression_repeat5_noreload.tar.gz
+docs/log/repeatability/artifacts/paper_v3_radar_only_regression_repeat5_noreload.tar.gz
+docs/log/repeatability/artifacts/paper_v3_fusion_on_radar_regression_repeat5_noreload.tar.gz
+```
