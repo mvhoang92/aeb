@@ -88,7 +88,8 @@ vào `.gitignore`. Khi clone repo mới, cần train/export lại model hoặc �
     YOLO26n.
 15. `docs/log/FINAL_EVIDENCE_PACK_20260628.md`: kết quả final evidence.
 16. `docs/log/PAPER_V3_REPRODUCTION_NOTES.md`: nhật ký chạy lại thí nghiệm để cải tiến paper.
-17. `docs/log/REPORT_REWORK_TASKS.md`: task list cho lần viết lại báo cáo.
+17. `docs/log/repeatability/`: bảng summary/CSV nhẹ sinh từ các run lặp, dùng cho paper/report.
+18. `docs/log/REPORT_REWORK_TASKS.md`: task list cho lần viết lại báo cáo.
 
 ## Cài Đặt Nhanh
 

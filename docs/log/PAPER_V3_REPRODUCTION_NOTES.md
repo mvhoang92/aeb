@@ -531,7 +531,7 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
   --output-dir outputs/paper_v3_reproduction/repeatability/paper_v3_fusion_full66_repeat3_noreload
 ```
 
-Output:
+Output local:
 
 ```text
 outputs/paper_v3_reproduction/repeatability/paper_v3_fusion_full66_repeat3_noreload/repeatability_summary.md
@@ -540,4 +540,12 @@ outputs/paper_v3_reproduction/repeatability/paper_v3_fusion_full66_repeat3_norel
 outputs/paper_v3_reproduction/repeatability/paper_v3_fusion_full66_repeat3_noreload/repeatability_by_scenario.csv
 ```
 
-Khi chạy x5/x10, dùng cùng script với run directory tương ứng để sinh bảng tự động trước khi đưa vào paper.
+Vì `outputs/` và `logs/` bị `.gitignore`, các bảng nhẹ cần theo dõi bằng Git đã được copy sang:
+
+```text
+docs/log/repeatability/paper_v3_fusion_full66_repeat3_noreload/repeatability_summary.md
+docs/log/repeatability/paper_v3_fusion_full66_repeat3_noreload/repeatability_by_family.csv
+docs/log/repeatability/paper_v3_fusion_full66_repeat3_noreload/repeatability_by_scenario.csv
+```
+
+Raw per-tick CSV vẫn để local/ignored vì dung lượng lớn; chỉ commit summary/table đã dẫn xuất. Khi chạy x5/x10, dùng cùng script với run directory tương ứng rồi copy summary nhẹ sang `docs/log/repeatability/<run-id>/` trước khi đưa vào paper.
