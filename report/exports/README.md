@@ -7,8 +7,9 @@ Thư mục này chứa các file xuất ra từ nguồn báo cáo/slides để d
 - Sửa nội dung lâu dài ở `report/chapters/*.md`, sau đó chạy `report/build_report.py` để ghép lại `report/report.md`.
 - Dùng file trong `exports/` để xem nhanh layout, gửi duyệt, hoặc lấy ảnh minh họa.
 - Không coi `.docx`/`.pptx` là source of truth vì dễ lệch khỏi Markdown nguồn.
-- Các file nặng như `.docx`, `.pptx`, `.pdf` đang bị `.gitignore`; nếu cần chia sẻ chính thức nên đưa lên Drive/GitHub Release và ghi link/hash trong tài liệu.
-- Các ảnh/sơ đồ nhỏ có thể cân nhắc track nếu cần tái dựng report/slides trên máy khác.
+- Các file nặng như `.docx`, `.pptx`, `.pdf` mặc định bị `.gitignore`; riêng snapshot hiện tại đã được force-add vào Git để khi kéo repo sang máy khác vẫn có bản export phục vụ chuẩn bị paper/report.
+- Nếu các file nhị phân này lớn lên nhiều trong các lần export sau, nên đưa lên Drive/GitHub Release và chỉ commit link/hash.
+- Các ảnh/sơ đồ nhỏ nên track nếu cần tái dựng report/slides trên máy khác.
 
 ## Cấu trúc hiện tại
 
@@ -85,7 +86,7 @@ Nhóm file kiểm tra bản export:
 | `page_map.json` | Mapping trang hoặc metadata kiểm tra render |
 | `pages/page-*.png` | Ảnh từng trang để xem nhanh layout |
 
-Các file này dùng cho QA hình thức, không phải nguồn nội dung chính.
+Các file này dùng cho QA hình thức, không phải nguồn nội dung chính. Snapshot hiện tại đã được track để có thể kiểm tra layout khi chuyển máy.
 
 ## Quy trình đề xuất khi sửa báo cáo
 
