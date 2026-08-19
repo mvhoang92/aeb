@@ -87,7 +87,8 @@ vào `.gitignore`. Khi clone repo mới, cần train/export lại model hoặc �
 14. `docs/official/08_DATASET_AND_TRAINING.md`: dataset v7 same-lane và train
     YOLO26n.
 15. `docs/log/FINAL_EVIDENCE_PACK_20260628.md`: kết quả final evidence.
-16. `docs/log/REPORT_REWORK_TASKS.md`: task list cho lần viết lại báo cáo.
+16. `docs/log/PAPER_V3_REPRODUCTION_NOTES.md`: nhật ký chạy lại thí nghiệm để cải tiến paper.
+17. `docs/log/REPORT_REWORK_TASKS.md`: task list cho lần viết lại báo cáo.
 
 ## Cài Đặt Nhanh
 
