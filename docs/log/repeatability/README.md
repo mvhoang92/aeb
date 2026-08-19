@@ -33,6 +33,28 @@ Raw log archive:
 artifacts/paper_v3_fusion_full66_repeat3_noreload.tar.gz
 ```
 
+### Full suite fusion repeat5
+
+Run ID:
+
+```text
+paper_v3_fusion_full66_repeat5_noreload
+```
+
+Bảng đã track:
+
+```text
+paper_v3_fusion_full66_repeat5_noreload/repeatability_summary.md
+paper_v3_fusion_full66_repeat5_noreload/repeatability_by_family.csv
+paper_v3_fusion_full66_repeat5_noreload/repeatability_by_scenario.csv
+```
+
+Raw log archive:
+
+```text
+artifacts/paper_v3_fusion_full66_repeat5_noreload.tar.gz
+```
+
 ### Boundary probes x10
 
 Raw log archives:
@@ -77,22 +99,22 @@ Kiểm tra hash archive:
 sha256sum -c docs/log/repeatability/artifacts/SHA256SUMS.txt
 ```
 
-Sau khi giải nén, ví dụ full-suite x3 nằm tại:
+Sau khi giải nén, ví dụ full-suite x5 nằm tại:
 
 ```text
-logs/paper_v3_fusion_full66_repeat3_noreload/
+logs/paper_v3_fusion_full66_repeat5_noreload/
 ```
 
 Có thể sinh lại bảng bằng:
 
 ```bash
 /home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/summarize_repeatability.py \
-  logs/paper_v3_fusion_full66_repeat3_noreload \
-  --output-dir outputs/paper_v3_reproduction/repeatability/paper_v3_fusion_full66_repeat3_noreload
+  logs/paper_v3_fusion_full66_repeat5_noreload \
+  --output-dir outputs/paper_v3_reproduction/repeatability/paper_v3_fusion_full66_repeat5_noreload
 ```
 
 Nếu chạy trên máy khác, thay path Python bằng venv CARLA tương ứng.
 
 ## Ghi chú
 
-Archive hiện còn nhỏ vì full66 repeat3 chỉ khoảng vài MB sau nén. Nếu sau này chạy repeat5/repeat10 và artifact quá lớn, nên đưa raw archive lên GitHub Release/Drive rồi chỉ commit bảng summary + URL + SHA-256.
+Archive hiện còn nhỏ: full66 repeat3 khoảng 2.2 MB, full66 repeat5 khoảng 3.6 MB sau nén. Nếu sau này chạy repeat10 hoặc nhiều ablation và artifact quá lớn, nên đưa raw archive lên GitHub Release/Drive rồi chỉ commit bảng summary + URL + SHA-256.

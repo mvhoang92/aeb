@@ -567,3 +567,125 @@ docs/log/repeatability/environment_20260818/
 ```
 
 Như vậy khi clone/pull sang máy khác, có thể đọc bảng ngay trong `docs/log/repeatability/` hoặc giải nén archive để phân tích lại raw CSV. Khi chạy x5/x10, dùng cùng script với run directory tương ứng rồi copy summary nhẹ sang `docs/log/repeatability/<run-id>/`; nếu archive còn nhỏ thì commit vào `docs/log/repeatability/artifacts/`, nếu quá lớn thì đưa lên Release/Drive và commit URL + SHA-256.
+
+## 2026-08-19 — Full fusion 66 case x5
+
+### Vận hành
+
+Lần thử đầu báo port `127.0.0.1:2000` đóng nên runner không kết nối được CARLA. Đây là server-not-running issue, không tạo run directory hợp lệ. Đã khởi động lại CARLA bằng cấu hình NVIDIA offload/quality Low rồi chạy lại.
+
+Lệnh chạy lại:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/run_fusion_aeb_scenarios.py \
+  --scenario-config configs/scenarios/suites/system_limit_extended_sweep.yaml \
+  --sensor-config configs/sensors.yaml \
+  --control-mode physics \
+  --repeat 5 \
+  --run-id paper_v3_fusion_full66_repeat5_noreload \
+  --load-map \
+  --scenario-cooldown-s 1.0 \
+  --reload-world-every 0 \
+  --reload-world-wait-s 2.0
+```
+
+Run ID:
+
+```text
+paper_v3_fusion_full66_repeat5_noreload
+```
+
+Log:
+
+```text
+logs/paper_v3_fusion_full66_repeat5_noreload/
+```
+
+Exit code:
+
+```text
+1
+```
+
+Diễn giải exit code: batch hoàn tất đủ 330/330 run nhưng trả 1 vì có các scenario FAIL theo PASS criteria. Đây không phải crash.
+
+Tổng quan:
+
+| Chỉ số | Giá trị |
+|---|---:|
+| Scenario cấu hình | 66 |
+| Repeat mỗi scenario | 5 |
+| Tổng run | 330 |
+| PASS run | 315 |
+| FAIL run | 15 |
+| Collision run | 15 |
+| Brake activated | 330/330 |
+| Scenario all-PASS | 63 |
+| Scenario all-FAIL | 3 |
+| Scenario mixed PASS/FAIL | 0 |
+| Missing run | 0 |
+
+Theo family:
+
+| Family | Runs | PASS | FAIL | Collision |
+|---|---:|---:|---:|---:|
+| CCRm | 120 | 120 | 0 | 0 |
+| CCRb | 150 | 140 | 10 | 10 |
+| Cut-in | 60 | 55 | 5 | 5 |
+
+Ba scenario all-FAIL, vẫn đúng với final evidence và full66 x3:
+
+| Scenario | Runs | Status | Collision | Brake | First brake | Brake gap | Min bumper gap |
+|---|---:|---|---|---|---:|---:|---:|
+| `ccrb_95_gap_20` | 5 | 5/5 FAIL | 5/5 | 5/5 | 2.1 s mọi run | 18.562--18.605 m | -0.018--0.023 m |
+| `ccrb_110_gap_20` | 5 | 5/5 FAIL | 5/5 | 5/5 | 2.1 s mọi run | 18.562--18.591 m | 0.004--0.082 m |
+| `cutin_100_60_gap_25` | 5 | 5/5 FAIL | 5/5 | 5/5 | 1.55--1.60 s | 7.256--7.794 m | 0.467--0.477 m |
+
+Các scenario có dao động `minimum_bumper_gap_m` lớn nhất trong x5:
+
+| Scenario | Mean min gap | Std | Range | Min--max |
+|---|---:|---:|---:|---:|
+| `cutin_80_50_gap_25` | 5.197 m | 0.628 m | 1.575 m | 3.942--5.517 m |
+| `ccrb_95_gap_60` | 9.589 m | 0.315 m | 0.788 m | 8.960--9.748 m |
+| `cutin_80_50_gap_35` | 14.063 m | 0.214 m | 0.538 m | 13.953--14.491 m |
+| `ccrm_110_80_gap_50` | 24.298 m | 0.204 m | 0.511 m | 23.890--24.401 m |
+
+Nhận xét:
+
+- Full-suite x5 chạy đủ 330 run, không missing, không crash khi dùng `--reload-world-every 0`.
+- Không có scenario nào đảo outcome giữa 5 lần lặp: 63 scenario luôn PASS, 3 scenario luôn FAIL.
+- Ba FAIL vẫn là `ccrb_95_gap_20`, `ccrb_110_gap_20`, `cutin_100_60_gap_25`; tất cả đều có phanh và radar target--hazard match 100%.
+- Kết quả x5 củng cố mạnh hơn x3 rằng final outcome map là ổn định trong cấu hình này, nhưng vẫn không được diễn giải là reliability thống kê.
+- Một số case PASS có dao động min-gap khoảng 0.5--1.6 m, đặc biệt cut-in, nên paper v4 cần mô tả residual simulation/actor/sensor scheduling variability.
+
+### Bảng và artifact đã sinh cho x5
+
+Lệnh aggregate:
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/summarize_repeatability.py \
+  logs/paper_v3_fusion_full66_repeat5_noreload \
+  --output-dir outputs/paper_v3_reproduction/repeatability/paper_v3_fusion_full66_repeat5_noreload
+```
+
+Bảng Git-tracked:
+
+```text
+docs/log/repeatability/paper_v3_fusion_full66_repeat5_noreload/repeatability_summary.md
+docs/log/repeatability/paper_v3_fusion_full66_repeat5_noreload/repeatability_by_family.csv
+docs/log/repeatability/paper_v3_fusion_full66_repeat5_noreload/repeatability_by_scenario.csv
+```
+
+Raw log archive Git-tracked:
+
+```text
+docs/log/repeatability/artifacts/paper_v3_fusion_full66_repeat5_noreload.tar.gz
+```
+
+Hash archive đã cập nhật trong:
+
+```text
+docs/log/repeatability/artifacts/SHA256SUMS.txt
+```
