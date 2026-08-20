@@ -1152,3 +1152,31 @@ Props: box01, barrel ngay giữa ego path (`lateral_offset_m: 0.0`).
 - Đây là trade-off phải ghi rõ: camera gating là cơ chế giảm false-positive, KHÔNG phải obstacle-avoidance tổng quát.
 
 Artifact: `docs/log/repeatability/physical_false_positive_v2_and_limitation_comparison.md`
+
+## 2026-08-19 — Controller ablation (binary vs staged_pid)
+
+Giữ nguyên perception (fusion), scenario suite (system_limit_extended_sweep 66 case), control mode physics, repeat 5. Chỉ đổi `brake_mode`.
+
+Config binary: `configs/sensors_binary.yaml` (chỉ đổi `brake_mode: staged_pid` -> `binary`).
+
+| Metric | binary | staged_pid |
+|---|---:|---:|
+| Runs | 330 | 330 |
+| PASS | 310 | 315 |
+| FAIL | 20 | 15 |
+| Collision | 20 | 15 |
+| All-PASS scenarios | 62 | 63 |
+
+Khác biệt duy nhất: `ccrb_110_gap_30` (binary 0/5 collision, staged 5/5 PASS).
+
+Root cause: staged_pid phanh sớm qua distance-margin threshold (`pid_target_margin_m = 4.0 m`), còn binary chỉ phanh khi margin <= 0 (TTC-only). Trên case 110 km/h + lead full-brake ở 30m, staged_pid phanh sớm ~0.1s (2.25s vs 2.35s) => tránh collision.
+
+Comfort: binary mean decel 11.2 vs staged 10.5 m/s2; jerk gần bằng (170 vs 169).
+
+Kết luận: giữ staged_pid.
+
+## 2026-08-19 — Phân tích cut_out_late_65_35
+
+Xem `docs/log/cut_out_late_65_35_failure_analysis.md`.
+
+Tóm tắt: case này là lateral-corridor timing boundary, không phải lỗi camera gate. Xe cut-out rời hành lang (lateral > 0.95m/1.25m) đúng lúc margin stopping-distance chạm ngưỡng. Radar-only 4/5 miss, 1/5 pass là do lệch lateral 0.28m ở đúng frame tới hạn. Fusion 5/5 miss nhưng camera vẫn `fusion_confirmed` (không chặn). Label `expected_brake=true` cho cut-out đang rời làn là borderline.

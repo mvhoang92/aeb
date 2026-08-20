@@ -1,0 +1,4 @@
+family,runs,pass,fail,collision,brake
+CCRb,150,135,15,15,150
+CCRm,120,120,0,0,120
+Cut-in,60,55,5,5,60

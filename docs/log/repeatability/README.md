@@ -171,6 +171,24 @@ Raw log archives (cùng tên run ID + `_raw_logs.tar.gz`).
 
 Kết quả chính: fusion loại 40/40 false brake trên barrel/box/trashcan/streetbarrier gần mép đường; nhưng bỏ lỡ 10/10 non-vehicle obstacle ngay giữa lane (radar-only dừng an toàn 10/10).
 
+### Controller ablation (binary vs staged_pid)
+
+Run ID:
+
+```text
+paper_v4_fusion_binary_full66_repeat5_noreload
+```
+
+Config: `configs/sensors_binary.yaml` (`brake_mode: binary`, còn lại giống `sensors.yaml`).
+
+Tracked comparison:
+
+```text
+controller_ablation_binary_vs_staged_pid.md
+```
+
+Kết quả chính: staged_pid 315/330 PASS (15 collision) vs binary 310/330 PASS (20 collision). Khác biệt duy nhất ở `ccrb_110_gap_30`: staged_pid phanh sớm hơn ~0.1s nhờ distance-margin (4.0m) nên tránh collision; binary chỉ phanh khi margin <= 0 nên collision.
+
 ### Fusion-benefit synthetic stress repeat5
 
 Run IDs:
