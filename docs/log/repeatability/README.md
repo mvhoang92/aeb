@@ -143,6 +143,34 @@ artifacts/paper_v4_fusion_physical_false_positive_repeat5_noreload_raw_logs.tar.
 
 Kết quả chính: radar-only phanh nhầm 10/10 với traffic cone vật lý gần mép đường; fusion không phanh nhầm 0/10 và không collision.
 
+### Physical false-positive v2 + limitation repeat5
+
+Run IDs:
+
+```text
+paper_v4_radar_only_physical_false_positive_v2_repeat5_noreload
+paper_v4_fusion_physical_false_positive_v2_repeat5_noreload
+paper_v4_radar_only_nonvehicle_hazard_repeat5_noreload
+paper_v4_fusion_nonvehicle_hazard_repeat5_noreload
+```
+
+Suites:
+
+```text
+configs/scenarios/suites/fusion_physical_false_positive_v2.yaml
+configs/scenarios/suites/fusion_nonvehicle_hazard_limitation.yaml
+```
+
+Tracked comparison:
+
+```text
+physical_false_positive_v2_and_limitation_comparison.md
+```
+
+Raw log archives (cùng tên run ID + `_raw_logs.tar.gz`).
+
+Kết quả chính: fusion loại 40/40 false brake trên barrel/box/trashcan/streetbarrier gần mép đường; nhưng bỏ lỡ 10/10 non-vehicle obstacle ngay giữa lane (radar-only dừng an toàn 10/10).
+
 ### Fusion-benefit synthetic stress repeat5
 
 Run IDs:

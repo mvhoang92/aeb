@@ -1118,3 +1118,37 @@ docs/log/repeatability/paper_v4_fusion_physical_false_positive_repeat5_noreload/
 docs/log/repeatability/artifacts/paper_v4_radar_only_physical_false_positive_repeat5_noreload_raw_logs.tar.gz
 docs/log/repeatability/artifacts/paper_v4_fusion_physical_false_positive_repeat5_noreload_raw_logs.tar.gz
 ```
+
+## 2026-08-19 — Physical false-positive v2 + non-vehicle hazard limitation
+
+Mở rộng evidence fusion bằng nhiều loại static prop vật lý, và ghi nhận cả trade-off (limitation) để paper trung thực.
+
+### Fusion advantage (props gần mép đường, non-hazard)
+
+Suite: `configs/scenarios/suites/fusion_physical_false_positive_v2.yaml`
+
+Props: barrel, box01, trashcan01, streetbarrier ở offset 1.30/1.40/1.50.
+
+| Config | Runs | PASS | FAIL | Collision | Brake | False brake |
+|---|---:|---:|---:|---:|---:|---:|
+| Radar-only | 40 | 0 | 40 | 0 | 40 | 40 |
+| Fusion | 40 | 40 | 0 | 0 | 0 | 0 |
+
+### Fusion limitation (non-vehicle ngay giữa lane, genuine hazard)
+
+Suite: `configs/scenarios/suites/fusion_nonvehicle_hazard_limitation.yaml`
+
+Props: box01, barrel ngay giữa ego path (`lateral_offset_m: 0.0`).
+
+| Config | Runs | PASS | FAIL | Collision | Brake | Missed brake |
+|---|---:|---:|---:|---:|---:|---:|
+| Radar-only | 10 | 10 | 0 | 0 | 10 | 0 |
+| Fusion | 10 | 0 | 10 | 10 | 0 | 10 |
+
+### Diễn giải
+
+- YOLO car gate giảm false brake thật và lặp lại được: loại 40/40 false brake của radar-only trên props gần mép đường.
+- Nhưng vì gate chỉ xác nhận class CAR, fusion bỏ lỡ toàn bộ non-vehicle obstacle ở giữa lane: 10/10 collision, trong khi radar-only dừng an toàn 10/10 (min gap ~0.85 m).
+- Đây là trade-off phải ghi rõ: camera gating là cơ chế giảm false-positive, KHÔNG phải obstacle-avoidance tổng quát.
+
+Artifact: `docs/log/repeatability/physical_false_positive_v2_and_limitation_comparison.md`

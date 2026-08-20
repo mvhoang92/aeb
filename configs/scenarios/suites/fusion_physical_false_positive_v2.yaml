@@ -1,0 +1,141 @@
+# Physical false-positive stress suite v2 for camera-gated fusion.
+# Extends v1 (traffic cones) with more static-prop types to show that the YOLO
+# gate suppresses radar false braking across several non-vehicle obstacles near
+# the ego path. All cases are labelled non-hazards: ego passes beside the prop
+# without collision when AEB does not brake.
+map: Town04
+fixed_delta_seconds: 0.05
+spawn_index: 18
+settle_ticks: 4
+sensor_wait_timeout_s: 1.0
+stop_speed_mps: 0.30
+stop_hold_time_s: 0.5
+physics_velocity_lock: true
+physics_speed_kp: 0.35
+physics_speed_ki: 0.0
+physics_speed_integral_limit: 3.0
+physics_throttle_feedforward: 0.18
+physics_throttle_per_mps: 0.0
+physics_throttle_limit: 0.70
+physics_brake_limit: 0.40
+physics_speed_deadband_mps: 0.4
+scenarios:
+  - id: prop_barrel_right_1p30
+    description: Physical barrel near right edge; radar-only false-brake candidate.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - role: barrel
+        blueprint: static.prop.barrel
+        initial_gap_m: 20.0
+        lateral_offset_m: 1.30
+        motion: stationary
+        hazard: false
+
+  - id: prop_barrel_right_1p40
+    description: Physical barrel near right edge; radar-only false-brake candidate.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - role: barrel
+        blueprint: static.prop.barrel
+        initial_gap_m: 20.0
+        lateral_offset_m: 1.40
+        motion: stationary
+        hazard: false
+
+  - id: prop_box_right_1p40
+    description: Physical box near right edge; radar-only false-brake candidate.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - role: box
+        blueprint: static.prop.box01
+        initial_gap_m: 20.0
+        lateral_offset_m: 1.40
+        motion: stationary
+        hazard: false
+
+  - id: prop_box_right_1p50
+    description: Physical box near right edge; radar-only false-brake candidate.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - role: box
+        blueprint: static.prop.box01
+        initial_gap_m: 20.0
+        lateral_offset_m: 1.50
+        motion: stationary
+        hazard: false
+
+  - id: prop_trashcan_left_1p30
+    description: Physical trashcan near left edge; radar-only false-brake candidate.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - role: trashcan
+        blueprint: static.prop.trashcan01
+        initial_gap_m: 20.0
+        lateral_offset_m: -1.30
+        motion: stationary
+        hazard: false
+
+  - id: prop_trashcan_left_1p40
+    description: Physical trashcan near left edge; radar-only false-brake candidate.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - role: trashcan
+        blueprint: static.prop.trashcan01
+        initial_gap_m: 20.0
+        lateral_offset_m: -1.40
+        motion: stationary
+        hazard: false
+
+  - id: prop_streetbarrier_right_1p30
+    description: Physical street barrier near right edge; radar-only false-brake candidate.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - role: streetbarrier
+        blueprint: static.prop.streetbarrier
+        initial_gap_m: 20.0
+        lateral_offset_m: 1.30
+        motion: stationary
+        hazard: false
+
+  - id: prop_streetbarrier_right_1p40
+    description: Physical street barrier near right edge; radar-only false-brake candidate.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - role: streetbarrier
+        blueprint: static.prop.streetbarrier
+        initial_gap_m: 20.0
+        lateral_offset_m: 1.40
+        motion: stationary
+        hazard: false

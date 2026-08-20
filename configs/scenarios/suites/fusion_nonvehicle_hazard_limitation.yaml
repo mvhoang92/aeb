@@ -1,0 +1,52 @@
+# Honest limitation suite for camera-gated fusion.
+# A non-vehicle static object is placed directly in the ego path. This is a
+# genuine hazard: the ego should brake to avoid collision. Radar-only can brake
+# from the radar return alone, but camera-gated fusion only confirms CAR-class
+# YOLO boxes, so it may suppress the BRAKE and collide with the non-vehicle
+# obstacle. This documents a known safety trade-off of car-only camera gating.
+map: Town04
+fixed_delta_seconds: 0.05
+spawn_index: 18
+settle_ticks: 4
+sensor_wait_timeout_s: 1.0
+stop_speed_mps: 0.30
+stop_hold_time_s: 0.5
+physics_velocity_lock: true
+physics_speed_kp: 0.35
+physics_speed_ki: 0.0
+physics_speed_integral_limit: 3.0
+physics_throttle_feedforward: 0.18
+physics_throttle_per_mps: 0.0
+physics_throttle_limit: 0.70
+physics_brake_limit: 0.40
+physics_speed_deadband_mps: 0.4
+scenarios:
+  - id: prop_box_in_path_0p00
+    description: Box directly in ego path; genuine non-vehicle hazard for camera-gating limitation.
+    type: physical_hazard
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - role: box_hazard
+        blueprint: static.prop.box01
+        initial_gap_m: 20.0
+        lateral_offset_m: 0.0
+        motion: stationary
+        hazard: true
+
+  - id: prop_barrel_in_path_0p00
+    description: Barrel directly in ego path; genuine non-vehicle hazard for camera-gating limitation.
+    type: physical_hazard
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - role: barrel_hazard
+        blueprint: static.prop.barrel
+        initial_gap_m: 20.0
+        lateral_offset_m: 0.0
+        motion: stationary
+        hazard: true
