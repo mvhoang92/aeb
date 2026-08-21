@@ -1180,3 +1180,18 @@ Kết luận: giữ staged_pid.
 Xem `docs/log/cut_out_late_65_35_failure_analysis.md`.
 
 Tóm tắt: case này là lateral-corridor timing boundary, không phải lỗi camera gate. Xe cut-out rời hành lang (lateral > 0.95m/1.25m) đúng lúc margin stopping-distance chạm ngưỡng. Radar-only 4/5 miss, 1/5 pass là do lệch lateral 0.28m ở đúng frame tới hạn. Fusion 5/5 miss nhưng camera vẫn `fusion_confirmed` (không chặn). Label `expected_brake=true` cho cut-out đang rời làn là borderline.
+
+## 2026-08-19 — Headline: confusion matrix + latency
+
+Tổng hợp paired runs thành confusion matrix (decision level: brake vs no-brake).
+
+| Config | TP | FP | TN | FN | Precision | Recall | F1 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Radar-only | 421 | 40 | 60 | 4 | 0.913 | 0.991 | 0.950 |
+| Fusion | 410 | 0 | 100 | 15 | 1.000 | 0.965 | 0.982 |
+
+- Fusion precision tuyệt đối (1.000): loại toàn bộ 40 FP của radar-only.
+- Radar-only recall cao hơn (0.991 vs 0.965): chỉ miss cut_out (4), fusion miss thêm 10 non-vehicle in-path (car-only gate limitation).
+- Latency: first_brake_s fusion - radar mean +4.5ms, median 0ms, max 250ms (1 case cut-in) => camera gate KHÔNG thêm latency đáng kể trên xe thật.
+
+Artifact: docs/log/repeatability/confusion_matrix_precision_recall.md + confusion_matrix_by_suite.csv

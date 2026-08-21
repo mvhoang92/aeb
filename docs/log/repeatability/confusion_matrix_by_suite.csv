@@ -1,0 +1,9 @@
+config,suite,TP,FP,TN,FN
+radar_only,full66,330,0,0,0
+radar_only,negative_regression,81,0,60,4
+radar_only,physical_fp_v2,0,40,0,0
+radar_only,nonvehicle_hazard_inpath,10,0,0,0
+fusion,full66,330,0,0,0
+fusion,negative_regression,80,0,60,5
+fusion,physical_fp_v2,0,0,40,0
+fusion,nonvehicle_hazard_inpath,0,0,0,10
