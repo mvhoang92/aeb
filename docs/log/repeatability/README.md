@@ -171,6 +171,16 @@ Raw log archives (cùng tên run ID + `_raw_logs.tar.gz`).
 
 Kết quả chính: fusion loại 40/40 false brake trên barrel/box/trashcan/streetbarrier gần mép đường; nhưng bỏ lỡ 10/10 non-vehicle obstacle ngay giữa lane (radar-only dừng an toàn 10/10).
 
+### Fusion hold-time sensitivity
+
+Run IDs: `paper_v4_fusion_hold_{0p10,0p35,0p70,1p00}_sensitivity_repeat5_noreload`
+
+Configs: `configs/sensors_fusion_hold_{0p10,0p35,0p70,1p00}.yaml`
+
+Tracked: `fusion_hold_time_sensitivity.md`
+
+Kết quả chính: `confirmation_hold_s` 0.1--1.0s không đổi FP (luôn 0) và FN (chỉ cut_out_late_65_35). Default 0.35s không phải hyperparameter nhạy.
+
 ### Controller ablation (binary vs staged_pid)
 
 Run ID:

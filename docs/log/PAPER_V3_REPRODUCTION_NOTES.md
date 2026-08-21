@@ -1195,3 +1195,22 @@ Tổng hợp paired runs thành confusion matrix (decision level: brake vs no-br
 - Latency: first_brake_s fusion - radar mean +4.5ms, median 0ms, max 250ms (1 case cut-in) => camera gate KHÔNG thêm latency đáng kể trên xe thật.
 
 Artifact: docs/log/repeatability/confusion_matrix_precision_recall.md + confusion_matrix_by_suite.csv
+
+## 2026-08-19 — Fusion hold-time sensitivity (confirmation_hold_s sweep)
+
+Sweep `confirmation_hold_s` 0.10/0.35/0.70/1.00s trên 8 scenario (4 hazard + 4 non-hazard) x5.
+
+| hold_s | TP | FP | TN | FN | Precision | Recall |
+|---|---:|---:|---:|---:|---:|---:|
+| 0.10 | 16 | 0 | 20 | 4 | 1.000 | 0.800 |
+| 0.35 | 15 | 0 | 20 | 5 | 1.000 | 0.750 |
+| 0.70 | 15 | 0 | 20 | 5 | 1.000 | 0.750 |
+| 1.00 | 15 | 0 | 20 | 5 | 1.000 | 0.750 |
+
+Kết luận:
+- FP = 0 cho mọi hold (YOLO không confirm non-car => hold không tạo false brake).
+- FN duy nhất là cut_out_late_65_35, do radar mất target khỏi hành lang lateral, KHÔNG phụ thuộc hold.
+- 1 TP thêm ở hold 0.10 là stochastic boundary (run 4 brake 2.0s), giống radar-only 4/5 vs 1/5.
+- `confirmation_hold_s` không phải hyperparameter nhạy; default 0.35s an toàn.
+
+Artifact: docs/log/repeatability/fusion_hold_time_sensitivity.md + 4 raw archive.
