@@ -528,6 +528,24 @@ class ScenarioRunner(object):
         return run_directory
 
     def _validate_resume_configs(self, run_directory):
+        metadata_path = Path(run_directory) / "run_metadata.json"
+        if metadata_path.exists():
+            with open(str(metadata_path)) as stream:
+                metadata = json.load(stream)
+            current_commit, current_dirty = git_state(AEB_ROOT)
+            recorded_commit = metadata.get("git_commit")
+            if current_dirty:
+                raise RuntimeError(
+                    "Không thể resume evidence khi working tree đang có thay đổi."
+                )
+            if recorded_commit and current_commit != recorded_commit:
+                raise RuntimeError(
+                    "Không thể resume qua commit khác: run={} current={}".format(
+                        recorded_commit,
+                        current_commit,
+                    )
+                )
+
         config_directory = Path(run_directory) / "config_snapshot"
         expected = (self.args.sensor_config, self.args.scenario_config)
         for source in expected:

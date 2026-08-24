@@ -186,6 +186,17 @@ def summarize_run(args, run_directory, output_directory):
     subprocess.check_call(command, cwd=str(AEB_ROOT))
 
 
+def ensure_clean_worktree():
+    status = subprocess.check_output(
+        ["git", "-C", str(AEB_ROOT), "status", "--porcelain"],
+        universal_newlines=True,
+    )
+    if status.strip():
+        raise RuntimeError(
+            "Campaign evidence yêu cầu working tree sạch; hãy commit trước khi chạy."
+        )
+
+
 def write_manifest(path, payload):
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(str(path), "w") as stream:
@@ -306,6 +317,8 @@ def parse_args():
 
 def main():
     args = parse_args()
+    if not args.dry_run:
+        ensure_clean_worktree()
     jobs: List[CampaignJob] = []
     if args.phase in ("smoke", "all"):
         jobs.extend(build_smoke_jobs(args.smoke_repeat))

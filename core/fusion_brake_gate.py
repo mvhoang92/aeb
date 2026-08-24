@@ -133,9 +133,11 @@ class FusionBrakeGate(object):
     def __init__(self, config: Optional[FusionBrakeGateConfig] = None):
         self.config = config or FusionBrakeGateConfig()
         self._last_confirmed_timestamp_s = None
+        self._radar_fallback_latched = False
 
     def reset(self):
         self._last_confirmed_timestamp_s = None
+        self._radar_fallback_latched = False
 
     def apply(
         self,
@@ -152,6 +154,7 @@ class FusionBrakeGate(object):
             self._last_confirmed_timestamp_s = now
 
         if radar_decision.state != AEBState.BRAKE:
+            self._radar_fallback_latched = False
             return FusionBrakeGateResult(
                 decision=radar_decision,
                 action="radar_no_brake",
@@ -160,6 +163,7 @@ class FusionBrakeGate(object):
             )
 
         if fusion_confirmed:
+            self._radar_fallback_latched = False
             return FusionBrakeGateResult(
                 decision=radar_decision,
                 action="camera_confirmed",
@@ -168,10 +172,26 @@ class FusionBrakeGate(object):
             )
 
         if self._recently_confirmed(now):
+            self._radar_fallback_latched = False
             return FusionBrakeGateResult(
                 decision=radar_decision,
                 action="confirmation_hold",
                 reason="recent_camera_confirmation",
+                target_path_offset_m=target_path_offset_m,
+            )
+
+        if self._radar_fallback_latched:
+            fallback_decision = replace(
+                radar_decision,
+                reason="radar_emergency_fallback_hold|radar={}".format(
+                    radar_decision.reason
+                ),
+            )
+            return FusionBrakeGateResult(
+                decision=fallback_decision,
+                action="radar_emergency_fallback_hold",
+                reason="fallback_latched_until_radar_release",
+                radar_fallback_active=True,
                 target_path_offset_m=target_path_offset_m,
             )
 
@@ -181,6 +201,7 @@ class FusionBrakeGate(object):
             target_path_offset_m,
         )
         if fallback_rejection is None:
+            self._radar_fallback_latched = True
             fallback_decision = replace(
                 radar_decision,
                 reason="radar_emergency_fallback:{}|radar={}".format(
@@ -196,6 +217,7 @@ class FusionBrakeGate(object):
                 target_path_offset_m=target_path_offset_m,
             )
 
+        self._radar_fallback_latched = False
         blocked_reason = "fusion_blocked_brake:{}|fallback_blocked:{}".format(
             fusion_reason,
             fallback_rejection,

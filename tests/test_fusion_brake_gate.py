@@ -52,6 +52,9 @@ def radar_target(**overrides):
     return SimpleNamespace(**values)
 
 
+_DEFAULT_TARGET = object()
+
+
 class FusionBrakeGateTests(unittest.TestCase):
     def fallback_gate(self, **fallback_overrides):
         fallback = {
@@ -74,10 +77,10 @@ class FusionBrakeGateTests(unittest.TestCase):
         )
         return FusionBrakeGate(config)
 
-    def apply(self, gate, decision=None, target=None, **kwargs):
+    def apply(self, gate, decision=None, target=_DEFAULT_TARGET, **kwargs):
         return gate.apply(
             decision or brake_decision(),
-            target or radar_target(),
+            radar_target() if target is _DEFAULT_TARGET else target,
             fusion_confirmed=kwargs.pop("fusion_confirmed", False),
             fusion_reason=kwargs.pop("fusion_reason", "no_yolo_detection"),
             timestamp_s=kwargs.pop("timestamp_s", 10.0),
@@ -141,6 +144,35 @@ class FusionBrakeGateTests(unittest.TestCase):
         self.assertTrue(result.radar_fallback_active)
         self.assertEqual("radar_emergency_fallback", result.action)
         self.assertIn("radar_emergency_fallback", result.decision.reason)
+
+    def test_fallback_is_latched_while_radar_remains_in_brake(self):
+        gate = self.fallback_gate()
+        first = self.apply(gate)
+        held = self.apply(
+            gate,
+            decision=brake_decision(ttc_s=2.0, margin_m=5.0),
+            target=None,
+            target_path_offset_m=None,
+            timestamp_s=10.1,
+        )
+
+        self.assertTrue(first.radar_fallback_active)
+        self.assertEqual(AEBState.BRAKE, held.decision.state)
+        self.assertTrue(held.radar_fallback_active)
+        self.assertEqual("radar_emergency_fallback_hold", held.action)
+
+    def test_non_brake_radar_state_clears_fallback_latch(self):
+        gate = self.fallback_gate()
+        self.apply(gate)
+        self.apply(gate, decision=warning_decision(), timestamp_s=10.1)
+        blocked = self.apply(
+            gate,
+            decision=brake_decision(ttc_s=2.0, margin_m=5.0),
+            timestamp_s=10.2,
+        )
+
+        self.assertEqual(AEBState.RELEASE, blocked.decision.state)
+        self.assertEqual("ttc_not_critical", blocked.reason)
 
     def test_lane_edge_target_is_blocked(self):
         result = self.apply(
