@@ -28,7 +28,10 @@ FUSION_RUNNER = AEB_ROOT / "scripts" / "run_fusion_aeb_scenarios.py"
 RADAR_RUNNER = AEB_ROOT / "scripts" / "run_radar_aeb_scenarios.py"
 SUMMARIZER = AEB_ROOT / "scripts" / "summarize_repeatability.py"
 SENSORS_HARD = AEB_ROOT / "configs" / "sensors.yaml"
-SENSORS_SAFE = AEB_ROOT / "configs" / "sensors_fusion_safe_fallback.yaml"
+SENSORS_HARD_BATCH = AEB_ROOT / "configs" / "sensors_fusion_hard_batch_cpu.yaml"
+SENSORS_SAFE_BATCH = (
+    AEB_ROOT / "configs" / "sensors_fusion_safe_fallback_batch_cpu.yaml"
+)
 SUITE_ROOT = AEB_ROOT / "configs" / "scenarios" / "suites"
 
 
@@ -62,8 +65,8 @@ FULL_SUITES = (
 
 CONFIGURATIONS = {
     "radar_only": (RADAR_RUNNER, SENSORS_HARD),
-    "hard_gate": (FUSION_RUNNER, SENSORS_HARD),
-    "safe_fallback": (FUSION_RUNNER, SENSORS_SAFE),
+    "hard_gate": (FUSION_RUNNER, SENSORS_HARD_BATCH),
+    "safe_fallback": (FUSION_RUNNER, SENSORS_SAFE_BATCH),
 }
 
 
@@ -80,7 +83,7 @@ def build_smoke_jobs(repeat):
             CampaignJob(
                 name="smoke_safe_{}".format(suite.stem),
                 runner=str(FUSION_RUNNER),
-                sensor_config=str(SENSORS_SAFE),
+                sensor_config=str(SENSORS_SAFE_BATCH),
                 scenario_config=str(suite),
                 repeat=repeat,
                 scenarios=tuple(scenarios),

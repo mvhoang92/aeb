@@ -1402,6 +1402,12 @@ class ScenarioRunner(object):
             "scenario_config": str(self.args.scenario_config),
             "scenario_config_sha256": sha256_file(self.args.scenario_config),
             "model_path": str(model_path) if model_path is not None else None,
+            "model_providers_configured": self.sensor_config.get("model", {}).get(
+                "providers"
+            ),
+            "model_inference_interval_s": self.sensor_config.get("model", {}).get(
+                "inference_interval_s"
+            ),
             "model_sha256": (
                 sha256_file(model_path)
                 if model_path is not None and model_path.exists()
