@@ -247,6 +247,17 @@ def parse_args():
     )
     parser.add_argument("--log-root", type=Path, default=DEFAULT_LOG_ROOT)
     parser.add_argument("--run-id", default=None)
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Tiếp tục run-id hiện có và bỏ qua scenario-runs đã hoàn thành.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=2026,
+        help="Seed được ghi vào metadata và áp dụng cho Python/NumPy.",
+    )
     parser.add_argument("--repeat", type=int, default=1)
     parser.add_argument(
         "--control-mode",

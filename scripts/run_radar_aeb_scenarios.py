@@ -6,8 +6,13 @@ from __future__ import print_function
 
 import argparse
 import csv
+import functools
+import hashlib
 import json
 import math
+import platform
+import random
+import shlex
 import shutil
 import subprocess
 import sys
@@ -361,6 +366,14 @@ class ScenarioRunner(object):
             self.args.control_mode
             or str(self.runner_config.get("control_mode", "deterministic"))
         )
+        self.seed = int(getattr(args, "seed", 2026))
+        random.seed(self.seed)
+        try:
+            import numpy as np  # pylint: disable=import-outside-toplevel
+
+            np.random.seed(self.seed)
+        except ImportError:
+            pass
         self.client = carla.Client(args.host, args.port)
         self.client.set_timeout(args.timeout)
         self.world = self.client.get_world()
@@ -373,14 +386,30 @@ class ScenarioRunner(object):
         self._ensure_map()
         self._enable_synchronous_mode()
         run_directory = self._create_run_directory()
-        summaries = []
+        summaries = self._load_resume_summaries(run_directory)
+        completed_jobs = {
+            (str(summary["scenario_id"]), int(summary.get("run_index", 1)))
+            for summary in summaries
+        }
         try:
             scenarios = self._selected_scenarios()
-            jobs = [
+            all_jobs = [
                 (scenario, run_index)
                 for scenario in scenarios
                 for run_index in range(1, self.args.repeat + 1)
             ]
+            jobs = [
+                (scenario, run_index)
+                for scenario, run_index in all_jobs
+                if (str(scenario["id"]), int(run_index)) not in completed_jobs
+            ]
+            if completed_jobs:
+                print(
+                    "Resume: bỏ qua {}/{} scenario-runs đã hoàn thành".format(
+                        len(all_jobs) - len(jobs),
+                        len(all_jobs),
+                    )
+                )
             for index, (scenario, run_index) in enumerate(jobs, 1):
                 print(
                     "[{}/{}] {} run {}/{}: {}".format(
@@ -398,6 +427,9 @@ class ScenarioRunner(object):
                     run_index,
                 )
                 summaries.append(summary)
+                self._write_summary(run_directory, summaries)
+                self._write_aggregate_summary(run_directory, summaries)
+                self._write_metadata(run_directory, summaries)
                 print(
                     "  {} | brake={} collision={} min_gap={}m log={}".format(
                         summary["status"],
@@ -471,6 +503,17 @@ class ScenarioRunner(object):
     def _create_run_directory(self):
         run_id = self.args.run_id or datetime.now().strftime("%Y%m%d_%H%M%S")
         run_directory = Path(self.args.log_root) / run_id
+        resume = bool(getattr(self.args, "resume", False))
+        if run_directory.exists():
+            if not resume:
+                raise FileExistsError(
+                    "Run directory đã tồn tại: {}. Dùng --resume để tiếp tục.".format(
+                        run_directory
+                    )
+                )
+            self._validate_resume_configs(run_directory)
+            return run_directory
+
         run_directory.mkdir(parents=True, exist_ok=False)
         config_directory = run_directory / "config_snapshot"
         config_directory.mkdir()
@@ -483,6 +526,32 @@ class ScenarioRunner(object):
             str(config_directory / Path(self.args.scenario_config).name),
         )
         return run_directory
+
+    def _validate_resume_configs(self, run_directory):
+        config_directory = Path(run_directory) / "config_snapshot"
+        expected = (self.args.sensor_config, self.args.scenario_config)
+        for source in expected:
+            snapshot = config_directory / Path(source).name
+            if not snapshot.exists():
+                raise RuntimeError(
+                    "Không thể resume: thiếu config snapshot {}".format(snapshot)
+                )
+            if sha256_file(source) != sha256_file(snapshot):
+                raise RuntimeError(
+                    "Không thể resume vì config đã thay đổi: {}".format(source)
+                )
+
+    def _load_resume_summaries(self, run_directory):
+        if not bool(getattr(self.args, "resume", False)):
+            return []
+        summary_path = Path(run_directory) / "summary.json"
+        if not summary_path.exists():
+            return []
+        with open(str(summary_path)) as stream:
+            summaries = json.load(stream)
+        if not isinstance(summaries, list):
+            raise RuntimeError("summary.json không phải một danh sách hợp lệ")
+        return summaries
 
     def _selected_scenarios(self):
         scenarios = self.scenario_config.get("scenarios", [])
@@ -1293,8 +1362,15 @@ class ScenarioRunner(object):
 
     def _write_metadata(self, run_directory, summaries):
         git_commit, git_dirty = git_state(AEB_ROOT)
+        model_path = resolve_project_path(
+            self.sensor_config.get("model", {}).get("path")
+        )
         metadata = {
             "created_at": datetime.now().isoformat(),
+            "command": " ".join(shlex.quote(str(arg)) for arg in sys.argv),
+            "python_executable": sys.executable,
+            "python_version": platform.python_version(),
+            "platform": platform.platform(),
             "carla_client_version": self.client.get_client_version(),
             "carla_server_version": self.client.get_server_version(),
             "carla_map": self.world.get_map().name,
@@ -1302,14 +1378,24 @@ class ScenarioRunner(object):
                 "fixed_delta_seconds",
                 0.05,
             ),
+            "seed": self.seed,
             "sensor_config": str(self.args.sensor_config),
+            "sensor_config_sha256": sha256_file(self.args.sensor_config),
             "scenario_config": str(self.args.scenario_config),
+            "scenario_config_sha256": sha256_file(self.args.scenario_config),
+            "model_path": str(model_path) if model_path is not None else None,
+            "model_sha256": (
+                sha256_file(model_path)
+                if model_path is not None and model_path.exists()
+                else None
+            ),
             "config_snapshot_directory": "config_snapshot",
             "git_commit": git_commit,
             "git_dirty": git_dirty,
-            "scenario_count": len(summaries),
+            "completed_scenario_runs": len(summaries),
             "repeat": self.args.repeat,
             "control_mode": self.args.control_mode,
+            "resume_enabled": bool(getattr(self.args, "resume", False)),
             "record_evidence": self.args.record_evidence,
             "passed": sum(1 for summary in summaries if summary["status"] == "PASS"),
             "failed": sum(1 for summary in summaries if summary["status"] == "FAIL"),
@@ -1952,6 +2038,29 @@ def optional_float(value):
     return float(value)
 
 
+@functools.lru_cache(maxsize=32)
+def sha256_file(path):
+    path = Path(path)
+    digest = hashlib.sha256()
+    with open(str(path), "rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def resolve_project_path(value):
+    if not value:
+        return None
+    path = Path(str(value))
+    if path.is_absolute():
+        return path
+    for base in (PROJECT_ROOT, AEB_ROOT):
+        candidate = base / path
+        if candidate.exists():
+            return candidate
+    return PROJECT_ROOT / path
+
+
 def git_state(repository):
     try:
         commit = subprocess.check_output(
@@ -1991,6 +2100,17 @@ def parse_args():
     )
     parser.add_argument("--log-root", type=Path, default=DEFAULT_LOG_ROOT)
     parser.add_argument("--run-id", default=None)
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Tiếp tục run-id hiện có và bỏ qua scenario-runs đã hoàn thành.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=2026,
+        help="Seed được ghi vào metadata và áp dụng cho Python/NumPy.",
+    )
     parser.add_argument(
         "--repeat",
         type=int,
