@@ -1,0 +1,91 @@
+# Deterministic sensor-config variants generated into each campaign output.
+# Dotted override keys are applied to the tracked base YAML and the resulting
+# complete YAML is snapshotted and hashed by the scenario runner.
+ablation:
+  hard_gate:
+    base: configs/sensors_fusion_hard_batch_gpu.yaml
+    overrides: {}
+  full_fallback:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides: {}
+  no_central_path_constraint:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides:
+      fusion.radar_emergency_fallback.max_path_offset_m: 10.0
+  no_minimum_point_constraint:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides:
+      fusion.radar_emergency_fallback.min_cluster_points: 2
+  no_stability_constraint:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides:
+      fusion.radar_emergency_fallback.min_track_age_frames: 1
+      fusion.radar_emergency_fallback.min_hit_streak: 1
+      fusion.radar_emergency_fallback.min_confidence: 0.0
+  either_risk_condition:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides:
+      fusion.radar_emergency_fallback.require_both_risk_conditions: false
+  no_fallback_latch:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides:
+      fusion.radar_emergency_fallback.latch_enabled: false
+
+sensitivity:
+  nominal:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides: {}
+  points_4:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides: {fusion.radar_emergency_fallback.min_cluster_points: 4}
+  points_8:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides: {fusion.radar_emergency_fallback.min_cluster_points: 8}
+  path_0p45:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides: {fusion.radar_emergency_fallback.max_path_offset_m: 0.45}
+  path_0p85:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides: {fusion.radar_emergency_fallback.max_path_offset_m: 0.85}
+  stability_2:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides:
+      fusion.radar_emergency_fallback.min_track_age_frames: 2
+      fusion.radar_emergency_fallback.min_hit_streak: 2
+  stability_4:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides:
+      fusion.radar_emergency_fallback.min_track_age_frames: 4
+      fusion.radar_emergency_fallback.min_hit_streak: 4
+  ttc_0p90:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides: {fusion.radar_emergency_fallback.max_ttc_s: 0.90}
+  ttc_1p30:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides: {fusion.radar_emergency_fallback.max_ttc_s: 1.30}
+  margin_m1:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides: {fusion.radar_emergency_fallback.max_distance_margin_m: -1.0}
+  margin_m3:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides: {fusion.radar_emergency_fallback.max_distance_margin_m: -3.0}
+  confidence_0p50:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides: {fusion.radar_emergency_fallback.min_confidence: 0.50}
+  confidence_0p90:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides: {fusion.radar_emergency_fallback.min_confidence: 0.90}
+
+camera_degradation:
+  hard_gate_camera_off:
+    base: configs/sensors_fusion_hard_batch_gpu.yaml
+    overrides:
+      model.enabled: false
+      model.require_provider: null
+      model.fail_on_inference_error: false
+  safe_fallback_camera_off:
+    base: configs/sensors_fusion_safe_fallback_batch_gpu.yaml
+    overrides:
+      model.enabled: false
+      model.require_provider: null
+      model.fail_on_inference_error: false

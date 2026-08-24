@@ -96,6 +96,7 @@ fusion:
     max_ttc_s: 1.10
     max_distance_margin_m: -2.0
     require_both_risk_conditions: true
+    latch_enabled: true
 
 target_gate:
   enabled: true

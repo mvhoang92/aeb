@@ -1,0 +1,140 @@
+# Development-only focused suite for fallback ablation and threshold sensitivity.
+# These cases were already represented in earlier evidence and are not hold-out.
+runner:
+  map: Town04
+  spawn_index: 18
+  fixed_delta_seconds: 0.05
+  sensor_wait_timeout_s: 1.0
+  settle_ticks: 4
+  stop_speed_mps: 0.3
+  stop_hold_time_s: 0.5
+  control_mode: physics
+  physics_velocity_lock: true
+  physics_speed_kp: 0.35
+  physics_speed_ki: 0.0
+  physics_speed_integral_limit: 3.0
+  physics_throttle_feedforward: 0.18
+  physics_throttle_limit: 0.70
+  physics_brake_limit: 0.40
+  physics_speed_deadband_mps: 0.4
+scenarios:
+  - id: dev_box_in_path
+    description: Development non-vehicle hazard, central box.
+    type: physical_hazard
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: box_hazard, blueprint: static.prop.box01, initial_gap_m: 20.0, lateral_offset_m: 0.0, motion: stationary, hazard: true}
+  - id: dev_barrel_in_path
+    description: Development non-vehicle hazard, central barrel.
+    type: physical_hazard
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: barrel_hazard, blueprint: static.prop.barrel, initial_gap_m: 20.0, lateral_offset_m: 0.0, motion: stationary, hazard: true}
+  - id: dev_barrel_edge
+    description: Development non-hazard barrel near right path edge.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - {role: barrel, blueprint: static.prop.barrel, initial_gap_m: 20.0, lateral_offset_m: 1.30, motion: stationary, hazard: false}
+  - id: dev_box_edge
+    description: Development non-hazard box near right path edge.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - {role: box, blueprint: static.prop.box01, initial_gap_m: 20.0, lateral_offset_m: 1.40, motion: stationary, hazard: false}
+  - id: dev_trashcan_edge
+    description: Development non-hazard trashcan near left path edge.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - {role: trashcan, blueprint: static.prop.trashcan01, initial_gap_m: 20.0, lateral_offset_m: -1.30, motion: stationary, hazard: false}
+  - id: dev_barrier_edge
+    description: Development non-hazard street barrier near right path edge.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - {role: barrier, blueprint: static.prop.streetbarrier, initial_gap_m: 20.0, lateral_offset_m: 1.30, motion: stationary, hazard: false}
+  - id: dev_synthetic_4pt_center
+    description: Development four-point central synthetic radar fault.
+    type: clear_road
+    ego_speed_kph: 80.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - {x_forward_m: 20.0, y_right_m: 0.0, z_up_m: 0.8, relative_velocity_mps: -22.2, count: 4, spacing_m: 0.18}
+  - id: dev_synthetic_4pt_offset
+    description: Development four-point offset synthetic radar fault.
+    type: clear_road
+    ego_speed_kph: 80.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - {x_forward_m: 20.0, y_right_m: 0.5, z_up_m: 0.8, relative_velocity_mps: -22.2, count: 4, spacing_m: 0.18}
+  - id: dev_ccrs_65
+    description: Development stationary vehicle hazard.
+    type: stationary_lead
+    ego_speed_kph: 65.0
+    target_speed_kph: 0.0
+    initial_gap_m: 60.0
+    duration_s: 8.0
+    expected_brake: true
+    expected_collision: false
+  - id: dev_ccrm_65_30
+    description: Development moving vehicle hazard.
+    type: moving_lead
+    ego_speed_kph: 65.0
+    target_speed_kph: 30.0
+    initial_gap_m: 50.0
+    duration_s: 10.0
+    expected_brake: true
+    expected_collision: false
+  - id: dev_cut_in_65_45
+    description: Development cut-in vehicle hazard.
+    type: cut_in
+    ego_speed_kph: 65.0
+    duration_s: 8.0
+    lane_follow: true
+    max_lane_offset_m: 1.25
+    expected_brake: true
+    expected_brake_actor: cut_in
+    expected_collision: false
+    expected_hazard_initial_same_lane: false
+    expected_hazard_final_same_lane: true
+    actors:
+      - role: cut_in
+        hazard: true
+        motion: moving
+        speed_kph: 45.0
+        initial_gap_m: 38.0
+        spawn_lane: left
+        lane_follow: true
+        lane_change: {start_s: 1.0, direction: right, lookahead_m: 14.0}
+  - id: dev_adjacent_stationary_65
+    description: Development adjacent-lane negative.
+    type: adjacent_stationary
+    ego_speed_kph: 65.0
+    target_speed_kph: 0.0
+    initial_gap_m: 45.0
+    duration_s: 6.0
+    expected_brake: false
+    expected_collision: false

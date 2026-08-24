@@ -161,6 +161,19 @@ class FusionBrakeGateTests(unittest.TestCase):
         self.assertTrue(held.radar_fallback_active)
         self.assertEqual("radar_emergency_fallback_hold", held.action)
 
+    def test_latch_can_be_disabled_for_ablation(self):
+        gate = self.fallback_gate(latch_enabled=False)
+        first = self.apply(gate)
+        blocked = self.apply(
+            gate,
+            decision=brake_decision(ttc_s=2.0, margin_m=5.0),
+            timestamp_s=10.1,
+        )
+
+        self.assertEqual(AEBState.BRAKE, first.decision.state)
+        self.assertEqual(AEBState.RELEASE, blocked.decision.state)
+        self.assertEqual("ttc_not_critical", blocked.reason)
+
     def test_non_brake_radar_state_clears_fallback_latch(self):
         gate = self.fallback_gate()
         self.apply(gate)

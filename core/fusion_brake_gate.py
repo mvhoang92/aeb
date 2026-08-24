@@ -31,6 +31,7 @@ class FusionBrakeGateConfig:
     radar_fallback_max_ttc_s: float = 1.10
     radar_fallback_max_distance_margin_m: float = -2.0
     radar_fallback_require_both_risk_conditions: bool = True
+    radar_fallback_latch_enabled: bool = True
 
     @classmethod
     def from_mapping(cls, data: Optional[Mapping[str, object]]):
@@ -113,6 +114,12 @@ class FusionBrakeGateConfig:
                     cls.radar_fallback_require_both_risk_conditions,
                 )
             ),
+            radar_fallback_latch_enabled=as_bool(
+                fallback.get(
+                    "latch_enabled",
+                    cls.radar_fallback_latch_enabled,
+                )
+            ),
         )
 
 
@@ -180,7 +187,7 @@ class FusionBrakeGate(object):
                 target_path_offset_m=target_path_offset_m,
             )
 
-        if self._radar_fallback_latched:
+        if self._radar_fallback_latched and self.config.radar_fallback_latch_enabled:
             fallback_decision = replace(
                 radar_decision,
                 reason="radar_emergency_fallback_hold|radar={}".format(
@@ -201,7 +208,7 @@ class FusionBrakeGate(object):
             target_path_offset_m,
         )
         if fallback_rejection is None:
-            self._radar_fallback_latched = True
+            self._radar_fallback_latched = self.config.radar_fallback_latch_enabled
             fallback_decision = replace(
                 radar_decision,
                 reason="radar_emergency_fallback:{}|radar={}".format(

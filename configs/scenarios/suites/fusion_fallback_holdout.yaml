@@ -1,0 +1,147 @@
+# Frozen hold-out suite. Do not use these outcomes to tune safe-fallback-v1.
+# Includes unseen physical props/vehicle appearances and high-support synthetic
+# radar faults that can resemble a genuine central obstacle.
+runner:
+  map: Town04
+  spawn_index: 18
+  fixed_delta_seconds: 0.05
+  sensor_wait_timeout_s: 1.0
+  settle_ticks: 4
+  stop_speed_mps: 0.3
+  stop_hold_time_s: 0.5
+  control_mode: physics
+  physics_velocity_lock: true
+  physics_speed_kp: 0.35
+  physics_speed_ki: 0.0
+  physics_speed_integral_limit: 3.0
+  physics_throttle_feedforward: 0.18
+  physics_throttle_limit: 0.70
+  physics_brake_limit: 0.40
+  physics_speed_deadband_mps: 0.4
+scenarios:
+  - id: holdout_cart_center_v50_g18
+    description: Unseen shopping cart directly in path.
+    type: physical_hazard
+    ego_speed_kph: 50.0
+    duration_s: 4.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: cart, blueprint: static.prop.shoppingcart, initial_gap_m: 18.0, lateral_offset_m: 0.0, motion: stationary, hazard: true}
+  - id: holdout_bench_center_v60_g22
+    description: Unseen bench directly in path.
+    type: physical_hazard
+    ego_speed_kph: 60.0
+    duration_s: 5.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: bench, blueprint: static.prop.bench01, initial_gap_m: 22.0, lateral_offset_m: 0.0, motion: stationary, hazard: true}
+  - id: holdout_warning_center_v70_g25
+    description: Unseen traffic warning prop directly in path.
+    type: physical_hazard
+    ego_speed_kph: 70.0
+    duration_s: 5.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: warning, blueprint: static.prop.trafficwarning, initial_gap_m: 25.0, lateral_offset_m: 0.2, motion: stationary, hazard: true}
+  - id: holdout_cart_edge_v60_x1p40
+    description: Unseen shopping cart near edge and labelled non-hazard.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - {role: cart, blueprint: static.prop.shoppingcart, initial_gap_m: 22.0, lateral_offset_m: 1.40, motion: stationary, hazard: false}
+  - id: holdout_garbage_edge_v60_xm1p35
+    description: Unseen garbage prop near left edge and labelled non-hazard.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - {role: garbage, blueprint: static.prop.garbage04, initial_gap_m: 22.0, lateral_offset_m: -1.35, motion: stationary, hazard: false}
+  - id: holdout_cybertruck_stationary
+    description: Unseen large vehicle appearance, stationary lead.
+    type: stationary_lead
+    ego_speed_kph: 70.0
+    duration_s: 9.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: lead, blueprint: vehicle.tesla.cybertruck, initial_gap_m: 68.0, motion: stationary, speed_kph: 0.0, hazard: true}
+  - id: holdout_van_moving
+    description: Unseen van appearance, moving lead.
+    type: moving_lead
+    ego_speed_kph: 70.0
+    duration_s: 10.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: lead, blueprint: vehicle.volkswagen.t2, initial_gap_m: 55.0, motion: moving, speed_kph: 30.0, lane_follow: true, hazard: true}
+  - id: holdout_truck_stationary
+    description: Unseen truck appearance, stationary lead.
+    type: stationary_lead
+    ego_speed_kph: 80.0
+    duration_s: 10.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: lead, blueprint: vehicle.carlamotors.carlacola, initial_gap_m: 78.0, motion: stationary, speed_kph: 0.0, hazard: true}
+  - id: holdout_motorcycle_stationary
+    description: Unseen motorcycle appearance, stationary lead.
+    type: stationary_lead
+    ego_speed_kph: 60.0
+    duration_s: 8.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: lead, blueprint: vehicle.harley-davidson.low_rider, initial_gap_m: 52.0, motion: stationary, speed_kph: 0.0, hazard: true}
+  - id: holdout_ghost_6pt_center
+    description: High-support six-point central synthetic radar ghost.
+    type: clear_road
+    ego_speed_kph: 80.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - {x_forward_m: 20.0, y_right_m: 0.0, z_up_m: 0.8, relative_velocity_mps: -22.2, count: 6, spacing_m: 0.16}
+  - id: holdout_ghost_8pt_center
+    description: High-support eight-point central synthetic radar ghost.
+    type: clear_road
+    ego_speed_kph: 80.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - {x_forward_m: 20.0, y_right_m: 0.0, z_up_m: 0.8, relative_velocity_mps: -22.2, count: 8, spacing_m: 0.14}
+  - id: holdout_ghost_10pt_center
+    description: High-support ten-point central synthetic radar ghost.
+    type: clear_road
+    ego_speed_kph: 90.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - {x_forward_m: 25.0, y_right_m: 0.0, z_up_m: 0.8, relative_velocity_mps: -25.0, count: 10, spacing_m: 0.12}
+  - id: holdout_ghost_8pt_offset_0p50
+    description: High-support synthetic ghost within fallback path threshold.
+    type: clear_road
+    ego_speed_kph: 80.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - {x_forward_m: 20.0, y_right_m: 0.5, z_up_m: 0.8, relative_velocity_mps: -22.2, count: 8, spacing_m: 0.14}
+  - id: holdout_ghost_8pt_offset_0p75
+    description: High-support synthetic ghost outside fallback path threshold.
+    type: clear_road
+    ego_speed_kph: 80.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - {x_forward_m: 20.0, y_right_m: 0.75, z_up_m: 0.8, relative_velocity_mps: -22.2, count: 8, spacing_m: 0.14}

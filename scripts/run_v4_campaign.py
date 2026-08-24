@@ -44,6 +44,7 @@ class CampaignJob:
     repeat: int
     scenarios: Tuple[str, ...] = tuple()
     require_all_pass: bool = False
+    required_provider: Optional[str] = None
 
 
 SMOKE_REGRESSION_SCENARIOS = (
@@ -88,6 +89,7 @@ def build_smoke_jobs(repeat):
                 repeat=repeat,
                 scenarios=tuple(scenarios),
                 require_all_pass=True,
+                required_provider="CUDAExecutionProvider",
             )
         )
     return jobs
@@ -108,6 +110,11 @@ def build_full_jobs(repeat, selected_configs=None, selected_suites=None):
                     sensor_config=str(sensors),
                     scenario_config=str(suite),
                     repeat=repeat,
+                    required_provider=(
+                        "CUDAExecutionProvider"
+                        if Path(runner).name == "run_fusion_aeb_scenarios.py"
+                        else None
+                    ),
                 )
             )
     return jobs

@@ -10,6 +10,7 @@ technical incompleteness or loss of the required CUDA provider stops the gate.
 from __future__ import annotations
 
 import argparse
+import copy
 import glob
 import json
 import os
@@ -22,6 +23,8 @@ from dataclasses import asdict, replace
 from datetime import datetime
 from pathlib import Path
 
+import yaml
+
 
 AEB_ROOT = Path(__file__).resolve().parents[1]
 CARLA_ROOT = AEB_ROOT.parent
@@ -30,6 +33,10 @@ if str(AEB_ROOT) not in sys.path:
 
 from scripts.run_v4_campaign import (  # noqa: E402
     CONFIGURATIONS,
+    FUSION_RUNNER,
+    SENSORS_HARD_BATCH,
+    SENSORS_SAFE_BATCH,
+    SUITE_ROOT,
     CampaignJob,
     build_full_jobs,
     build_smoke_jobs,
@@ -44,6 +51,19 @@ from scripts.run_v4_campaign import (  # noqa: E402
 
 DEFAULT_OUTPUT_ROOT = AEB_ROOT / "outputs" / "paper_v4_final_pipeline"
 DEFAULT_LOG_ROOT = AEB_ROOT / "logs"
+EXPERIMENT_SPEC = AEB_ROOT / "configs" / "evaluation" / "paper_v4_experiments.yaml"
+DEVELOPMENT_SUITE = SUITE_ROOT / "fusion_fallback_development.yaml"
+PERTURBATION_SUITE = SUITE_ROOT / "fusion_perturbation_robustness.yaml"
+DEGRADATION_SUITE = SUITE_ROOT / "fusion_camera_degradation.yaml"
+HOLDOUT_SUITE = SUITE_ROOT / "fusion_fallback_holdout.yaml"
+SENSITIVITY_SCENARIOS = (
+    "dev_box_in_path",
+    "dev_barrel_edge",
+    "dev_synthetic_4pt_center",
+    "dev_ccrs_65",
+    "dev_cut_in_65_45",
+    "dev_adjacent_stationary_65",
+)
 
 
 def utc_now():
@@ -223,14 +243,15 @@ def read_runtime_metadata(run_directory):
 
 
 def validate_cuda_runtime(job, metadata):
-    if Path(job.runner).name != "run_fusion_aeb_scenarios.py":
+    if not job.required_provider:
         return
     runtime = metadata.get("model_runtime", {}) or {}
     active = runtime.get("active_providers", []) or []
-    if "CUDAExecutionProvider" not in active:
+    if job.required_provider not in active:
         raise RuntimeError(
-            "HARD STOP: {} did not use CUDAExecutionProvider (active={})".format(
+            "HARD STOP: {} did not use {} (active={})".format(
                 job.name,
+                job.required_provider,
                 active,
             )
         )
@@ -243,10 +264,90 @@ def validate_cuda_runtime(job, metadata):
         )
 
 
-def selected_jobs(args):
+def set_dotted_value(data, dotted_key, value):
+    current = data
+    parts = str(dotted_key).split(".")
+    for key in parts[:-1]:
+        current = current.setdefault(key, {})
+    current[parts[-1]] = value
+
+
+def generate_variant_configs(output_root):
+    with open(str(EXPERIMENT_SPEC)) as stream:
+        specification = yaml.safe_load(stream) or {}
+    generated_root = Path(output_root) / "generated_sensor_configs"
+    generated = {}
+    for category, variants in specification.items():
+        generated[category] = {}
+        for name, variant in (variants or {}).items():
+            base_path = AEB_ROOT / str(variant["base"])
+            with open(str(base_path)) as stream:
+                config = yaml.safe_load(stream) or {}
+            config = copy.deepcopy(config)
+            for dotted_key, value in (variant.get("overrides", {}) or {}).items():
+                set_dotted_value(config, dotted_key, value)
+            config["evaluation_variant"] = {
+                "category": str(category),
+                "name": str(name),
+                "base": str(variant["base"]),
+                "overrides": variant.get("overrides", {}) or {},
+            }
+            path = generated_root / str(category) / "{}.yaml".format(name)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(str(path), "w") as stream:
+                yaml.safe_dump(config, stream, sort_keys=False)
+            generated[category][name] = path
+    return generated
+
+
+def three_way_jobs(name_prefix, suite, repeat):
+    jobs = []
+    for config_name, (runner, sensors) in CONFIGURATIONS.items():
+        jobs.append(
+            CampaignJob(
+                name="{}_{}".format(name_prefix, config_name),
+                runner=str(runner),
+                sensor_config=str(sensors),
+                scenario_config=str(suite),
+                repeat=repeat,
+                required_provider=(
+                    "CUDAExecutionProvider"
+                    if Path(runner).name == "run_fusion_aeb_scenarios.py"
+                    else None
+                ),
+            )
+        )
+    return jobs
+
+
+def selected_jobs(args, generated):
     jobs = []
     if args.phase in ("smoke", "all"):
         jobs.extend(build_smoke_jobs(args.smoke_repeat))
+    if args.phase in ("development", "all"):
+        for name, config_path in generated["ablation"].items():
+            jobs.append(
+                CampaignJob(
+                    name="ablation_{}".format(name),
+                    runner=str(FUSION_RUNNER),
+                    sensor_config=str(config_path),
+                    scenario_config=str(DEVELOPMENT_SUITE),
+                    repeat=args.development_repeat,
+                    required_provider="CUDAExecutionProvider",
+                )
+            )
+        for name, config_path in generated["sensitivity"].items():
+            jobs.append(
+                CampaignJob(
+                    name="sensitivity_{}".format(name),
+                    runner=str(FUSION_RUNNER),
+                    sensor_config=str(config_path),
+                    scenario_config=str(DEVELOPMENT_SUITE),
+                    repeat=args.sensitivity_repeat,
+                    scenarios=SENSITIVITY_SCENARIOS,
+                    required_provider="CUDAExecutionProvider",
+                )
+            )
     if args.phase in ("core", "all"):
         jobs.extend(
             build_full_jobs(
@@ -255,6 +356,28 @@ def selected_jobs(args):
                 tuple(args.suite) if args.suite else None,
             )
         )
+    if args.phase in ("robustness", "all"):
+        jobs.extend(
+            three_way_jobs(
+                "perturbation",
+                PERTURBATION_SUITE,
+                args.perturbation_repeat,
+            )
+        )
+    if args.phase in ("degradation", "all"):
+        for name, config_path in generated["camera_degradation"].items():
+            jobs.append(
+                CampaignJob(
+                    name="degradation_{}".format(name),
+                    runner=str(FUSION_RUNNER),
+                    sensor_config=str(config_path),
+                    scenario_config=str(DEGRADATION_SUITE),
+                    repeat=args.degradation_repeat,
+                    required_provider=None,
+                )
+            )
+    if args.phase in ("holdout", "all"):
+        jobs.extend(three_way_jobs("holdout", HOLDOUT_SUITE, args.holdout_repeat))
     return jobs
 
 
@@ -270,8 +393,9 @@ def run_preflight(args):
 
 def run_pipeline(args):
     run_preflight(args)
-    jobs = selected_jobs(args)
     output_root = Path(args.output_root) / args.campaign_id
+    generated = generate_variant_configs(output_root)
+    jobs = selected_jobs(args, generated)
     manifest_path = output_root / "campaign_manifest.json"
     session_path = output_root / "runtime_sessions.json"
     sessions = []
@@ -466,7 +590,19 @@ def run_pipeline(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--phase", choices=("smoke", "core", "all"), default="smoke")
+    parser.add_argument(
+        "--phase",
+        choices=(
+            "smoke",
+            "development",
+            "core",
+            "robustness",
+            "degradation",
+            "holdout",
+            "all",
+        ),
+        default="smoke",
+    )
     parser.add_argument(
         "--campaign-id",
         default="paper_v4_gpu_final_{}".format(datetime.now().strftime("%Y%m%d")),
@@ -479,7 +615,12 @@ def parse_args():
     parser.add_argument("--technical-retries", type=int, default=2)
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument("--smoke-repeat", type=int, default=1)
+    parser.add_argument("--development-repeat", type=int, default=2)
+    parser.add_argument("--sensitivity-repeat", type=int, default=2)
     parser.add_argument("--repeat", type=int, default=5)
+    parser.add_argument("--perturbation-repeat", type=int, default=3)
+    parser.add_argument("--degradation-repeat", type=int, default=3)
+    parser.add_argument("--holdout-repeat", type=int, default=5)
     parser.add_argument("--log-root", type=Path, default=DEFAULT_LOG_ROOT)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--scenario-cooldown-s", type=float, default=0.5)
@@ -495,7 +636,16 @@ def parse_args():
     )
     parser.add_argument("--suite", action="append")
     args = parser.parse_args()
-    if args.repeat < 1 or args.smoke_repeat < 1:
+    repeats = (
+        args.repeat,
+        args.smoke_repeat,
+        args.development_repeat,
+        args.sensitivity_repeat,
+        args.perturbation_repeat,
+        args.degradation_repeat,
+        args.holdout_repeat,
+    )
+    if any(value < 1 for value in repeats):
         parser.error("repeat must be >= 1")
     if args.technical_retries < 0:
         parser.error("technical retries must be >= 0")

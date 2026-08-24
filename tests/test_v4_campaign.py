@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,7 +15,10 @@ from scripts.run_v4_campaign import (
     scenario_count,
     scenario_ids,
 )
-from scripts.run_v4_final_pipeline import validate_cuda_runtime
+from scripts.run_v4_final_pipeline import (
+    generate_variant_configs,
+    validate_cuda_runtime,
+)
 
 
 class V4CampaignTests(unittest.TestCase):
@@ -40,6 +44,29 @@ class V4CampaignTests(unittest.TestCase):
         job = build_smoke_jobs(repeat=1)[-1]
 
         self.assertEqual(list(job.scenarios), scenario_ids(job))
+
+    def test_variant_generation_applies_nested_overrides(self):
+        import yaml
+
+        with tempfile.TemporaryDirectory() as directory:
+            generated = generate_variant_configs(Path(directory))
+            camera_off = generated["camera_degradation"][
+                "safe_fallback_camera_off"
+            ]
+            no_points = generated["ablation"]["no_minimum_point_constraint"]
+            with open(str(camera_off)) as stream:
+                camera_off_config = yaml.safe_load(stream)
+            with open(str(no_points)) as stream:
+                no_points_config = yaml.safe_load(stream)
+
+        self.assertFalse(camera_off_config["model"]["enabled"])
+        self.assertIsNone(camera_off_config["model"]["require_provider"])
+        self.assertEqual(
+            2,
+            no_points_config["fusion"]["radar_emergency_fallback"][
+                "min_cluster_points"
+            ],
+        )
 
     def test_final_pipeline_rejects_cpu_fallback_for_fusion(self):
         job = build_smoke_jobs(repeat=1)[0]

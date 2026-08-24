@@ -1,0 +1,72 @@
+# Camera-detector-disabled failure-mode subset. The camera sensor remains active,
+# but model inference is disabled by the sensor variant to emulate no detections.
+runner:
+  map: Town04
+  spawn_index: 18
+  fixed_delta_seconds: 0.05
+  sensor_wait_timeout_s: 1.0
+  settle_ticks: 4
+  stop_speed_mps: 0.3
+  stop_hold_time_s: 0.5
+  control_mode: physics
+  physics_velocity_lock: true
+  physics_speed_kp: 0.35
+  physics_speed_ki: 0.0
+  physics_speed_integral_limit: 3.0
+  physics_throttle_feedforward: 0.18
+  physics_throttle_limit: 0.70
+  physics_brake_limit: 0.40
+  physics_speed_deadband_mps: 0.4
+scenarios:
+  - {id: camera_off_clear_65, description: Clear road with detector disabled., type: clear_road, ego_speed_kph: 65.0, duration_s: 6.0, expected_brake: false, expected_collision: false}
+  - {id: camera_off_ccrs_65, description: Stationary vehicle with detector disabled., type: stationary_lead, ego_speed_kph: 65.0, target_speed_kph: 0.0, initial_gap_m: 60.0, duration_s: 8.0, expected_brake: true, expected_collision: false}
+  - {id: camera_off_ccrm_65_30, description: Moving vehicle with detector disabled., type: moving_lead, ego_speed_kph: 65.0, target_speed_kph: 30.0, initial_gap_m: 50.0, duration_s: 10.0, expected_brake: true, expected_collision: false}
+  - {id: camera_off_ccrb_65, description: Braking lead with detector disabled., type: braking_lead, ego_speed_kph: 65.0, target_speed_kph: 65.0, initial_gap_m: 38.0, target_brake_time_s: 1.5, target_brake: 1.0, duration_s: 10.0, expected_brake: true, expected_collision: false}
+  - {id: camera_off_adjacent_65, description: Adjacent stationary vehicle with detector disabled., type: adjacent_stationary, ego_speed_kph: 65.0, target_speed_kph: 0.0, initial_gap_m: 45.0, duration_s: 6.0, expected_brake: false, expected_collision: false}
+  - id: camera_off_cutin_65
+    description: Cut-in vehicle with detector disabled.
+    type: cut_in
+    ego_speed_kph: 65.0
+    duration_s: 8.0
+    lane_follow: true
+    expected_brake: true
+    expected_collision: false
+    expected_brake_actor: cut_in
+    actors:
+      - {role: cut_in, hazard: true, motion: moving, speed_kph: 45.0, initial_gap_m: 38.0, spawn_lane: left, lane_follow: true, lane_change: {start_s: 1.0, direction: right, lookahead_m: 14.0}}
+  - id: camera_off_box_center
+    description: Central non-vehicle hazard with detector disabled.
+    type: physical_hazard
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: box, blueprint: static.prop.box01, initial_gap_m: 20.0, lateral_offset_m: 0.0, motion: stationary, hazard: true}
+  - id: camera_off_barrel_center
+    description: Central barrel hazard with detector disabled.
+    type: physical_hazard
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: barrel, blueprint: static.prop.barrel, initial_gap_m: 20.0, lateral_offset_m: 0.0, motion: stationary, hazard: true}
+  - id: camera_off_box_edge
+    description: Edge box non-hazard with detector disabled.
+    type: physical_false_positive
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: false
+    expected_collision: false
+    actors:
+      - {role: box, blueprint: static.prop.box01, initial_gap_m: 20.0, lateral_offset_m: 1.40, motion: stationary, hazard: false}
+  - id: camera_off_synthetic_4pt
+    description: Four-point synthetic fault with detector disabled.
+    type: clear_road
+    ego_speed_kph: 80.0
+    duration_s: 5.0
+    expected_brake: false
+    expected_collision: false
+    synthetic_radar_points:
+      - {x_forward_m: 20.0, y_right_m: 0.0, z_up_m: 0.8, relative_velocity_mps: -22.2, count: 4, spacing_m: 0.18}

@@ -1,0 +1,130 @@
+# Pre-registered local perturbations around representative development cases.
+# Each ID is a distinct condition; repeats measure consistency, not independence.
+runner:
+  map: Town04
+  spawn_index: 18
+  fixed_delta_seconds: 0.05
+  sensor_wait_timeout_s: 1.0
+  settle_ticks: 4
+  stop_speed_mps: 0.3
+  stop_hold_time_s: 0.5
+  control_mode: physics
+  physics_velocity_lock: true
+  physics_speed_kp: 0.35
+  physics_speed_ki: 0.0
+  physics_speed_integral_limit: 3.0
+  physics_throttle_feedforward: 0.18
+  physics_throttle_limit: 0.70
+  physics_brake_limit: 0.40
+  physics_speed_deadband_mps: 0.4
+scenarios:
+  - {id: pert_ccrs_v63_g60, description: CCRs ego speed -2 km/h., type: stationary_lead, ego_speed_kph: 63.0, target_speed_kph: 0.0, initial_gap_m: 60.0, duration_s: 8.0, expected_brake: true, expected_collision: false}
+  - {id: pert_ccrs_v65_g59, description: CCRs gap -1 m., type: stationary_lead, ego_speed_kph: 65.0, target_speed_kph: 0.0, initial_gap_m: 59.0, duration_s: 8.0, expected_brake: true, expected_collision: false}
+  - {id: pert_ccrs_v65_g60, description: CCRs nominal condition., type: stationary_lead, ego_speed_kph: 65.0, target_speed_kph: 0.0, initial_gap_m: 60.0, duration_s: 8.0, expected_brake: true, expected_collision: false}
+  - {id: pert_ccrs_v65_g61, description: CCRs gap +1 m., type: stationary_lead, ego_speed_kph: 65.0, target_speed_kph: 0.0, initial_gap_m: 61.0, duration_s: 8.0, expected_brake: true, expected_collision: false}
+  - {id: pert_ccrs_v67_g60, description: CCRs ego speed +2 km/h., type: stationary_lead, ego_speed_kph: 67.0, target_speed_kph: 0.0, initial_gap_m: 60.0, duration_s: 8.0, expected_brake: true, expected_collision: false}
+  - {id: pert_ccrm_v63_g50, description: CCRm ego speed -2 km/h., type: moving_lead, ego_speed_kph: 63.0, target_speed_kph: 30.0, initial_gap_m: 50.0, duration_s: 10.0, expected_brake: true, expected_collision: false}
+  - {id: pert_ccrm_v65_g49, description: CCRm gap -1 m., type: moving_lead, ego_speed_kph: 65.0, target_speed_kph: 30.0, initial_gap_m: 49.0, duration_s: 10.0, expected_brake: true, expected_collision: false}
+  - {id: pert_ccrm_v65_g50, description: CCRm nominal condition., type: moving_lead, ego_speed_kph: 65.0, target_speed_kph: 30.0, initial_gap_m: 50.0, duration_s: 10.0, expected_brake: true, expected_collision: false}
+  - {id: pert_ccrm_v65_g51, description: CCRm gap +1 m., type: moving_lead, ego_speed_kph: 65.0, target_speed_kph: 30.0, initial_gap_m: 51.0, duration_s: 10.0, expected_brake: true, expected_collision: false}
+  - {id: pert_ccrm_v67_g50, description: CCRm ego speed +2 km/h., type: moving_lead, ego_speed_kph: 67.0, target_speed_kph: 30.0, initial_gap_m: 50.0, duration_s: 10.0, expected_brake: true, expected_collision: false}
+  - id: pert_cutin_t0p9_g38
+    description: Cut-in starts 0.1 s earlier.
+    type: cut_in
+    ego_speed_kph: 65.0
+    duration_s: 8.0
+    lane_follow: true
+    expected_brake: true
+    expected_collision: false
+    expected_brake_actor: cut_in
+    actors:
+      - {role: cut_in, hazard: true, motion: moving, speed_kph: 45.0, initial_gap_m: 38.0, spawn_lane: left, lane_follow: true, lane_change: {start_s: 0.9, direction: right, lookahead_m: 14.0}}
+  - id: pert_cutin_t1p0_g37
+    description: Cut-in gap -1 m.
+    type: cut_in
+    ego_speed_kph: 65.0
+    duration_s: 8.0
+    lane_follow: true
+    expected_brake: true
+    expected_collision: false
+    expected_brake_actor: cut_in
+    actors:
+      - {role: cut_in, hazard: true, motion: moving, speed_kph: 45.0, initial_gap_m: 37.0, spawn_lane: left, lane_follow: true, lane_change: {start_s: 1.0, direction: right, lookahead_m: 14.0}}
+  - id: pert_cutin_t1p0_g38
+    description: Cut-in nominal condition.
+    type: cut_in
+    ego_speed_kph: 65.0
+    duration_s: 8.0
+    lane_follow: true
+    expected_brake: true
+    expected_collision: false
+    expected_brake_actor: cut_in
+    actors:
+      - {role: cut_in, hazard: true, motion: moving, speed_kph: 45.0, initial_gap_m: 38.0, spawn_lane: left, lane_follow: true, lane_change: {start_s: 1.0, direction: right, lookahead_m: 14.0}}
+  - id: pert_cutin_t1p0_g39
+    description: Cut-in gap +1 m.
+    type: cut_in
+    ego_speed_kph: 65.0
+    duration_s: 8.0
+    lane_follow: true
+    expected_brake: true
+    expected_collision: false
+    expected_brake_actor: cut_in
+    actors:
+      - {role: cut_in, hazard: true, motion: moving, speed_kph: 45.0, initial_gap_m: 39.0, spawn_lane: left, lane_follow: true, lane_change: {start_s: 1.0, direction: right, lookahead_m: 14.0}}
+  - id: pert_cutin_t1p1_g38
+    description: Cut-in starts 0.1 s later.
+    type: cut_in
+    ego_speed_kph: 65.0
+    duration_s: 8.0
+    lane_follow: true
+    expected_brake: true
+    expected_collision: false
+    expected_brake_actor: cut_in
+    actors:
+      - {role: cut_in, hazard: true, motion: moving, speed_kph: 45.0, initial_gap_m: 38.0, spawn_lane: left, lane_follow: true, lane_change: {start_s: 1.1, direction: right, lookahead_m: 14.0}}
+  - id: pert_box_xm0p15_g20
+    description: Box hazard shifted 0.15 m left.
+    type: physical_hazard
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: box, blueprint: static.prop.box01, initial_gap_m: 20.0, lateral_offset_m: -0.15, motion: stationary, hazard: true}
+  - id: pert_box_x0_g19
+    description: Box hazard gap -1 m.
+    type: physical_hazard
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: box, blueprint: static.prop.box01, initial_gap_m: 19.0, lateral_offset_m: 0.0, motion: stationary, hazard: true}
+  - id: pert_box_x0_g20
+    description: Box hazard nominal condition.
+    type: physical_hazard
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: box, blueprint: static.prop.box01, initial_gap_m: 20.0, lateral_offset_m: 0.0, motion: stationary, hazard: true}
+  - id: pert_box_x0_g21
+    description: Box hazard gap +1 m.
+    type: physical_hazard
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: box, blueprint: static.prop.box01, initial_gap_m: 21.0, lateral_offset_m: 0.0, motion: stationary, hazard: true}
+  - id: pert_box_xp0p15_g20
+    description: Box hazard shifted 0.15 m right.
+    type: physical_hazard
+    ego_speed_kph: 60.0
+    duration_s: 4.0
+    expected_brake: true
+    expected_collision: false
+    actors:
+      - {role: box, blueprint: static.prop.box01, initial_gap_m: 20.0, lateral_offset_m: 0.15, motion: stationary, hazard: true}
