@@ -7,6 +7,7 @@ from __future__ import print_function
 import argparse
 import ast
 import copy
+import gc
 import glob
 import math
 import os
@@ -575,7 +576,7 @@ class YoloDetector(object):
         self.runtime_label = "YOLO"
         self.names = {}
         self.status = "YOLO chưa tải"
-        self._last_inference_time = 0.0
+        self._last_inference_time = None
         self._last_detections = []
         self._load_model()
 
@@ -656,12 +657,21 @@ class YoloDetector(object):
         except Exception as exc:  # pylint: disable=broad-except
             self.status = "Lỗi tải YOLO: {}".format(exc)
 
-    def infer(self, rgb_image):
+    def infer(self, rgb_image, timestamp_s=None):
+        """Run inference at a stable cadence.
+
+        Batch evaluation passes the camera simulation timestamp so inference
+        frequency is independent of host load. Interactive callers may omit it
+        and retain wall-clock behavior.
+        """
+
         if rgb_image is None or (self.model is None and self.session is None):
             return list(self._last_detections)
-        now = time.time()
-        if now - self._last_inference_time < self.inference_interval_s:
-            return list(self._last_detections)
+        now = time.time() if timestamp_s is None else float(timestamp_s)
+        if self._last_inference_time is not None:
+            elapsed = now - self._last_inference_time
+            if 0.0 <= elapsed and elapsed + 1e-9 < self.inference_interval_s:
+                return list(self._last_detections)
 
         try:
             if self.session is not None:
@@ -674,6 +684,17 @@ class YoloDetector(object):
         except Exception as exc:  # pylint: disable=broad-except
             self.status = "Lỗi inference YOLO: {}".format(exc)
         return list(self._last_detections)
+
+    def destroy(self):
+        """Release model/session resources between batch scenarios."""
+
+        self.model = None
+        self.session = None
+        self.input_name = None
+        self.output_names = None
+        self._last_detections = []
+        self._last_inference_time = None
+        gc.collect()
 
     def _infer_onnx(self, rgb_image):
         model_input, scale, pad_x, pad_y = preprocess_yolo_onnx(rgb_image, self.input_size)

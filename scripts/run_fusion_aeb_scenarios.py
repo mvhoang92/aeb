@@ -79,7 +79,10 @@ class HeadlessFusionAEB(object):
 
     def tick(self):
         frame = self.pipeline.update(self.radar)
-        self.last_detections = self.detector.infer(self.camera.latest_rgb)
+        self.last_detections = self.detector.infer(
+            self.camera.latest_rgb,
+            timestamp_s=self.camera.timestamp,
+        )
         self.fusion_confirmed, self.fusion_reason = self._confirm_target(
             frame.target,
         )
@@ -113,6 +116,7 @@ class HeadlessFusionAEB(object):
         self.pipeline.reset()
         self.radar.destroy()
         self.camera.destroy()
+        self.detector.destroy()
 
     def reset_control_state(self):
         self.pipeline.reset_control_state()
