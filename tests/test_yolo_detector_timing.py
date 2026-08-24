@@ -21,6 +21,12 @@ class YoloDetectorTimingTests(unittest.TestCase):
         detector._last_detections = []
         detector.runtime_label = "TEST"
         detector.status = "ready"
+        detector.active_providers = ["CUDAExecutionProvider"]
+        detector.required_provider = "CUDAExecutionProvider"
+        detector.fail_on_inference_error = False
+        detector.inference_count = 0
+        detector.inference_error_count = 0
+        detector.inference_durations_ms = []
         detector.calls = 0
 
         def infer_stub(_image):
@@ -52,6 +58,17 @@ class YoloDetectorTimingTests(unittest.TestCase):
 
         self.assertEqual([2], result)
 
+    def test_diagnostics_report_provider_and_latency_percentiles(self):
+        detector = self.detector_stub()
+        detector.inference_count = 3
+        detector.inference_durations_ms = [10.0, 20.0, 30.0]
+
+        diagnostics = detector.diagnostics()
+
+        self.assertEqual(["CUDAExecutionProvider"], diagnostics["active_providers"])
+        self.assertEqual(20.0, diagnostics["inference_ms_p50"])
+        self.assertEqual(30.0, diagnostics["inference_ms_p95"])
+
     def test_destroy_releases_runtime_references(self):
         detector = self.detector_stub()
         detector.session = object()
@@ -62,6 +79,7 @@ class YoloDetectorTimingTests(unittest.TestCase):
 
         self.assertIsNone(detector.model)
         self.assertIsNone(detector.session)
+        self.assertEqual([], detector.active_providers)
         self.assertEqual([], detector._last_detections)
         self.assertIsNone(detector._last_inference_time)
 

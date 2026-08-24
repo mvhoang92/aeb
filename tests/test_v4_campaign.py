@@ -12,7 +12,9 @@ from scripts.run_v4_campaign import (
     build_smoke_jobs,
     job_command,
     scenario_count,
+    scenario_ids,
 )
+from scripts.run_v4_final_pipeline import validate_cuda_runtime
 
 
 class V4CampaignTests(unittest.TestCase):
@@ -33,6 +35,25 @@ class V4CampaignTests(unittest.TestCase):
                 sum(1 for job in jobs if job.name.startswith(prefix + "_")),
             )
         self.assertTrue(all(job.repeat == 5 for job in jobs))
+
+    def test_scenario_ids_preserve_suite_order(self):
+        job = build_smoke_jobs(repeat=1)[-1]
+
+        self.assertEqual(list(job.scenarios), scenario_ids(job))
+
+    def test_final_pipeline_rejects_cpu_fallback_for_fusion(self):
+        job = build_smoke_jobs(repeat=1)[0]
+
+        with self.assertRaises(RuntimeError):
+            validate_cuda_runtime(
+                job,
+                {
+                    "model_runtime": {
+                        "active_providers": ["CPUExecutionProvider"],
+                        "inference_error_count": 0,
+                    }
+                },
+            )
 
     def test_job_command_is_resumable_and_repeats_scenario_flags(self):
         job = build_smoke_jobs(repeat=1)[-1]

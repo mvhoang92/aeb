@@ -1,0 +1,180 @@
+world:
+  map: Town04
+  load_map: true
+
+ego:
+  blueprint: vehicle.tesla.model3
+  role_name: hero
+  spawn_index: null
+
+manual_control:
+  actor_filter: vehicle.tesla.model3
+  role_name: hero
+
+display:
+  panel_width: 1280
+  panel_height: 720
+  fps: 60
+  gamma: 2.2
+
+driver_camera:
+  name: AEB windshield camera
+  blueprint: sensor.camera.rgb
+  attachment: Rigid
+  image_size_x: 1280
+  image_size_y: 720
+  fov: 70
+  sensor_tick: 0.05
+  location:
+    x: 0.43
+    y: 0.0
+    z: 1.35
+  rotation:
+    pitch: 0.0
+    yaw: 0.0
+    roll: 0.0
+
+front_radar:
+  name: AEB front radar
+  blueprint: sensor.other.radar
+  attachment: Rigid
+  range: 100
+  horizontal_fov: 30
+  vertical_fov: 6
+  points_per_second: 2000
+  sensor_tick: 0.05
+  location:
+    x: 2.53
+    y: 0.0
+    z: 0.48
+  rotation:
+    pitch: 0.0
+    yaw: 0.0
+    roll: 0.0
+
+model:
+  enabled: true
+  backend: onnx
+  path: aeb/models/yolo26n_aeb_v7.onnx
+  input_size: 640
+  confidence: 0.25
+  nms_iou: 0.50
+  inference_interval_s: 0.15
+  # Final batch evidence must stay on CUDA; CPU fallback is a hard failure.
+  providers:
+    - CUDAExecutionProvider
+  require_provider: CUDAExecutionProvider
+  allow_provider_fallback: false
+  fail_on_inference_error: true
+  provider_options:
+    CUDAExecutionProvider:
+      gpu_mem_limit: 536870912
+      arena_extend_strategy: kSameAsRequested
+      cudnn_conv_algo_search: HEURISTIC
+      do_copy_in_default_stream: 1
+  class_names:
+    0: car
+  allowed_classes: null
+
+fusion:
+  max_lateral_offset_m: 2.4
+  min_radar_z_up_m: -100.0
+  max_radar_z_up_m: 100.0
+  min_radar_forward_distance_m: 0.5
+  draw_projected_radar_points: true
+  radar_match_inside_bbox: true
+  # Hard camera gate baseline. The safe-fallback ablation uses
+  # configs/sensors_fusion_safe_fallback.yaml instead.
+  confirmation_hold_s: 0.35
+  radar_emergency_fallback:
+    enabled: false
+    max_path_offset_m: 0.65
+    min_track_age_frames: 3
+    min_hit_streak: 3
+    min_cluster_points: 6
+    min_confidence: 0.70
+    max_ttc_s: 1.10
+    max_distance_margin_m: -2.0
+    require_both_risk_conditions: true
+
+target_gate:
+  enabled: true
+  selected_confirm_frames: 5
+  immediate_brake_distance_m: 22.0
+  immediate_distance_margin_m: -4.0
+
+radar_cluster:
+  tolerance_m: 1.0
+  velocity_tolerance_mps: 2.0
+  vertical_tolerance_m: 1.5
+  min_points: 2
+  confirm_frames: 3
+  release_frames: 4
+  match_distance_m: 2.5
+  match_velocity_mps: 3.0
+  distance_percentile: 0.20
+  min_max_height_above_road_m: 0.25
+  prediction_enabled: true
+  max_prediction_time_s: 0.30
+
+brake:
+  brake_mode: staged_pid
+  staged_soft_brake: 0.55
+  staged_medium_brake: 0.75
+  staged_hard_brake: 0.90
+  staged_emergency_brake: 1.0
+  staged_hard_ttc_s: 1.10
+  staged_emergency_ttc_s: 0.80
+  staged_hard_margin_m: -2.0
+  staged_emergency_margin_m: -5.0
+  staged_emergency_distance_m: 18.0
+  pid_kp: 0.12
+  pid_ki: 0.01
+  pid_kd: 0.0
+  pid_ttc_kp: 0.12
+  pid_min_brake: 0.25
+  pid_hold_brake: 0.75
+  pid_max_brake: 1.0
+  pid_integral_limit: 8.0
+  pid_margin_deadband_m: 0.2
+  pid_target_margin_m: 4.0
+  pid_target_margin_max_lateral_m: 0.95
+  pid_default_dt_s: 0.05
+  pid_brake_rise_rate_per_s: 3.0
+  pid_brake_fall_rate_per_s: 1.5
+  pid_emergency_rise_rate_per_s: 20.0
+  pid_emergency_distance_m: 16.0
+  pid_emergency_margin_m: -5.0
+  pid_emergency_ttc_s: 0.80
+  warning_ttc_s: 3.0
+  brake_ttc_s: 1.5
+  release_ttc_s: 3.5
+  max_lateral_offset_m: 1.25
+  min_radar_z_up_m: -0.35
+  max_radar_z_up_m: 2.5
+  min_height_above_road_m: 0.20
+  ground_filter_max_road_lateral_m: 2.8
+  path_sample_step_m: 1.0
+  path_horizon_time_s: 2.5
+  path_min_horizon_m: 12.0
+  path_max_lateral_deviation_m: 6.0
+  path_min_speed_for_yaw_rate_mps: 1.0
+  path_min_yaw_rate_deg_s: 0.5
+  path_steer_curvature_per_unit: 0.06
+  path_max_abs_curvature_1pm: 0.12
+  path_curvature_smoothing: 0.35
+  path_max_heading_change_deg: 75.0
+  min_brake_hold_time_s: 0.3
+  hold_brake_until_stopped: true
+  release_speed_mps: -0.1
+  use_stopping_distance: true
+  response_time_s: 0.20
+  ego_emergency_decel_mps2: 8.0
+  target_emergency_decel_mps2: 6.0
+  stopping_distance_offset_m: 1.0
+  full_brake: 1.0
+  min_valid_distance_m: 0.5
+  max_valid_distance_m: 100.0
+  min_closing_speed_mps: 0.2
+  disable_in_reverse: true
+  static_obstacle_brake_distance_m: 0.0

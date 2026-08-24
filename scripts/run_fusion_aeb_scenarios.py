@@ -5,6 +5,7 @@
 from __future__ import print_function
 
 import argparse
+import json
 import sys
 import time
 from pathlib import Path
@@ -50,7 +51,7 @@ class HeadlessFusionAEB(object):
     path to trigger an emergency fallback.
     """
 
-    def __init__(self, ego, config, carla_map):
+    def __init__(self, ego, config, carla_map, detector=None):
         if not pygame.get_init():
             pygame.init()
         self.ego = ego
@@ -61,7 +62,9 @@ class HeadlessFusionAEB(object):
             gamma=float(config.get("camera_gamma", 2.2)),
         )
         self.radar = RadarSensor(ego, config.get("front_radar", {}))
-        self.detector = YoloDetector(config.get("model", {}))
+        self._owns_detector = detector is None
+        self.detector = detector or YoloDetector(config.get("model", {}))
+        self.detector.reset_sequence()
         self.pipeline = RadarAEBPipeline(ego, config, carla_map)
         self.brake_gate = FusionBrakeGate(
             FusionBrakeGateConfig.from_mapping(config.get("fusion", {}))
@@ -116,7 +119,10 @@ class HeadlessFusionAEB(object):
         self.pipeline.reset()
         self.radar.destroy()
         self.camera.destroy()
-        self.detector.destroy()
+        if self._owns_detector:
+            self.detector.destroy()
+        else:
+            self.detector.reset_sequence()
 
     def reset_control_state(self):
         self.pipeline.reset_control_state()
@@ -171,12 +177,34 @@ class HeadlessFusionAEB(object):
 
 
 class FusionScenarioRunner(ScenarioRunner):
+    """Scenario runner that reuses one detector session across all repetitions."""
+
+    def __init__(self, args):
+        super(FusionScenarioRunner, self).__init__(args)
+        self.shared_detector = YoloDetector(self.sensor_config.get("model", {}))
+
+    def run(self):
+        try:
+            return super(FusionScenarioRunner, self).run()
+        finally:
+            self.shared_detector.destroy()
+
     def _make_system(self, ego):
         return HeadlessFusionAEB(
             ego,
             self.sensor_config,
             self.carla_map,
+            detector=self.shared_detector,
         )
+
+    def _write_metadata(self, run_directory, summaries):
+        super(FusionScenarioRunner, self)._write_metadata(run_directory, summaries)
+        metadata_path = Path(run_directory) / "run_metadata.json"
+        with open(str(metadata_path)) as stream:
+            metadata = json.load(stream)
+        metadata["model_runtime"] = self.shared_detector.diagnostics()
+        with open(str(metadata_path), "w") as stream:
+            json.dump(metadata, stream, ensure_ascii=False, indent=2)
 
     def _wait_for_radar(self, system, world_frame):
         timeout_s = float(self.runner_config.get("sensor_wait_timeout_s", 1.0))

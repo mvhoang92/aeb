@@ -563,6 +563,14 @@ class YoloDetector(object):
             "providers",
             ["CUDAExecutionProvider", "CPUExecutionProvider"],
         )
+        self.provider_options = self.config.get("provider_options", {}) or {}
+        self.required_provider = self.config.get("require_provider")
+        self.allow_provider_fallback = bool(
+            self.config.get("allow_provider_fallback", True)
+        )
+        self.fail_on_inference_error = bool(
+            self.config.get("fail_on_inference_error", False)
+        )
         self.configured_names = {
             int(class_id): str(class_name)
             for class_id, class_name in (
@@ -578,7 +586,18 @@ class YoloDetector(object):
         self.status = "YOLO chưa tải"
         self._last_inference_time = None
         self._last_detections = []
+        self.inference_count = 0
+        self.inference_error_count = 0
+        self.inference_durations_ms = []
+        self.active_providers = []
         self._load_model()
+        if self.required_provider and self.required_provider not in self.active_providers:
+            raise RuntimeError(
+                "Required provider {} was not activated: {}".format(
+                    self.required_provider,
+                    self.status,
+                )
+            )
 
     def _load_model(self):
         if not self.enabled:
@@ -610,16 +629,39 @@ class YoloDetector(object):
 
         try:
             available = set(ort.get_available_providers())
-            providers = [provider for provider in self.providers if provider in available]
-            if not providers:
-                providers = ["CPUExecutionProvider"]
+            provider_names = [
+                str(provider) for provider in self.providers if str(provider) in available
+            ]
+            if self.required_provider and self.required_provider not in provider_names:
+                raise RuntimeError(
+                    "required provider {} is unavailable (available={})".format(
+                        self.required_provider,
+                        ",".join(sorted(available)),
+                    )
+                )
+            if not provider_names:
+                provider_names = ["CPUExecutionProvider"]
+            providers = []
+            for provider in provider_names:
+                options = self.provider_options.get(provider, {}) or {}
+                if options:
+                    providers.append(
+                        (
+                            provider,
+                            {str(key): str(value) for key, value in options.items()},
+                        )
+                    )
+                else:
+                    providers.append(provider)
             try:
                 self.session = ort.InferenceSession(
                     str(model_path),
                     providers=providers,
                 )
             except Exception:
-                if providers == ["CPUExecutionProvider"]:
+                if not self.allow_provider_fallback or provider_names == [
+                    "CPUExecutionProvider"
+                ]:
                     raise
                 self.session = ort.InferenceSession(
                     str(model_path),
@@ -633,13 +675,27 @@ class YoloDetector(object):
             )
             if self.configured_names:
                 self.names.update(self.configured_names)
-            active_providers = self.session.get_providers()
+            self.active_providers = list(self.session.get_providers())
+            if (
+                self.required_provider
+                and self.required_provider not in self.active_providers
+            ):
+                raise RuntimeError(
+                    "required provider {} is not active (active={})".format(
+                        self.required_provider,
+                        ",".join(self.active_providers),
+                    )
+                )
             self.runtime_label = (
-                "ONNX CUDA" if "CUDAExecutionProvider" in active_providers else "ONNX CPU"
+                "ONNX CUDA"
+                if "CUDAExecutionProvider" in self.active_providers
+                else "ONNX CPU"
             )
-            self.status = "ONNX YOLO26n: {}".format(",".join(self.session.get_providers()))
+            self.status = "ONNX YOLO26n: {}".format(",".join(self.active_providers))
         except Exception as exc:  # pylint: disable=broad-except
             self.status = "Lỗi tải ONNX: {}".format(exc)
+            if self.required_provider:
+                raise RuntimeError(self.status)
 
     def _load_ultralytics_model(self, model_path):
         try:
@@ -673,17 +729,60 @@ class YoloDetector(object):
             if 0.0 <= elapsed and elapsed + 1e-9 < self.inference_interval_s:
                 return list(self._last_detections)
 
+        started = time.perf_counter()
         try:
             if self.session is not None:
                 detections = self._infer_onnx(rgb_image)
             else:
                 detections = self._infer_ultralytics(rgb_image)
+            duration_ms = (time.perf_counter() - started) * 1000.0
+            self.inference_count += 1
+            self.inference_durations_ms.append(duration_ms)
             self._last_detections = detections
             self._last_inference_time = now
             self.status = "{}: {} object".format(self.runtime_label, len(detections))
         except Exception as exc:  # pylint: disable=broad-except
+            self.inference_error_count += 1
             self.status = "Lỗi inference YOLO: {}".format(exc)
+            if self.fail_on_inference_error:
+                raise RuntimeError(self.status)
         return list(self._last_detections)
+
+    def reset_sequence(self):
+        """Clear temporal cache while retaining the loaded runtime session."""
+
+        self._last_detections = []
+        self._last_inference_time = None
+
+    def diagnostics(self):
+        """Return compact runtime/provider evidence for run metadata."""
+
+        durations = sorted(float(value) for value in self.inference_durations_ms)
+
+        def percentile(fraction):
+            if not durations:
+                return None
+            index = int(round((len(durations) - 1) * float(fraction)))
+            return round(durations[index], 4)
+
+        return {
+            "active_providers": list(self.active_providers),
+            "required_provider": self.required_provider,
+            "inference_count": int(self.inference_count),
+            "inference_error_count": int(self.inference_error_count),
+            "inference_interval_s": float(self.inference_interval_s),
+            "inference_ms_mean": (
+                round(sum(durations) / len(durations), 4) if durations else None
+            ),
+            "inference_ms_p50": percentile(0.50),
+            "inference_ms_p95": percentile(0.95),
+            "inference_ms_p99": percentile(0.99),
+            "inference_ms_max": (
+                round(max(durations), 4) if durations else None
+            ),
+            "inference_over_50ms": sum(1 for value in durations if value > 50.0),
+            "inference_over_150ms": sum(1 for value in durations if value > 150.0),
+        }
 
     def destroy(self):
         """Release model/session resources between batch scenarios."""
@@ -692,8 +791,8 @@ class YoloDetector(object):
         self.session = None
         self.input_name = None
         self.output_names = None
-        self._last_detections = []
-        self._last_inference_time = None
+        self.active_providers = []
+        self.reset_sequence()
         gc.collect()
 
     def _infer_onnx(self, rgb_image):

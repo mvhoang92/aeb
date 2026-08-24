@@ -28,9 +28,9 @@ FUSION_RUNNER = AEB_ROOT / "scripts" / "run_fusion_aeb_scenarios.py"
 RADAR_RUNNER = AEB_ROOT / "scripts" / "run_radar_aeb_scenarios.py"
 SUMMARIZER = AEB_ROOT / "scripts" / "summarize_repeatability.py"
 SENSORS_HARD = AEB_ROOT / "configs" / "sensors.yaml"
-SENSORS_HARD_BATCH = AEB_ROOT / "configs" / "sensors_fusion_hard_batch_cpu.yaml"
+SENSORS_HARD_BATCH = AEB_ROOT / "configs" / "sensors_fusion_hard_batch_gpu.yaml"
 SENSORS_SAFE_BATCH = (
-    AEB_ROOT / "configs" / "sensors_fusion_safe_fallback_batch_cpu.yaml"
+    AEB_ROOT / "configs" / "sensors_fusion_safe_fallback_batch_gpu.yaml"
 )
 SUITE_ROOT = AEB_ROOT / "configs" / "scenarios" / "suites"
 
@@ -113,7 +113,7 @@ def build_full_jobs(repeat, selected_configs=None, selected_suites=None):
     return jobs
 
 
-def scenario_count(job):
+def scenario_ids(job):
     with open(job.scenario_config) as stream:
         data = yaml.safe_load(stream) or {}
     configured = [str(item["id"]) for item in data.get("scenarios", [])]
@@ -127,7 +127,11 @@ def scenario_count(job):
                 )
             )
         configured = [name for name in configured if name in set(job.scenarios)]
-    return len(configured) * int(job.repeat)
+    return configured
+
+
+def scenario_count(job):
+    return len(scenario_ids(job)) * int(job.repeat)
 
 
 def read_summaries(run_directory):
