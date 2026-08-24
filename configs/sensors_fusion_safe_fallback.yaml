@@ -74,11 +74,11 @@ fusion:
   min_radar_forward_distance_m: 0.5
   draw_projected_radar_points: true
   radar_match_inside_bbox: true
-  # Hard camera gate baseline. The safe-fallback ablation uses
-  # configs/sensors_fusion_safe_fallback.yaml instead.
+  # Fail-safe fusion ablation: camera confirmation remains preferred, while
+  # strong critical radar tracks in the central predicted path may override.
   confirmation_hold_s: 0.35
   radar_emergency_fallback:
-    enabled: false
+    enabled: true
     max_path_offset_m: 0.65
     min_track_age_frames: 3
     min_hit_streak: 3

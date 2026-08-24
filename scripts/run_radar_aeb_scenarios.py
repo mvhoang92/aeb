@@ -68,8 +68,12 @@ TICK_FIELDS = [
     "confirmed_clusters",
     "target_track_id",
     "target_cluster_points",
+    "target_track_age_frames",
+    "target_hit_streak",
+    "target_confidence",
     "target_distance_m",
     "target_lateral_m",
+    "target_path_offset_m",
     "target_relative_velocity_mps",
     "ttc_s",
     "required_distance_m",
@@ -81,6 +85,10 @@ TICK_FIELDS = [
     "throttle_cmd",
     "steer_cmd",
     "aeb_override",
+    "fusion_confirmed",
+    "fusion_gate_action",
+    "fusion_gate_reason",
+    "radar_fallback_active",
     "collision_count",
     "control_mode",
 ]
@@ -119,6 +127,10 @@ SUMMARY_FIELDS = [
     "first_hazard_same_lane_s",
     "radar_target_hazard_match_rate_pct",
     "brake_target_actor_role",
+    "radar_fallback_activated",
+    "radar_fallback_first_s",
+    "radar_fallback_tick_count",
+    "fusion_blocked_tick_count",
     "evidence_video",
     "evidence_events",
     "log_file",
@@ -1201,12 +1213,30 @@ class ScenarioRunner(object):
             "target_cluster_points": (
                 target_cluster.point_count if target_cluster is not None else None
             ),
+            "target_track_age_frames": (
+                target_cluster.age_frames if target_cluster is not None else None
+            ),
+            "target_hit_streak": (
+                target_cluster.hit_streak if target_cluster is not None else None
+            ),
+            "target_confidence": optional_round(
+                target_cluster.confidence if target_cluster is not None else None,
+                4,
+            ),
             "target_distance_m": optional_round(
                 target_cluster.x_forward_m if target_cluster is not None else None,
                 4,
             ),
             "target_lateral_m": optional_round(
                 target_cluster.y_right_m if target_cluster is not None else None,
+                4,
+            ),
+            "target_path_offset_m": optional_round(
+                (
+                    pipeline.distance_to_predicted_path(target_cluster)
+                    if target_cluster is not None
+                    else None
+                ),
                 4,
             ),
             "target_relative_velocity_mps": optional_round(
@@ -1236,6 +1266,10 @@ class ScenarioRunner(object):
             "throttle_cmd": round(logged_throttle, 4),
             "steer_cmd": round(float(ego_control.steer), 4),
             "aeb_override": int(system.aeb_override_active),
+            "fusion_confirmed": None,
+            "fusion_gate_action": None,
+            "fusion_gate_reason": None,
+            "radar_fallback_active": 0,
             "collision_count": len(collision.events),
             "control_mode": self.args.control_mode,
         }
@@ -1420,6 +1454,13 @@ def summarize_scenario(scenario, rows, log_file, run_index=1):
                 )
             )
     hazard_match_values = numeric_values(rows, "radar_target_matches_hazard")
+    fallback_rows = [row for row in rows if row.get("radar_fallback_active")]
+    fusion_blocked_rows = [
+        row
+        for row in rows
+        if row.get("fusion_gate_action") == "fusion_blocked_brake"
+    ]
+    first_fallback = fallback_rows[0] if fallback_rows else None
     return {
         "scenario_id": scenario["id"],
         "run_index": run_index,
@@ -1520,6 +1561,13 @@ def summarize_scenario(scenario, rows, log_file, run_index=1):
         "brake_target_actor_role": (
             first_brake.get("radar_target_actor_role") if first_brake else None
         ),
+        "radar_fallback_activated": bool(fallback_rows),
+        "radar_fallback_first_s": optional_round(
+            first_fallback.get("elapsed_s") if first_fallback else None,
+            3,
+        ),
+        "radar_fallback_tick_count": len(fallback_rows),
+        "fusion_blocked_tick_count": len(fusion_blocked_rows),
         "evidence_video": None,
         "evidence_events": None,
         "log_file": log_file,
