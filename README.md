@@ -1,6 +1,6 @@
 # AEB CARLA 0.9.11
 
-Dự án mô phỏng hệ thống phanh khẩn cấp tự động AEB (Autonomous Emergency
+Dự án mô phỏng hệ thống phanh khẩn cấp tự động AEB (Automatic Emergency
 Braking) trên CARLA 0.9.11. Xe ego là `vehicle.tesla.model3`, chạy chủ yếu trên
 cao tốc `Town04`, dùng một camera RGB đặt sau kính lái và một radar đặt ở mũi
 xe.
@@ -19,14 +19,16 @@ Repository: https://github.com/mvhoang92/aeb
   điểm đo -> lọc -> gom cụm -> theo dõi -> `RadarObjectList` -> chọn mục tiêu.
 - YOLO26n đã được train lại cho bài toán một lớp `car` bằng dataset
   `dataset_v7_same_lane`.
-- Camera-radar fusion đã được tích hợp vào giao diện và pipeline kiểm thử.
-- Bộ phanh chính hiện tại là `staged_pid`, có nhiều tầng cảnh báo/phanh và có
-  PID trong từng tầng.
-- Final evidence hiện có 66 kịch bản system-limit, kết quả 63 đạt, 3 không đạt,
-  tỷ lệ đạt 95,45%.
+- Ba chính sách được đánh giá: radar-only, hard camera gate và camera gate có
+  radar emergency fallback; bộ phanh dùng `staged_pid`.
+- Final GPU campaign đã khóa trước hold-out gồm 2.461/2.461 runs trong 639 phiên
+  CARLA; 474 CUDA sessions ghi 74.928 inference và không có inference error.
+- Trên core benchmark không tính synthetic fault, precision/recall lần lượt là
+  0,913/0,988; 1,000/0,965; và 1,000/0,988. Frozen hold-out cho kết quả PASS
+  30/70, 55/70 và 35/70, thể hiện trade-off thay vì ưu thế tổng quát.
 - Có launcher để bật CARLA, chạy UI, chạy kiểm thử và quay video.
-- Có `report_mini.md`, thư mục `report/` chứa bản thảo full tách theo chương
-  và hướng dẫn form/caption cho báo cáo đồ án.
+- Báo cáo v3 và paper v4 song ngữ đã có source, PDF/DOCX, claim–evidence matrix
+  và raw evidence kèm SHA-256.
 
 ## Cấu Trúc Thư Mục
 
@@ -47,16 +49,16 @@ aeb/
 │   ├── research/         # tài liệu tham khảo và so sánh repo/cảm biến
 │   ├── log/              # nhật ký thí nghiệm, kết quả, quyết định kỹ thuật
 │   └── backup/           # tài liệu cũ để tra cứu
-├── report/               # bản thảo báo cáo full, tách theo chương
-│   ├── chapters/         # từng chương để sửa cuốn chiếu
-│   ├── assets/           # ảnh riêng cho báo cáo
-│   ├── build_report.py   # ghép chương thành report/report.md
-│   └── report.md         # bản full đã ghép để chuyển sang DOCX
+├── report/               # báo cáo đồ án, source theo chương và export
+│   ├── chapters_v3/      # source of truth của report v3
+│   ├── assets/           # ảnh riêng và figures final evidence
+│   ├── build_report_v3.py
+│   ├── export_report_v3.py
+│   └── report_v3.md      # bản full v3 đã ghép
 ├── paper/                # các phiên bản paper IEEE song ngữ
-│   ├── README.md         # quy tắc bắt buộc build PDF Anh và Việt
-│   ├── paper_v1/         # manuscript song ngữ đầu tiên
-│   ├── paper_v2/         # bản nhấn mạnh đóng góp tích hợp hệ thống
-│   └── paper_v3/         # bản hiện tại: research-audited, có hồ sơ phản biện
+│   ├── README.md         # quy tắc build PDF Anh và Việt
+│   ├── paper_v1..v3/     # manuscript lịch sử
+│   └── paper_v4/         # final trade-off study, evidence/review map
 └── report_mini.md        # bản báo cáo ngắn để duyệt nhanh
 ```
 
@@ -68,9 +70,9 @@ vào `.gitignore`. Khi clone repo mới, cần train/export lại model hoặc �
 ## Thứ Tự Đọc Tài Liệu
 
 1. `README.md`: tổng quan nhanh, cách chạy chính.
-2. `report_mini.md`: bản tóm tắt nội dung đồ án.
-3. `report/report.md`: bản thảo báo cáo full đã ghép.
-4. `report/chapters/*.md`: nguồn sửa từng chương của báo cáo.
+2. `report/report_v3.md`: báo cáo final đã ghép.
+3. `report/chapters_v3/*.md`: nguồn chính để sửa report v3.
+4. `paper/paper_v4/aeb_ieee_6page.pdf`: paper tiếng Anh sáu trang.
 5. `docs/official/16_REPORT_FORMAT_AND_CAPTIONS.md`: quy ước form báo cáo,
    tên hình và tên bảng.
 6. `docs/official/00_PROJECT_INTRODUCTION.md`: mục tiêu, phạm vi, kết quả hiện
@@ -86,10 +88,10 @@ vào `.gitignore`. Khi clone repo mới, cần train/export lại model hoặc �
     đánh giá.
 14. `docs/official/08_DATASET_AND_TRAINING.md`: dataset v7 same-lane và train
     YOLO26n.
-15. `docs/log/FINAL_EVIDENCE_PACK_20260628.md`: kết quả final evidence.
-16. `docs/log/PAPER_V3_REPRODUCTION_NOTES.md`: nhật ký chạy lại thí nghiệm để cải tiến paper.
-17. `docs/log/repeatability/`: bảng summary/CSV, archive raw log đã nén và môi trường reproduction cho các run lặp dùng cho paper/report.
-18. `docs/log/REPORT_REWORK_TASKS.md`: task list cho lần viết lại báo cáo.
+15. `docs/log/PAPER_V4_EVALUATION_PROTOCOL.md`: protocol khóa trước hold-out.
+16. `docs/log/repeatability/paper_v4_gpu_final/FINAL_GPU_EVIDENCE.md`: kết quả final.
+17. `paper/paper_v4/CLAIM_EVIDENCE_MATRIX.md`: mapping claim và artifact.
+18. `docs/log/repeatability/artifacts/`: raw-log archive và SHA-256.
 
 ## Cài Đặt Nhanh
 
@@ -172,11 +174,12 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
   --load-map
 ```
 
-Kết quả quan trọng hiện nằm ở:
+Headline evidence hiện nằm ở:
 
 ```text
-logs/final_evidence_staged_pid_20260628/
-outputs/scenario_videos/final_evidence_videos_20260628_internal/
+outputs/paper_v4_final_pipeline/paper_v4_gpu_final_locked_20260825/
+docs/log/repeatability/paper_v4_gpu_final/
+docs/log/repeatability/artifacts/paper_v4_gpu_final_locked_20260825_raw_logs.tar.gz
 ```
 
 ## Dataset Và Train YOLO
@@ -216,19 +219,17 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
 
 ## Báo Cáo
 
-- `report_mini.md`: bản đọc nhanh.
-- `report/chapters/*.md`: nguồn sửa từng chương, dùng để làm cuốn chiếu.
-- `report/report.md`: bản thảo full đã ghép, dùng để đọc tổng thể hoặc chuyển
-  sang `.docx`.
-- `report/build_report.py`: script ghép các chương sau khi chỉnh sửa.
-- `docs/official/16_REPORT_FORMAT_AND_CAPTIONS.md`: quy ước tên hình/bảng để
-  chuyển sang `.docx`.
+- `report/chapters_v3/*.md`: source of truth của report v3.
+- `report/report_v3.md`: bản Markdown full đã ghép.
+- `report/exports/aeb_report_v3.docx`: bản DOCX theo form cũ.
+- `report/exports/aeb_report_v3.pdf`: bản PDF A4 để duyệt.
 
-Sau khi sửa một chương, ghép lại bản full bằng:
+Sau khi sửa source, build và export lại bằng:
 
 ```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb/report
-python3 build_report.py
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/usr/bin/python3 report/build_report_v3.py
+/usr/bin/python3 report/export_report_v3.py
 ```
 
 Khi hoàn thiện báo cáo, link GitHub và link Google Drive video sẽ được đưa vào

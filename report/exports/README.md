@@ -1,6 +1,6 @@
 # Report Export Files Guide
 
-Thư mục này chứa các file xuất ra từ nguồn báo cáo/slides để duyệt nhanh, kiểm tra hình thức hoặc chuyển cho người khác. **Nguồn chính vẫn là `report/chapters/*.md`, `report/report.md`, `report/assets/` và các script build/export**, không phải các file `.docx`, `.pptx`, `.pdf` đã xuất.
+Thư mục này chứa các file xuất ra từ nguồn báo cáo/slides để duyệt nhanh, kiểm tra hình thức hoặc chuyển cho người khác. **Với bản v3, nguồn chính là `report/chapters_v3/*.md`, `report/report_v3.md`, `report/assets/` và các script build/export**, không phải các file `.docx`, `.pptx`, `.pdf` đã xuất. Nguồn `chapters/`/`report.md` vẫn được giữ cho phiên bản lịch sử.
 
 ## Nguyên tắc sử dụng
 
@@ -18,7 +18,9 @@ report/exports/
 ├── README.md                         # file hướng dẫn này
 ├── aeb_project_slides_outline.md     # dàn ý slide dạng Markdown
 ├── aeb_project_slides.pptx           # bản PowerPoint export, local/ignored
-├── aeb_report_draft.docx             # bản DOCX export, local/ignored
+├── aeb_report_draft.docx             # bản DOCX lịch sử
+├── aeb_report_v3.docx                # report v3 theo style cũ
+├── aeb_report_v3.pdf                 # PDF render của report v3
 ├── generated_images/                 # ảnh/sơ đồ dùng cho report hoặc export
 ├── slides/generated/                 # ảnh/sơ đồ đã copy/resize cho slide
 └── validate/                         # file kiểm tra PDF/text/page render
@@ -90,12 +92,13 @@ Các file này dùng cho QA hình thức, không phải nguồn nội dung chín
 
 ## Quy trình đề xuất khi sửa báo cáo
 
-1. Sửa nội dung trong `report/chapters/*.md`.
-2. Build lại Markdown full:
+1. Với bản v3, sửa nội dung trong `report/chapters_v3/*.md`.
+2. Build và export lại:
 
 ```bash
-cd /home/mvhoang/CARLA_0.9.11/aeb/report
-python3 build_report.py
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/usr/bin/python3 report/build_report_v3.py
+/usr/bin/python3 report/export_report_v3.py
 ```
 
 3. Export lại DOCX/PDF bằng công cụ đang dùng trên máy.
@@ -107,8 +110,9 @@ python3 build_report.py
 Các export báo cáo/slides không thay thế evidence paper. Evidence repeatability cho paper v4 nằm ở:
 
 ```text
-docs/log/PAPER_V3_REPRODUCTION_NOTES.md
-docs/log/repeatability/
+docs/log/PAPER_V4_EVALUATION_PROTOCOL.md
+docs/log/repeatability/paper_v4_gpu_final/
+docs/log/repeatability/artifacts/paper_v4_gpu_final_locked_20260825_raw_logs.tar.gz
 ```
 
 Khi viết paper v4, dùng `report/exports/` chủ yếu để lấy hình minh họa hoặc kiểm tra cách diễn giải trong báo cáo đồ án; dùng `docs/log/repeatability/` để lấy bảng số liệu chạy lặp.
