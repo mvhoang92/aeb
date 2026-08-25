@@ -1,0 +1,7 @@
+scope,policy_a,policy_b,paired_named_conditions,both_pass,a_only_pass,b_only_pass,both_fail
+core_without_synthetic_fault,radar_only,hard_gate,105,91,2,8,4
+core_without_synthetic_fault,radar_only,safe_fallback,105,93,0,8,4
+core_without_synthetic_fault,hard_gate,safe_fallback,105,99,0,2,4
+frozen_adverse_holdout,radar_only,hard_gate,14,6,0,5,3
+frozen_adverse_holdout,radar_only,safe_fallback,14,6,0,1,7
+frozen_adverse_holdout,hard_gate,safe_fallback,14,7,4,0,3

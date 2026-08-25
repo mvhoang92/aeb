@@ -1,0 +1,10 @@
+config,scenario_id,runs,onset_speed_kph_median,onset_speed_kph_min,onset_speed_kph_max,brake_duration_s_median,brake_duration_s_min,brake_duration_s_max,peak_deceleration_mps2_median,peak_deceleration_mps2_min,peak_deceleration_mps2_max,minimum_logged_speed_kph_median,minimum_logged_speed_kph_min,minimum_logged_speed_kph_max,stopped_runs
+radar_only,holdout_ghost_10pt_center,5,88.233,88.233,88.233,4.0,4.0,4.0,9.081,9.081,9.081,0.0,0.0,0.0,5
+radar_only,holdout_ghost_6pt_center,5,78.368,78.368,78.368,3.6,3.6,3.6,9.022,9.022,9.022,0.0,0.0,0.0,5
+radar_only,holdout_ghost_8pt_center,5,78.368,78.368,78.368,3.6,3.6,3.6,9.022,9.022,9.022,0.0,0.0,0.0,5
+radar_only,holdout_ghost_8pt_offset_0p50,5,78.368,78.368,78.368,3.6,3.6,3.6,9.022,9.022,9.022,0.0,0.0,0.0,5
+radar_only,holdout_ghost_8pt_offset_0p75,5,78.368,78.368,78.368,3.6,3.6,3.6,9.022,9.022,9.022,0.0,0.0,0.0,5
+safe_fallback,holdout_ghost_10pt_center,5,88.233,88.233,88.233,4.0,4.0,4.0,9.081,9.081,9.081,0.0,0.0,0.0,5
+safe_fallback,holdout_ghost_6pt_center,5,78.368,78.368,78.368,3.6,3.6,3.6,9.022,9.022,9.022,0.0,0.0,0.0,5
+safe_fallback,holdout_ghost_8pt_center,5,78.368,78.368,78.368,3.6,3.6,3.6,9.022,9.022,9.022,0.0,0.0,0.0,5
+safe_fallback,holdout_ghost_8pt_offset_0p50,5,78.368,78.368,78.368,3.6,3.6,3.6,9.022,9.022,9.022,0.0,0.0,0.0,5

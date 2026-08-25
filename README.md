@@ -27,8 +27,8 @@ Repository: https://github.com/mvhoang92/aeb
   0,913/0,988; 1,000/0,965; và 1,000/0,988. Frozen hold-out cho kết quả PASS
   30/70, 55/70 và 35/70, thể hiện trade-off thay vì ưu thế tổng quát.
 - Có launcher để bật CARLA, chạy UI, chạy kiểm thử và quay video.
-- Báo cáo v3 và paper v4 song ngữ đã có source, PDF/DOCX, claim–evidence matrix
-  và raw evidence kèm SHA-256.
+- Báo cáo v3 và paper v5 song ngữ đã có source, PDF/DOCX, claim–evidence matrix,
+  scenario-level/severity analysis và raw evidence kèm SHA-256.
 
 ## Cấu Trúc Thư Mục
 
@@ -57,8 +57,8 @@ aeb/
 │   └── report_v3.md      # bản full v3 đã ghép
 ├── paper/                # các phiên bản paper IEEE song ngữ
 │   ├── README.md         # quy tắc build PDF Anh và Việt
-│   ├── paper_v1..v3/     # manuscript lịch sử
-│   └── paper_v4/         # final trade-off study, evidence/review map
+│   ├── paper_v1..v4/     # manuscript và final-campaign revision lịch sử
+│   └── paper_v5/         # reviewer-driven scenario/severity study
 └── report_mini.md        # bản báo cáo ngắn để duyệt nhanh
 ```
 
@@ -72,7 +72,7 @@ vào `.gitignore`. Khi clone repo mới, cần train/export lại model hoặc �
 1. `README.md`: tổng quan nhanh, cách chạy chính.
 2. `report/report_v3.md`: báo cáo final đã ghép.
 3. `report/chapters_v3/*.md`: nguồn chính để sửa report v3.
-4. `paper/paper_v4/aeb_ieee_6page.pdf`: paper tiếng Anh sáu trang.
+4. `paper/paper_v5/aeb_ieee_6page.pdf`: paper tiếng Anh sáu trang.
 5. `docs/official/16_REPORT_FORMAT_AND_CAPTIONS.md`: quy ước form báo cáo,
    tên hình và tên bảng.
 6. `docs/official/00_PROJECT_INTRODUCTION.md`: mục tiêu, phạm vi, kết quả hiện
@@ -90,7 +90,7 @@ vào `.gitignore`. Khi clone repo mới, cần train/export lại model hoặc �
     YOLO26n.
 15. `docs/log/PAPER_V4_EVALUATION_PROTOCOL.md`: protocol khóa trước hold-out.
 16. `docs/log/repeatability/paper_v4_gpu_final/FINAL_GPU_EVIDENCE.md`: kết quả final.
-17. `paper/paper_v4/CLAIM_EVIDENCE_MATRIX.md`: mapping claim và artifact.
+17. `paper/paper_v5/CLAIM_EVIDENCE_MATRIX.md`: mapping claim và artifact.
 18. `docs/log/repeatability/artifacts/`: raw-log archive và SHA-256.
 
 ## Cài Đặt Nhanh

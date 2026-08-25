@@ -1,0 +1,149 @@
+{
+  "created_at": "2026-06-25T17:04:55.453150",
+  "dataset_root": "/home/mvhoang/CARLA_0.9.11/aeb/dataset_v7_same_lane",
+  "splits": {
+    "train": {
+      "images": 1505,
+      "instances": 1872,
+      "sessions": 28,
+      "empty_images": 319,
+      "empty_ratio": 0.21196013289036544,
+      "near_duplicate_pairs": 108,
+      "near_duplicate_ratio": 0.07180851063829788,
+      "missing_labels": [],
+      "invalid_labels": [],
+      "orphan_labels": [],
+      "unreadable_images": []
+    },
+    "val": {
+      "images": 300,
+      "instances": 379,
+      "sessions": 6,
+      "empty_images": 49,
+      "empty_ratio": 0.16333333333333333,
+      "near_duplicate_pairs": 31,
+      "near_duplicate_ratio": 0.10367892976588629,
+      "missing_labels": [],
+      "invalid_labels": [],
+      "orphan_labels": [],
+      "unreadable_images": []
+    },
+    "test": {
+      "images": 200,
+      "instances": 264,
+      "sessions": 4,
+      "empty_images": 36,
+      "empty_ratio": 0.18,
+      "near_duplicate_pairs": 17,
+      "near_duplicate_ratio": 0.08542713567839195,
+      "missing_labels": [],
+      "invalid_labels": [],
+      "orphan_labels": [],
+      "unreadable_images": []
+    }
+  },
+  "cross_split_duplicates": [],
+  "checks": [
+    {
+      "name": "train_minimum_images",
+      "passed": true,
+      "detail": "1505 ảnh, cần tối thiểu 1500"
+    },
+    {
+      "name": "train_minimum_sessions",
+      "passed": true,
+      "detail": "28 session, cần tối thiểu 3"
+    },
+    {
+      "name": "train_valid_pairs",
+      "passed": true,
+      "detail": "missing=0 invalid=0 orphan=0 unreadable=0"
+    },
+    {
+      "name": "train_minimum_empty_ratio",
+      "passed": true,
+      "detail": "empty_ratio=0.212, cần tối thiểu 0.030"
+    },
+    {
+      "name": "train_empty_ratio",
+      "passed": true,
+      "detail": "empty_ratio=0.212, tối đa 0.300"
+    },
+    {
+      "name": "train_near_duplicates",
+      "passed": true,
+      "detail": "near_duplicate_ratio=0.072, tối đa 0.300"
+    },
+    {
+      "name": "val_minimum_images",
+      "passed": true,
+      "detail": "300 ảnh, cần tối thiểu 300"
+    },
+    {
+      "name": "val_minimum_sessions",
+      "passed": true,
+      "detail": "6 session, cần tối thiểu 1"
+    },
+    {
+      "name": "val_valid_pairs",
+      "passed": true,
+      "detail": "missing=0 invalid=0 orphan=0 unreadable=0"
+    },
+    {
+      "name": "val_minimum_empty_ratio",
+      "passed": true,
+      "detail": "empty_ratio=0.163, cần tối thiểu 0.030"
+    },
+    {
+      "name": "val_empty_ratio",
+      "passed": true,
+      "detail": "empty_ratio=0.163, tối đa 0.300"
+    },
+    {
+      "name": "val_near_duplicates",
+      "passed": true,
+      "detail": "near_duplicate_ratio=0.104, tối đa 0.300"
+    },
+    {
+      "name": "test_minimum_images",
+      "passed": true,
+      "detail": "200 ảnh, cần tối thiểu 200"
+    },
+    {
+      "name": "test_minimum_sessions",
+      "passed": true,
+      "detail": "4 session, cần tối thiểu 1"
+    },
+    {
+      "name": "test_valid_pairs",
+      "passed": true,
+      "detail": "missing=0 invalid=0 orphan=0 unreadable=0"
+    },
+    {
+      "name": "test_minimum_empty_ratio",
+      "passed": true,
+      "detail": "empty_ratio=0.180, cần tối thiểu 0.030"
+    },
+    {
+      "name": "test_empty_ratio",
+      "passed": true,
+      "detail": "empty_ratio=0.180, tối đa 0.300"
+    },
+    {
+      "name": "test_near_duplicates",
+      "passed": true,
+      "detail": "near_duplicate_ratio=0.085, tối đa 0.300"
+    },
+    {
+      "name": "train_minimum_instances",
+      "passed": true,
+      "detail": "1872 instances, cần tối thiểu 1500"
+    },
+    {
+      "name": "cross_split_exact_duplicates",
+      "passed": true,
+      "detail": "0 ảnh trùng tuyệt đối giữa các split"
+    }
+  ],
+  "passed": true
+}
