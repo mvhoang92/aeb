@@ -1,0 +1,14 @@
+runs,TP,FP,TN,FN,precision,precision_ci95_low,precision_ci95_high,recall,recall_ci95_low,recall_ci95_high,f1,pass,collision,brake,section,job,failed_scenarios,variant
+12,6,0,6,0,1.0,0.6097,1.0,1.0,0.6097,1.0,1.0,12,0,6,sensitivity,sensitivity_confidence_0p50,,confidence_0p50
+12,6,0,6,0,1.0,0.6097,1.0,1.0,0.6097,1.0,1.0,12,0,6,sensitivity,sensitivity_confidence_0p90,,confidence_0p90
+12,6,0,6,0,1.0,0.6097,1.0,1.0,0.6097,1.0,1.0,12,0,6,sensitivity,sensitivity_margin_m1,,margin_m1
+12,6,0,6,0,1.0,0.6097,1.0,1.0,0.6097,1.0,1.0,12,0,6,sensitivity,sensitivity_margin_m3,,margin_m3
+12,6,0,6,0,1.0,0.6097,1.0,1.0,0.6097,1.0,1.0,12,0,6,sensitivity,sensitivity_nominal,,nominal
+12,6,0,6,0,1.0,0.6097,1.0,1.0,0.6097,1.0,1.0,12,0,6,sensitivity,sensitivity_path_0p45,,path_0p45
+12,6,0,6,0,1.0,0.6097,1.0,1.0,0.6097,1.0,1.0,12,0,6,sensitivity,sensitivity_path_0p85,,path_0p85
+12,6,2,4,0,0.75,0.4093,0.9285,1.0,0.6097,1.0,0.8571,10,0,8,sensitivity,sensitivity_points_4,dev_synthetic_4pt_center:2,points_4
+12,6,0,6,0,1.0,0.6097,1.0,1.0,0.6097,1.0,1.0,12,0,6,sensitivity,sensitivity_points_8,,points_8
+12,6,0,6,0,1.0,0.6097,1.0,1.0,0.6097,1.0,1.0,12,0,6,sensitivity,sensitivity_stability_2,,stability_2
+12,6,0,6,0,1.0,0.6097,1.0,1.0,0.6097,1.0,1.0,10,2,6,sensitivity,sensitivity_stability_4,dev_box_in_path:2,stability_4
+12,6,0,6,0,1.0,0.6097,1.0,1.0,0.6097,1.0,1.0,10,2,6,sensitivity,sensitivity_ttc_0p90,dev_box_in_path:2,ttc_0p90
+12,6,0,6,0,1.0,0.6097,1.0,1.0,0.6097,1.0,1.0,12,0,6,sensitivity,sensitivity_ttc_1p30,,ttc_1p30

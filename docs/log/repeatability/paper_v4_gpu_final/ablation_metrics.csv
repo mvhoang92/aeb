@@ -1,0 +1,8 @@
+runs,TP,FP,TN,FN,precision,precision_ci95_low,precision_ci95_high,recall,recall_ci95_low,recall_ci95_high,f1,pass,collision,brake,section,job,failed_scenarios,variant
+24,10,0,14,0,1.0,0.7225,1.0,1.0,0.7225,1.0,1.0,24,0,10,ablation,ablation_either_risk_condition,,either_risk_condition
+24,10,0,14,0,1.0,0.7225,1.0,1.0,0.7225,1.0,1.0,24,0,10,ablation,ablation_full_fallback,,full_fallback
+24,6,0,14,4,1.0,0.6097,1.0,0.6,0.3127,0.8318,0.75,20,4,6,ablation,ablation_hard_gate,dev_barrel_in_path:2; dev_box_in_path:2,hard_gate
+24,10,6,8,0,0.625,0.3864,0.8152,1.0,0.7225,1.0,0.7692,18,0,16,ablation,ablation_no_central_path_constraint,dev_barrel_edge:2; dev_barrier_edge:2; dev_box_edge:2,no_central_path_constraint
+24,10,0,14,0,1.0,0.7225,1.0,1.0,0.7225,1.0,1.0,20,4,10,ablation,ablation_no_fallback_latch,dev_barrel_in_path:2; dev_box_in_path:2,no_fallback_latch
+24,10,4,10,0,0.7143,0.4535,0.8828,1.0,0.7225,1.0,0.8333,20,0,14,ablation,ablation_no_minimum_point_constraint,dev_synthetic_4pt_center:2; dev_synthetic_4pt_offset:2,no_minimum_point_constraint
+24,10,0,14,0,1.0,0.7225,1.0,1.0,0.7225,1.0,1.0,24,0,10,ablation,ablation_no_stability_constraint,,no_stability_constraint

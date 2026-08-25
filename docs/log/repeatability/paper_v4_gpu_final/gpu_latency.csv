@@ -1,0 +1,2 @@
+cuda_sessions,inference_count,inference_errors,weighted_mean_inference_ms,session_p50_median_ms,session_p95_median_ms,maximum_inference_ms,inferences_over_50ms,inferences_over_150ms,note
+474,74928,0,11.5611,9.9496,11.5319,276.1002,474,474,One CUDA warm-up outlier occurred in each isolated process/session.

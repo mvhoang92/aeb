@@ -1,0 +1,7 @@
+runs,TP,FP,TN,FN,precision,precision_ci95_low,precision_ci95_high,recall,recall_ci95_low,recall_ci95_high,f1,pass,collision,brake,config,scope
+555,420,70,60,5,0.8571,0.8234,0.8854,0.9882,0.9728,0.995,0.918,465,15,490,radar_only,all_core
+525,420,40,60,5,0.913,0.8838,0.9355,0.9882,0.9728,0.995,0.9492,465,15,460,radar_only,without_synthetic_fault
+555,410,0,130,15,1.0,0.9907,1.0,0.9647,0.9426,0.9785,0.982,525,25,410,hard_gate,all_core
+525,410,0,100,15,1.0,0.9907,1.0,0.9647,0.9426,0.9785,0.982,495,25,410,hard_gate,without_synthetic_fault
+555,420,0,130,5,1.0,0.9909,1.0,0.9882,0.9728,0.995,0.9941,535,15,420,safe_fallback,all_core
+525,420,0,100,5,1.0,0.9909,1.0,0.9882,0.9728,0.995,0.9941,505,15,420,safe_fallback,without_synthetic_fault

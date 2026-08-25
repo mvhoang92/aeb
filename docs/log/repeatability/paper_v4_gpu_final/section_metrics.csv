@@ -1,0 +1,24 @@
+runs,TP,FP,TN,FN,precision,precision_ci95_low,precision_ci95_high,recall,recall_ci95_low,recall_ci95_high,f1,pass,collision,brake,section,config,suite,job,failed_scenarios
+330,330,0,0,0,1.0,0.9885,1.0,1.0,0.9885,1.0,1.0,315,15,330,core_suite,radar_only,system_limit_extended_sweep,,
+145,80,0,60,5,1.0,0.9542,1.0,0.9412,0.8696,0.9746,0.9697,140,0,80,core_suite,radar_only,radar_only_regression,,
+40,0,40,0,0,0.0,0.0,0.0876,,,,,0,0,40,core_suite,radar_only,fusion_physical_false_positive_v2,,
+10,10,0,0,0,1.0,0.7225,1.0,1.0,0.7225,1.0,1.0,10,0,10,core_suite,radar_only,fusion_nonvehicle_hazard_limitation,,
+30,0,30,0,0,0.0,0.0,0.1135,,,,,0,0,30,core_suite,radar_only,fusion_benefit_stress,,
+330,330,0,0,0,1.0,0.9885,1.0,1.0,0.9885,1.0,1.0,315,15,330,core_suite,hard_gate,system_limit_extended_sweep,,
+145,80,0,60,5,1.0,0.9542,1.0,0.9412,0.8696,0.9746,0.9697,140,0,80,core_suite,hard_gate,radar_only_regression,,
+40,0,0,40,0,,,,,,,,40,0,0,core_suite,hard_gate,fusion_physical_false_positive_v2,,
+10,0,0,0,10,,,,0.0,0.0,0.2775,,0,10,0,core_suite,hard_gate,fusion_nonvehicle_hazard_limitation,,
+30,0,0,30,0,,,,,,,,30,0,0,core_suite,hard_gate,fusion_benefit_stress,,
+330,330,0,0,0,1.0,0.9885,1.0,1.0,0.9885,1.0,1.0,315,15,330,core_suite,safe_fallback,system_limit_extended_sweep,,
+145,80,0,60,5,1.0,0.9542,1.0,0.9412,0.8696,0.9746,0.9697,140,0,80,core_suite,safe_fallback,radar_only_regression,,
+40,0,0,40,0,,,,,,,,40,0,0,core_suite,safe_fallback,fusion_physical_false_positive_v2,,
+10,10,0,0,0,1.0,0.7225,1.0,1.0,0.7225,1.0,1.0,10,0,10,core_suite,safe_fallback,fusion_nonvehicle_hazard_limitation,,
+30,0,0,30,0,,,,,,,,30,0,0,core_suite,safe_fallback,fusion_benefit_stress,,
+60,60,0,0,0,1.0,0.9398,1.0,1.0,0.9398,1.0,1.0,57,3,60,perturbation,radar_only,,perturbation_radar_only,pert_box_x0_g19:3
+60,45,0,0,15,1.0,0.9213,1.0,0.75,0.6277,0.8422,0.8571,45,15,45,perturbation,hard_gate,,perturbation_hard_gate,pert_box_x0_g19:3; pert_box_x0_g20:3; pert_box_x0_g21:3; pert_box_xm0p15_g20:3; pert_box_xp0p15_g20:3
+60,60,0,0,0,1.0,0.9398,1.0,1.0,0.9398,1.0,1.0,54,3,60,perturbation,safe_fallback,,perturbation_safe_fallback,pert_box_x0_g19:3; pert_box_x0_g21:3
+30,0,0,12,18,,,,0.0,0.0,0.1759,,12,18,0,degradation,hard_gate,,degradation_hard_gate_camera_off,camera_off_barrel_center:3; camera_off_box_center:3; camera_off_ccrb_65:3; camera_off_ccrm_65_30:3; camera_off_ccrs_65:3; camera_off_cutin_65:3
+30,18,0,12,0,1.0,0.8241,1.0,1.0,0.8241,1.0,1.0,24,6,18,degradation,safe_fallback,,degradation_safe_fallback_camera_off,camera_off_ccrb_65:3; camera_off_ccrs_65:3
+70,30,25,10,5,0.5455,0.4152,0.6697,0.8571,0.7062,0.9374,0.6667,30,15,55,holdout,radar_only,,holdout_radar_only,holdout_bench_center_v60_g22:5; holdout_cart_center_v50_g18:5; holdout_ghost_10pt_center:5; holdout_ghost_6pt_center:5; holdout_ghost_8pt_center:5; holdout_ghost_8pt_offset_0p50:5; holdout_ghost_8pt_offset_0p75:5; holdout_warning_center_v70_g25:5
+70,25,0,35,10,1.0,0.8668,1.0,0.7143,0.5494,0.8367,0.8333,55,15,25,holdout,hard_gate,,holdout_hard_gate,holdout_bench_center_v60_g22:5; holdout_cart_center_v50_g18:5; holdout_warning_center_v70_g25:5
+70,30,20,15,5,0.6,0.4618,0.7239,0.8571,0.7062,0.9374,0.7059,35,15,50,holdout,safe_fallback,,holdout_safe_fallback,holdout_bench_center_v60_g22:5; holdout_cart_center_v50_g18:5; holdout_ghost_10pt_center:5; holdout_ghost_6pt_center:5; holdout_ghost_8pt_center:5; holdout_ghost_8pt_offset_0p50:5; holdout_warning_center_v70_g25:5
