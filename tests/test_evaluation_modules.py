@@ -10,6 +10,8 @@ from pathlib import Path
 from evaluation.artifact_io import write_csv
 from evaluation.metrics import summarize_scenario
 from evaluation.schemas import SUMMARY_FIELDS, TICK_FIELDS
+from evaluation.severity import compute_severity_metrics
+from evaluation.summary_writer import SummaryWriter
 from scripts import run_radar_aeb_scenarios as historical_runner
 
 
@@ -67,13 +69,43 @@ class EvaluationModuleTests(unittest.TestCase):
         self.assertFalse(summary["brake_activated"])
         self.assertEqual(summary["failure_reason"], "")
 
-    def test_csv_writer_preserves_schema_order(self):
+    def test_severity_excludes_initial_transient(self):
+        rows = [
+            {
+                "elapsed_s": 0.10,
+                "ego_acceleration_mps2": -99.0,
+                "ego_jerk_mps3": 99.0,
+                "ego_speed_kph": 50.0,
+            },
+            {
+                "elapsed_s": 0.25,
+                "ego_acceleration_mps2": -4.25,
+                "ego_jerk_mps3": -8.5,
+                "ego_speed_kph": 42.0,
+            },
+            {
+                "elapsed_s": 0.30,
+                "ego_acceleration_mps2": -3.0,
+                "ego_jerk_mps3": 4.0,
+                "ego_speed_kph": 40.0,
+            },
+        ]
+
+        result = compute_severity_metrics(rows, metric_start_s=0.25)
+
+        self.assertEqual(result["maximum_deceleration_mps2"], 4.25)
+        self.assertEqual(result["maximum_abs_jerk_mps3"], 8.5)
+        self.assertEqual(result["final_speed_kph"], 40.0)
+
+    def test_summary_writer_preserves_schema_order(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "summary.csv"
-            write_csv(path, SUMMARY_FIELDS, [])
-            header = path.read_text().splitlines()[0]
+            path = Path(directory)
+            SummaryWriter().write_run_summaries(path, [])
+            header = (path / "summary.csv").read_text().splitlines()[0]
+            payload = (path / "summary.json").read_text()
 
         self.assertEqual(header, ",".join(SUMMARY_FIELDS))
+        self.assertEqual(payload, "[]")
 
 
 if __name__ == "__main__":

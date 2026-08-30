@@ -35,16 +35,11 @@ from evaluation.evidence import (
     nearest_frame_path,
     select_evidence_events,
 )
-from evaluation.metrics import (
-    add_motion_metrics,
-    aggregate_summaries,
-    format_number,
-    max_value,
-    numeric_values,
-    optional_round,
-    summarize_scenario,
-)
+from evaluation.common import format_number, optional_round
+from evaluation.scoring import summarize_scenario
 from evaluation.schemas import SUMMARY_FIELDS, TICK_FIELDS
+from evaluation.summary_writer import SummaryWriter, aggregate_summaries
+from evaluation.telemetry import add_motion_metrics
 from ui.manual_control_common import RadarPoint, RadarSensor, carla, load_yaml
 
 
@@ -293,6 +288,7 @@ class ScenarioRunner(object):
         self.carla_map = self.world.get_map()
         self.managed_actors = []
         self.speed_control_integral = {}
+        self.summary_writer = SummaryWriter()
 
     def run(self):
         self._ensure_map()
@@ -1274,21 +1270,10 @@ class ScenarioRunner(object):
         }
 
     def _write_summary(self, run_directory, summaries):
-        write_csv(run_directory / "summary.csv", SUMMARY_FIELDS, summaries)
-        with open(str(run_directory / "summary.json"), "w") as stream:
-            json.dump(summaries, stream, ensure_ascii=False, indent=2)
+        self.summary_writer.write_run_summaries(run_directory, summaries)
 
     def _write_aggregate_summary(self, run_directory, summaries):
-        aggregate = aggregate_summaries(summaries)
-        if not aggregate:
-            return
-        write_csv(
-            run_directory / "aggregate_summary.csv",
-            list(aggregate[0].keys()),
-            aggregate,
-        )
-        with open(str(run_directory / "aggregate_summary.json"), "w") as stream:
-            json.dump(aggregate, stream, ensure_ascii=False, indent=2)
+        self.summary_writer.write_aggregate_summaries(run_directory, summaries)
 
     def _write_metadata(self, run_directory, summaries):
         git_commit, git_dirty = git_state(AEB_ROOT)
