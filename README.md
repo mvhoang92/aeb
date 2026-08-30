@@ -128,8 +128,10 @@ control.
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
-python3 laucher.py
+python3 launcher.py
 ```
+
+Tên lịch sử `python3 laucher.py` vẫn được hỗ trợ qua compatibility wrapper.
 
 Launcher có các tab chính:
 
@@ -142,7 +144,7 @@ Launcher có các tab chính:
 Kiểm tra dependency launcher:
 
 ```bash
-python3 laucher.py --check
+python3 launcher.py --check
 ```
 
 ## Chạy Final Demo 3 Màn
