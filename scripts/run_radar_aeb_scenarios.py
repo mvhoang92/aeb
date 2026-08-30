@@ -5,9 +5,6 @@
 from __future__ import print_function
 
 import argparse
-import csv
-import functools
-import hashlib
 import json
 import math
 import platform
@@ -23,12 +20,31 @@ from pathlib import Path
 
 
 AEB_ROOT = Path(__file__).resolve().parents[1]
-PROJECT_ROOT = AEB_ROOT.parent
 if str(AEB_ROOT) not in sys.path:
     sys.path.insert(0, str(AEB_ROOT))
 
 from control.brake import AEBState, BinaryBrakeConfig, apply_brake_override, as_bool
 from core.radar_aeb_pipeline import RadarAEBPipeline
+from evaluation.artifact_io import (
+    git_state,
+    resolve_project_path,
+    sha256_file,
+    write_csv,
+)
+from evaluation.evidence import (
+    nearest_frame_path,
+    select_evidence_events,
+)
+from evaluation.metrics import (
+    add_motion_metrics,
+    aggregate_summaries,
+    format_number,
+    max_value,
+    numeric_values,
+    optional_round,
+    summarize_scenario,
+)
+from evaluation.schemas import SUMMARY_FIELDS, TICK_FIELDS
 from ui.manual_control_common import RadarPoint, RadarSensor, carla, load_yaml
 
 
@@ -37,110 +53,6 @@ DEFAULT_SCENARIO_CONFIG = (
     AEB_ROOT / "configs" / "scenarios" / "suites" / "smoke_basic.yaml"
 )
 DEFAULT_LOG_ROOT = AEB_ROOT / "logs"
-
-TICK_FIELDS = [
-    "scenario_id",
-    "frame",
-    "sim_time_s",
-    "elapsed_s",
-    "ego_speed_mps",
-    "ego_speed_kph",
-    "ego_acceleration_mps2",
-    "ego_jerk_mps3",
-    "ego_x_m",
-    "ego_y_m",
-    "ego_lane_id",
-    "ego_lane_center_offset_m",
-    "ego_heading_error_deg",
-    "target_speed_mps",
-    "target_speed_kph",
-    "target_x_m",
-    "target_y_m",
-    "target_lane_id",
-    "scenario_actor_count",
-    "hazard_actor_role",
-    "radar_target_actor_role",
-    "radar_target_actor_error_m",
-    "radar_target_matches_hazard",
-    "center_distance_m",
-    "bumper_gap_m",
-    "lateral_offset_m",
-    "radar_frame",
-    "raw_points",
-    "path_candidates",
-    "ground_ignored",
-    "clusters",
-    "confirmed_clusters",
-    "target_track_id",
-    "target_cluster_points",
-    "target_track_age_frames",
-    "target_hit_streak",
-    "target_confidence",
-    "target_distance_m",
-    "target_lateral_m",
-    "target_path_offset_m",
-    "target_relative_velocity_mps",
-    "ttc_s",
-    "required_distance_m",
-    "distance_margin_m",
-    "aeb_state",
-    "aeb_reason",
-    "brake_stage",
-    "brake_cmd",
-    "throttle_cmd",
-    "steer_cmd",
-    "aeb_override",
-    "fusion_confirmed",
-    "fusion_gate_action",
-    "fusion_gate_reason",
-    "radar_fallback_active",
-    "collision_count",
-    "control_mode",
-]
-
-SUMMARY_FIELDS = [
-    "scenario_id",
-    "run_index",
-    "description",
-    "status",
-    "expected_brake",
-    "brake_activated",
-    "expected_collision",
-    "collision",
-    "duration_s",
-    "first_warning_s",
-    "first_brake_s",
-    "brake_speed_kph",
-    "brake_gap_m",
-    "minimum_center_distance_m",
-    "minimum_bumper_gap_m",
-    "minimum_ttc_s",
-    "brake_required_distance_m",
-    "brake_distance_margin_m",
-    "maximum_deceleration_mps2",
-    "maximum_abs_jerk_mps3",
-    "final_speed_kph",
-    "target_confirmed_rate_pct",
-    "maximum_raw_points",
-    "maximum_path_candidates",
-    "maximum_clusters",
-    "maximum_confirmed_clusters",
-    "maximum_abs_lane_center_offset_m",
-    "maximum_abs_heading_error_deg",
-    "hazard_initial_same_lane",
-    "hazard_final_same_lane",
-    "first_hazard_same_lane_s",
-    "radar_target_hazard_match_rate_pct",
-    "brake_target_actor_role",
-    "radar_fallback_activated",
-    "radar_fallback_first_s",
-    "radar_fallback_tick_count",
-    "fusion_blocked_tick_count",
-    "evidence_video",
-    "evidence_events",
-    "log_file",
-    "failure_reason",
-]
 
 
 class HeadlessRadarAEB(object):
@@ -1467,282 +1379,6 @@ class ScenarioRunner(object):
             pass
 
 
-def summarize_scenario(scenario, rows, log_file, run_index=1):
-    brake_rows = [row for row in rows if row["aeb_override"]]
-    warning_rows = [
-        row for row in rows if row["aeb_state"] in ("WARNING", "BRAKE")
-    ]
-    collision = any(row["collision_count"] for row in rows)
-    brake_activated = bool(brake_rows)
-    expected_brake = bool(scenario.get("expected_brake", False))
-    expected_collision = bool(scenario.get("expected_collision", False))
-    failures = []
-    if brake_activated != expected_brake:
-        failures.append(
-            "expected_brake={} actual={}".format(expected_brake, brake_activated)
-        )
-    if collision != expected_collision:
-        failures.append(
-            "expected_collision={} actual={}".format(expected_collision, collision)
-        )
-
-    center_distances = numeric_values(rows, "center_distance_m")
-    bumper_gaps = numeric_values(rows, "bumper_gap_m")
-    finite_ttc = numeric_values(rows, "ttc_s")
-    metric_start_s = float(scenario.get("metrics_ignore_initial_s", 0.25))
-    metric_rows = [
-        row for row in rows if float(row.get("elapsed_s", 0.0)) >= metric_start_s
-    ]
-    accelerations = numeric_values(metric_rows, "ego_acceleration_mps2")
-    jerks = numeric_values(metric_rows, "ego_jerk_mps3")
-    lane_offsets = numeric_values(metric_rows, "ego_lane_center_offset_m")
-    heading_errors = numeric_values(metric_rows, "ego_heading_error_deg")
-    if expected_brake and not collision and bumper_gaps:
-        minimum_stop_gap = float(scenario.get("min_stop_gap_m", 0.5))
-        if min(bumper_gaps) < minimum_stop_gap:
-            failures.append(
-                "minimum_gap={:.3f}m below {:.3f}m".format(
-                    min(bumper_gaps),
-                    minimum_stop_gap,
-                )
-            )
-    if lane_offsets and scenario.get("max_lane_offset_m") is not None:
-        maximum_lane_offset = max(abs(value) for value in lane_offsets)
-        allowed_lane_offset = float(scenario["max_lane_offset_m"])
-        if maximum_lane_offset > allowed_lane_offset:
-            failures.append(
-                "maximum_lane_offset={:.3f}m above {:.3f}m".format(
-                    maximum_lane_offset,
-                    allowed_lane_offset,
-                )
-            )
-    lane_relation_rows = [
-        row
-        for row in rows
-        if row.get("ego_lane_id") is not None
-        and row.get("target_lane_id") is not None
-    ]
-    initial_same_lane = (
-        lane_relation_rows[0]["ego_lane_id"]
-        == lane_relation_rows[0]["target_lane_id"]
-        if lane_relation_rows
-        else None
-    )
-    final_same_lane = (
-        lane_relation_rows[-1]["ego_lane_id"]
-        == lane_relation_rows[-1]["target_lane_id"]
-        if lane_relation_rows
-        else None
-    )
-    first_same_lane = next(
-        (
-            row
-            for row in lane_relation_rows
-            if row["ego_lane_id"] == row["target_lane_id"]
-        ),
-        None,
-    )
-    for key, actual in (
-        ("expected_hazard_initial_same_lane", initial_same_lane),
-        ("expected_hazard_final_same_lane", final_same_lane),
-    ):
-        if scenario.get(key) is None or actual is None:
-            continue
-        expected = as_bool(scenario.get(key))
-        if actual != expected:
-            failures.append("{}={} actual={}".format(key, expected, actual))
-    first_brake = brake_rows[0] if brake_rows else None
-    first_warning = warning_rows[0] if warning_rows else None
-    expected_brake_actor = scenario.get("expected_brake_actor")
-    if first_brake is not None and expected_brake_actor is not None:
-        actual_brake_actor = first_brake.get("radar_target_actor_role")
-        if actual_brake_actor != expected_brake_actor:
-            failures.append(
-                "expected_brake_actor={} actual={}".format(
-                    expected_brake_actor,
-                    actual_brake_actor,
-                )
-            )
-    hazard_match_values = numeric_values(rows, "radar_target_matches_hazard")
-    fallback_rows = [row for row in rows if row.get("radar_fallback_active")]
-    fusion_blocked_rows = [
-        row
-        for row in rows
-        if row.get("fusion_gate_action") == "fusion_blocked_brake"
-    ]
-    first_fallback = fallback_rows[0] if fallback_rows else None
-    return {
-        "scenario_id": scenario["id"],
-        "run_index": run_index,
-        "description": scenario.get("description", ""),
-        "status": "FAIL" if failures else "PASS",
-        "expected_brake": expected_brake,
-        "brake_activated": brake_activated,
-        "expected_collision": expected_collision,
-        "collision": collision,
-        "duration_s": optional_round(rows[-1]["elapsed_s"] if rows else 0.0, 3),
-        "first_warning_s": optional_round(
-            first_warning["elapsed_s"] if first_warning else None,
-            3,
-        ),
-        "first_brake_s": optional_round(
-            first_brake["elapsed_s"] if first_brake else None,
-            3,
-        ),
-        "brake_speed_kph": optional_round(
-            first_brake["ego_speed_kph"] if first_brake else None,
-            3,
-        ),
-        "brake_gap_m": optional_round(
-            first_brake["bumper_gap_m"] if first_brake else None,
-            3,
-        ),
-        "minimum_center_distance_m": optional_round(
-            min(center_distances) if center_distances else None,
-            3,
-        ),
-        "minimum_bumper_gap_m": optional_round(
-            (
-                min(bumper_gaps)
-                if bumper_gaps
-                and scenario.get("type") != "adjacent_stationary"
-                and as_bool(scenario.get("report_minimum_gap", True))
-                else None
-            ),
-            3,
-        ),
-        "minimum_ttc_s": optional_round(min(finite_ttc) if finite_ttc else None, 3),
-        "brake_required_distance_m": optional_round(
-            first_brake["required_distance_m"] if first_brake else None,
-            3,
-        ),
-        "brake_distance_margin_m": optional_round(
-            first_brake["distance_margin_m"] if first_brake else None,
-            3,
-        ),
-        "maximum_deceleration_mps2": optional_round(
-            max(0.0, -min(accelerations)) if accelerations else None,
-            3,
-        ),
-        "maximum_abs_jerk_mps3": optional_round(
-            max(abs(value) for value in jerks) if jerks else None,
-            3,
-        ),
-        "final_speed_kph": optional_round(
-            rows[-1]["ego_speed_kph"] if rows else None,
-            3,
-        ),
-        "target_confirmed_rate_pct": optional_round(
-            (
-                100.0
-                * sum(1 for row in rows if row["target_track_id"] is not None)
-                / len(rows)
-                if rows
-                else None
-            ),
-            2,
-        ),
-        "maximum_raw_points": max_value(rows, "raw_points"),
-        "maximum_path_candidates": max_value(rows, "path_candidates"),
-        "maximum_clusters": max_value(rows, "clusters"),
-        "maximum_confirmed_clusters": max_value(rows, "confirmed_clusters"),
-        "maximum_abs_lane_center_offset_m": optional_round(
-            max(abs(value) for value in lane_offsets) if lane_offsets else None,
-            3,
-        ),
-        "maximum_abs_heading_error_deg": optional_round(
-            max(abs(value) for value in heading_errors) if heading_errors else None,
-            3,
-        ),
-        "hazard_initial_same_lane": initial_same_lane,
-        "hazard_final_same_lane": final_same_lane,
-        "first_hazard_same_lane_s": optional_round(
-            first_same_lane["elapsed_s"] if first_same_lane else None,
-            3,
-        ),
-        "radar_target_hazard_match_rate_pct": optional_round(
-            (
-                100.0 * sum(hazard_match_values) / len(hazard_match_values)
-                if hazard_match_values
-                else None
-            ),
-            2,
-        ),
-        "brake_target_actor_role": (
-            first_brake.get("radar_target_actor_role") if first_brake else None
-        ),
-        "radar_fallback_activated": bool(fallback_rows),
-        "radar_fallback_first_s": optional_round(
-            first_fallback.get("elapsed_s") if first_fallback else None,
-            3,
-        ),
-        "radar_fallback_tick_count": len(fallback_rows),
-        "fusion_blocked_tick_count": len(fusion_blocked_rows),
-        "evidence_video": None,
-        "evidence_events": None,
-        "log_file": log_file,
-        "failure_reason": "; ".join(failures),
-    }
-
-
-def add_motion_metrics(row, previous_row):
-    if previous_row is None:
-        return
-    dt = float(row["sim_time_s"]) - float(previous_row["sim_time_s"])
-    if dt <= 1e-9:
-        return
-    acceleration = row.get("ego_acceleration_mps2")
-    previous_acceleration = previous_row.get("ego_acceleration_mps2")
-    if acceleration is not None and previous_acceleration is not None:
-        row["ego_jerk_mps3"] = round(
-            (float(acceleration) - float(previous_acceleration)) / dt,
-            4,
-        )
-
-
-def aggregate_summaries(summaries):
-    grouped = {}
-    for summary in summaries:
-        grouped.setdefault(summary["scenario_id"], []).append(summary)
-    aggregate = []
-    for scenario_id in sorted(grouped):
-        rows = grouped[scenario_id]
-        gaps = numeric_values(rows, "minimum_bumper_gap_m")
-        brake_times = numeric_values(rows, "first_brake_s")
-        decelerations = numeric_values(rows, "maximum_deceleration_mps2")
-        aggregate.append(
-            {
-                "scenario_id": scenario_id,
-                "runs": len(rows),
-                "passes": sum(1 for row in rows if row["status"] == "PASS"),
-                "pass_rate_pct": round(
-                    100.0
-                    * sum(1 for row in rows if row["status"] == "PASS")
-                    / len(rows),
-                    2,
-                ),
-                "brake_rate_pct": round(
-                    100.0
-                    * sum(1 for row in rows if row["brake_activated"])
-                    / len(rows),
-                    2,
-                ),
-                "minimum_gap_m": optional_round(min(gaps) if gaps else None, 3),
-                "mean_brake_time_s": optional_round(
-                    sum(brake_times) / len(brake_times)
-                    if brake_times
-                    else None,
-                    3,
-                ),
-                "maximum_deceleration_mps2": optional_round(
-                    max(decelerations) if decelerations else None,
-                    3,
-                ),
-            }
-        )
-    return aggregate
-
-
 def actor_distances(ego, target):
     if target is None:
         return None, None, None
@@ -1949,31 +1585,6 @@ def clamp(value, minimum, maximum):
     return max(minimum, min(maximum, value))
 
 
-def optional_round(value, digits):
-    if value is None:
-        return None
-    return round(float(value), digits)
-
-
-def numeric_values(rows, key):
-    return [
-        float(row[key])
-        for row in rows
-        if row.get(key) is not None and row.get(key) != ""
-    ]
-
-
-def max_value(rows, key):
-    values = numeric_values(rows, key)
-    return max(values) if values else 0
-
-
-def format_number(value, digits):
-    if value is None:
-        return "--"
-    return ("{:." + str(digits) + "f}").format(float(value))
-
-
 def brake_stage_label(decision, config):
     if decision is None:
         return "SAFE"
@@ -2006,105 +1617,6 @@ def system_brake_config(system):
     if config is not None:
         return config
     return BinaryBrakeConfig.from_mapping(getattr(system, "brake_config", {}))
-
-
-def select_evidence_events(rows, include_minimum_gap=True):
-    if not rows:
-        return []
-
-    warning = next(
-        (row for row in rows if row.get("aeb_state") in ("WARNING", "BRAKE")),
-        None,
-    )
-    brake = next((row for row in rows if row.get("aeb_override")), None)
-    gap_rows = [
-        row for row in rows if row.get("bumper_gap_m") not in (None, "")
-    ]
-    minimum_gap = (
-        min(gap_rows, key=lambda row: float(row["bumper_gap_m"]))
-        if gap_rows and include_minimum_gap
-        else None
-    )
-    events = []
-    for name, row in (
-        ("first_warning", warning),
-        ("first_brake", brake),
-        ("minimum_gap", minimum_gap),
-    ):
-        if row is None:
-            continue
-        events.append(
-            {
-                "name": name,
-                "frame": int(row["frame"]),
-                "elapsed_s": float(row["elapsed_s"]),
-                "ego_speed_kph": float(row["ego_speed_kph"]),
-                "bumper_gap_m": optional_float(row.get("bumper_gap_m")),
-                "ttc_s": optional_float(row.get("ttc_s")),
-                "aeb_state": row.get("aeb_state"),
-            }
-        )
-    return events
-
-
-def nearest_frame_path(frame_paths, target_frame):
-    if not frame_paths:
-        return None
-    return min(
-        frame_paths,
-        key=lambda path: abs(int(path.stem) - int(target_frame)),
-    )
-
-
-def optional_float(value):
-    if value in (None, ""):
-        return None
-    return float(value)
-
-
-@functools.lru_cache(maxsize=32)
-def sha256_file(path):
-    path = Path(path)
-    digest = hashlib.sha256()
-    with open(str(path), "rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def resolve_project_path(value):
-    if not value:
-        return None
-    path = Path(str(value))
-    if path.is_absolute():
-        return path
-    for base in (PROJECT_ROOT, AEB_ROOT):
-        candidate = base / path
-        if candidate.exists():
-            return candidate
-    return PROJECT_ROOT / path
-
-
-def git_state(repository):
-    try:
-        commit = subprocess.check_output(
-            ["git", "-C", str(repository), "rev-parse", "HEAD"],
-            universal_newlines=True,
-        ).strip()
-        status = subprocess.check_output(
-            ["git", "-C", str(repository), "status", "--porcelain"],
-            universal_newlines=True,
-        )
-    except (OSError, subprocess.CalledProcessError):
-        return None, None
-    return commit, bool(status.strip())
-
-
-def write_csv(path, fieldnames, rows):
-    with open(str(path), "w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
 
 
 def parse_args():
