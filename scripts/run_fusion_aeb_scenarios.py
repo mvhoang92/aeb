@@ -16,10 +16,11 @@ if str(AEB_ROOT) not in sys.path:
     sys.path.insert(0, str(AEB_ROOT))
 
 from control.brake import AEBState, apply_brake_override  # noqa: E402
-from core.fusion_brake_gate import (  # noqa: E402
-    FusionBrakeGate,
-    FusionBrakeGateConfig,
+from core.brake_permission_policy import (  # noqa: E402
+    BrakePermissionContext,
+    fusion_policy_from_config,
 )
+from core.fusion_brake_gate import FusionBrakeGateConfig  # noqa: E402
 from core.radar_aeb_pipeline import RadarAEBPipeline  # noqa: E402
 from scripts.run_radar_aeb_scenarios import (  # noqa: E402
     DEFAULT_LOG_ROOT,
@@ -66,9 +67,10 @@ class HeadlessFusionAEB(object):
         self.detector = detector or YoloDetector(config.get("model", {}))
         self.detector.reset_sequence()
         self.pipeline = RadarAEBPipeline(ego, config, carla_map)
-        self.brake_gate = FusionBrakeGate(
-            FusionBrakeGateConfig.from_mapping(config.get("fusion", {}))
-        )
+        gate_config = FusionBrakeGateConfig.from_mapping(config.get("fusion", {}))
+        self.brake_policy = fusion_policy_from_config(gate_config)
+        # Public compatibility alias retained for integrations that inspect it.
+        self.brake_gate = self.brake_policy.gate
         self.decision = self.pipeline.decision
         self.aeb_override_active = False
         self.last_detections = []
@@ -94,13 +96,15 @@ class HeadlessFusionAEB(object):
             if frame.target is not None
             else None
         )
-        gate_result = self.brake_gate.apply(
-            frame.decision,
-            frame.target,
-            fusion_confirmed=self.fusion_confirmed,
-            fusion_reason=self.fusion_reason,
-            timestamp_s=frame.radar_timestamp_s,
-            target_path_offset_m=self.target_path_offset_m,
+        gate_result = self.brake_policy.evaluate(
+            BrakePermissionContext(
+                radar_decision=frame.decision,
+                target=frame.target,
+                camera_confirmed=self.fusion_confirmed,
+                camera_reason=self.fusion_reason,
+                timestamp_s=frame.radar_timestamp_s,
+                target_path_offset_m=self.target_path_offset_m,
+            )
         )
         self.decision = gate_result.decision
         self.fusion_gate_action = gate_result.action
@@ -126,7 +130,7 @@ class HeadlessFusionAEB(object):
 
     def reset_control_state(self):
         self.pipeline.reset_control_state()
-        self.brake_gate.reset()
+        self.brake_policy.reset()
         self.decision = self.pipeline.decision
         self.aeb_override_active = False
         self.fusion_gate_action = "reset"
