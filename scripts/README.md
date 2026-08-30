@@ -8,9 +8,9 @@ categorized implementations where moving the implementation is safe.
 | Scenario runtime | `run_radar_aeb_scenarios.py`, `run_fusion_aeb_scenarios.py` | Stable evidence-facing CARLA CLIs; intentionally kept at historical paths |
 | Campaign | `campaign/` | Campaign orchestration, isolated final pipeline, video/smoke tooling and suite generation |
 | Analysis | `analysis/` | Frozen-evidence analysis, repeatability summaries, plots and manuscript validators |
-| Dataset | root wrappers, future `dataset/` | Collection, label audit/cleanup and visualization |
-| Training | root wrappers, future `training/` | Model training and ONNX export |
-| Maintenance | root wrappers, future `maintenance/` | Sensor visualization and one-off repository tools |
+| Dataset | `dataset/` | Collection, label audit/cleanup and visualization |
+| Training | `training/` | Model training and ONNX export |
+| Maintenance | `maintenance/` | Sensor visualization and one-off repository tools |
 
 For example, `scripts/run_v4_campaign.py` is a compatibility wrapper around
 `scripts/campaign/run_v4_campaign.py`. External automation should continue to

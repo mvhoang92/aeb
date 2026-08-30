@@ -20,12 +20,12 @@ venv/
 .DS_Store
 
 # Generated datasets and training artifacts
-raw_dataset/
-dataset/
-dataset*/
-training_runs/
-outputs/
-weights/
+/raw_dataset/
+/dataset/
+/dataset*/
+/training_runs/
+/outputs/
+/weights/
 *.weights
 *.cache
 
