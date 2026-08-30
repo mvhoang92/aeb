@@ -16,6 +16,9 @@ script ở root.
 ## Core
 
 - `core/radar_aeb_pipeline.py`: pipeline radar-only dùng chung cho UI và batch.
+- `core/headless_aeb_runtime.py`: thứ tự runtime dùng chung pipeline → policy → actuation.
+- `core/brake_permission_policy.py`: interface radar-only, hard camera gate và emergency fallback.
+- `core/fusion_brake_gate.py`: cơ chế gate/fallback đã được kiểm chứng và giữ nguyên.
 - `core/radar_object.py`: cấu trúc dữ liệu `RadarObject` và object list.
 - `core/target_selector.py`: chọn target AEB từ radar object list.
 
@@ -26,25 +29,33 @@ script ở root.
 
 ## Control
 
-- `control/brake.py`: TTC, quyết định phanh, binary brake và helper override
-  `carla.VehicleControl`.
+- `control/brake.py`: compatibility facade giữ nguyên import lịch sử.
+- `control/risk_model.py`: TTC và stopping distance.
+- `control/controller.py`: orchestration `BinaryAEB`.
+- `control/staged_pid.py`: binary/staged/PID brake command.
+- `control/state_machine.py`: validation, hysteresis và transition.
+- `control/actuation.py`: helper override `carla.VehicleControl`.
 
 ## Scripts
 
-- `scripts/run_radar_aeb_scenarios.py`: chạy batch scenario và sinh log.
-- `scripts/collect_yolo_dataset.py`: thu dataset YOLO bằng ground truth CARLA.
-- `scripts/check_yolo_dataset.py`: audit dataset YOLO trước khi train.
-- `scripts/train_yolo26n.py`: train YOLO26n trên dataset đã cấu hình.
-- `scripts/export_yolo26n_onnx.py`: export `best.pt` sang ONNX cho runtime.
-- `scripts/train_yolo_pipeline.py`: pipeline tổng hợp đời cũ, chỉ giữ để tham
-  khảo hoặc chạy lại log cũ.
+- `scripts/run_radar_aeb_scenarios.py` và `run_fusion_aeb_scenarios.py`: stable
+  scenario CLI và sinh log.
+- `scripts/campaign/`: campaign orchestration và final pipeline.
+- `scripts/analysis/`: analysis, repeatability summary và manuscript validators.
+- `scripts/dataset/`: thu thập/audit/cleanup dataset.
+- `scripts/training/`: training và ONNX export.
+- `scripts/maintenance/`: công cụ bảo trì/visualization.
+- Các file cùng tên ở `scripts/` là compatibility wrapper cho command lịch sử.
 
 ## Tests
 
 - `tests/test_radar_aeb_logic.py`: logic radar/AEB.
-- `tests/test_dataset_collector_helpers.py`: helper dataset.
-- `tests/test_model_pipeline.py`: pipeline train/model.
-- `tests/test_onnx_model_names.py`: kiểm tra tên model ONNX.
+- `tests/test_brake_permission_policy.py`: golden output ba policy.
+- `tests/test_headless_aeb_runtime.py`: runtime policy injection.
+- `tests/test_evaluation_modules.py`: schema/scoring/severity/summary compatibility.
+- `tests/test_control_modules.py`: facade và control decomposition.
+- `tests/test_script_compatibility.py`: wrapper script lịch sử.
+- Các test dataset/model/ONNX tiếp tục bảo vệ pipeline train/model.
 
 ## Quy Ước Sửa Code
 

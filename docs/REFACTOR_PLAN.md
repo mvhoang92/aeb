@@ -7,6 +7,12 @@ scenario definitions, CLI/config compatibility, telemetry schemas or frozen
 evidence. Work is isolated on `refactor/project-structure-v1`; `main` is not
 merged automatically.
 
+## Status
+
+Phases 1–8 are complete on the refactor branch. Static/golden gates and all
+three CARLA policy smokes passed. Validation details are recorded in
+`docs/log/refactor/REFACTOR_V1_VALIDATION.md`. Merge remains a user decision.
+
 ## Invariants
 
 - No algorithm tuning, threshold changes or PERG-AEB implementation.

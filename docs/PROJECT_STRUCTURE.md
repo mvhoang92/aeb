@@ -10,12 +10,14 @@ only describes the live source tree.
 |---|---|---|
 | Entry points | `launcher.py`, `laucher.py`, `ui/`, `scripts/` | Desktop launcher, interactive views and command-line jobs |
 | Scenario runtime | `scripts/run_*_aeb_scenarios.py` | CARLA actor lifecycle, simulation loop and compatibility CLIs |
-| Evaluation | `evaluation/` (refactor target) | Scoring, telemetry schema, severity metrics and summary output |
-| Policy | `core/brake_permission_policy.py` (refactor target) | Radar-only, hard camera gate and emergency-fallback permission |
+| Runtime composition | `core/headless_aeb_runtime.py` | Shared radar pipeline → permission policy → actuation order |
+| Evaluation | `evaluation/` | Frozen schemas, scoring, telemetry, severity and summary output |
+| Policy | `core/brake_permission_policy.py` | Radar-only, hard camera gate and emergency-fallback permission |
 | AEB pipeline | `core/radar_aeb_pipeline.py` | Radar tracking, target selection and provisional AEB decision |
 | Fusion gate | `core/fusion_brake_gate.py` | Frozen hard-gate/fallback decision logic |
 | Perception | `perception/`, `core/radar_object.py` | Radar clustering/tracking and object representation |
-| Control | `control/brake.py` | Frozen controller facade; risk/controller/state helpers are refactor targets |
+| Control | `control/` | Risk model, staged/PID command, state machine and actuation; `brake.py` is the compatibility facade |
+| Script jobs | `scripts/{campaign,analysis,dataset,training,maintenance}/` | Categorized implementations behind historical root wrappers |
 | Configuration | `configs/` | Sensor, scenario, evaluation, dataset and training configuration |
 | Verification | `tests/`, validation scripts | Unit, schema, manuscript and campaign checks |
 
@@ -67,4 +69,5 @@ moved or deleted as a side effect of structural refactoring. See
 
 The script names, options, output field names and exit-code semantics are part
 of the compatibility surface until a separately reviewed migration changes
-them.
+them. See `scripts/README.md` for the categorized implementation map and
+`docs/log/refactor/REFACTOR_V1_VALIDATION.md` for refactor regression evidence.
