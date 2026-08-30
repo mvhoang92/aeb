@@ -23,7 +23,8 @@ AEB_ROOT = Path(__file__).resolve().parents[1]
 if str(AEB_ROOT) not in sys.path:
     sys.path.insert(0, str(AEB_ROOT))
 
-from control.brake import AEBState, BinaryBrakeConfig, apply_brake_override, as_bool
+from control.brake import AEBState, BinaryBrakeConfig, as_bool
+from core.headless_aeb_runtime import PolicyControlledAEBRuntime
 from core.radar_aeb_pipeline import RadarAEBPipeline
 from evaluation.artifact_io import (
     git_state,
@@ -50,35 +51,13 @@ DEFAULT_SCENARIO_CONFIG = (
 DEFAULT_LOG_ROOT = AEB_ROOT / "logs"
 
 
-class HeadlessRadarAEB(object):
+class HeadlessRadarAEB(PolicyControlledAEBRuntime):
     """Radar AEB runtime without creating a pygame/manual-control window."""
 
     def __init__(self, ego, config, carla_map):
-        self.ego = ego
-        self.radar = RadarSensor(ego, config.get("front_radar", {}))
-        self.pipeline = RadarAEBPipeline(ego, config, carla_map)
-        self.decision = self.pipeline.decision
-        self.aeb_override_active = False
-
-    def tick(self):
-        frame = self.pipeline.update(self.radar)
-        self.decision = frame.decision
-        if self.decision.state == AEBState.BRAKE:
-            apply_brake_override(self.ego, self.decision)
-            self.aeb_override_active = True
-        elif self.aeb_override_active:
-            apply_brake_override(self.ego, self.decision)
-            self.aeb_override_active = False
-        return frame
-
-    def reset_control_state(self):
-        self.pipeline.reset_control_state()
-        self.decision = self.pipeline.decision
-        self.aeb_override_active = False
-
-    def destroy(self):
-        self.pipeline.reset()
-        self.radar.destroy()
+        radar = RadarSensor(ego, config.get("front_radar", {}))
+        pipeline = RadarAEBPipeline(ego, config, carla_map)
+        super(HeadlessRadarAEB, self).__init__(ego, radar, pipeline)
 
 
 class CollisionRecorder(object):

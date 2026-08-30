@@ -15,12 +15,12 @@ AEB_ROOT = Path(__file__).resolve().parents[1]
 if str(AEB_ROOT) not in sys.path:
     sys.path.insert(0, str(AEB_ROOT))
 
-from control.brake import AEBState, apply_brake_override  # noqa: E402
 from core.brake_permission_policy import (  # noqa: E402
     BrakePermissionContext,
     fusion_policy_from_config,
 )
 from core.fusion_brake_gate import FusionBrakeGateConfig  # noqa: E402
+from core.headless_aeb_runtime import PolicyControlledAEBRuntime  # noqa: E402
 from core.radar_aeb_pipeline import RadarAEBPipeline  # noqa: E402
 from scripts.run_radar_aeb_scenarios import (  # noqa: E402
     DEFAULT_LOG_ROOT,
@@ -42,7 +42,7 @@ DEFAULT_SCENARIO_CONFIG = (
 )
 
 
-class HeadlessFusionAEB(object):
+class HeadlessFusionAEB(PolicyControlledAEBRuntime):
     """Camera-radar fusion AEB runtime for batch scenario validation.
 
     Radar still owns object distance and relative velocity. YOLO supplies
@@ -66,13 +66,17 @@ class HeadlessFusionAEB(object):
         self._owns_detector = detector is None
         self.detector = detector or YoloDetector(config.get("model", {}))
         self.detector.reset_sequence()
-        self.pipeline = RadarAEBPipeline(ego, config, carla_map)
+        pipeline = RadarAEBPipeline(ego, config, carla_map)
         gate_config = FusionBrakeGateConfig.from_mapping(config.get("fusion", {}))
-        self.brake_policy = fusion_policy_from_config(gate_config)
+        brake_policy = fusion_policy_from_config(gate_config)
+        super(HeadlessFusionAEB, self).__init__(
+            ego,
+            self.radar,
+            pipeline,
+            brake_policy=brake_policy,
+        )
         # Public compatibility alias retained for integrations that inspect it.
         self.brake_gate = self.brake_policy.gate
-        self.decision = self.pipeline.decision
-        self.aeb_override_active = False
         self.last_detections = []
         self.last_projection = None
         self.fusion_confirmed = False
@@ -82,8 +86,7 @@ class HeadlessFusionAEB(object):
         self.radar_fallback_active = False
         self.target_path_offset_m = None
 
-    def tick(self):
-        frame = self.pipeline.update(self.radar)
+    def _permission_context(self, frame):
         self.last_detections = self.detector.infer(
             self.camera.latest_rgb,
             timestamp_s=self.camera.timestamp,
@@ -96,32 +99,23 @@ class HeadlessFusionAEB(object):
             if frame.target is not None
             else None
         )
-        gate_result = self.brake_policy.evaluate(
-            BrakePermissionContext(
-                radar_decision=frame.decision,
-                target=frame.target,
-                camera_confirmed=self.fusion_confirmed,
-                camera_reason=self.fusion_reason,
-                timestamp_s=frame.radar_timestamp_s,
-                target_path_offset_m=self.target_path_offset_m,
-            )
+        return BrakePermissionContext(
+            radar_decision=frame.decision,
+            target=frame.target,
+            camera_confirmed=self.fusion_confirmed,
+            camera_reason=self.fusion_reason,
+            timestamp_s=frame.radar_timestamp_s,
+            target_path_offset_m=self.target_path_offset_m,
         )
-        self.decision = gate_result.decision
-        self.fusion_gate_action = gate_result.action
-        self.fusion_gate_reason = gate_result.reason
-        self.radar_fallback_active = gate_result.radar_fallback_active
 
-        if self.decision.state == AEBState.BRAKE:
-            apply_brake_override(self.ego, self.decision)
-            self.aeb_override_active = True
-        elif self.aeb_override_active:
-            apply_brake_override(self.ego, self.decision)
-            self.aeb_override_active = False
-        return frame
+    def _record_permission_result(self, result):
+        super(HeadlessFusionAEB, self)._record_permission_result(result)
+        self.fusion_gate_action = result.action
+        self.fusion_gate_reason = result.reason
+        self.radar_fallback_active = result.radar_fallback_active
 
     def destroy(self):
-        self.pipeline.reset()
-        self.radar.destroy()
+        super(HeadlessFusionAEB, self).destroy()
         self.camera.destroy()
         if self._owns_detector:
             self.detector.destroy()
@@ -129,10 +123,7 @@ class HeadlessFusionAEB(object):
             self.detector.reset_sequence()
 
     def reset_control_state(self):
-        self.pipeline.reset_control_state()
-        self.brake_policy.reset()
-        self.decision = self.pipeline.decision
-        self.aeb_override_active = False
+        super(HeadlessFusionAEB, self).reset_control_state()
         self.fusion_gate_action = "reset"
         self.fusion_gate_reason = "reset"
         self.radar_fallback_active = False
