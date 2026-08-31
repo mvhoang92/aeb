@@ -17,7 +17,7 @@
 | Source/configuration | `core/`, `control/`, `scripts/`, `configs/`, `tests/` | Track in Git and review normally |
 | Curated evidence | `docs/log/repeatability/`, claim matrices, CSV summaries | Track when required for reproducibility; never rewrite frozen generations |
 | Manuscript/report | `paper/paper_v*/`, `report/chapters_v3/`, approved exports | Preserve each version; create a new version instead of overwriting history |
-| Raw local runtime data | `logs/`, `outputs/`, `dataset*/`, `training_runs/` | Keep locally; ignored by Git; never clean during refactor |
+| Raw local runtime data | `$AEB_WORKSPACE_ROOT/datasets`, `runs`, `training` | Keep outside Git; move only with manifest/checksum verification |
 | Models/environments | `models/`, `.venv_yolo310/`, CARLA `venv/` | Machine-local or release assets; do not commit new large binaries |
 | Raw release archive | tarballs, model weights, large datasets | Use GitHub Release, LFS or an external archive after license review |
 
@@ -26,9 +26,9 @@ remove them. New large artifacts should not be added directly to Git.
 
 ## Frozen evidence
 
-The final campaign root is
-`outputs/paper_v4_final_pipeline/paper_v4_gpu_final_locked_20260825/`; curated
-evidence is in `docs/log/repeatability/paper_v4_gpu_final/`. Paper v5 derived
+The local final campaign root is
+`$AEB_WORKSPACE_ROOT/runs/campaigns/paper_v4_final_pipeline/paper_v4_gpu_final_locked_20260825/`;
+curated evidence is in `docs/log/repeatability/paper_v4_gpu_final/`. Paper v5 derived
 metrics are in `docs/log/repeatability/paper_v5_derived/`. Refactoring may read
 these files for golden checks but may not regenerate them in place.
 

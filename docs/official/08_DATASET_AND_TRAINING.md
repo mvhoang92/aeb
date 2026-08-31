@@ -62,8 +62,8 @@ Dataset `v7_same_lane` đã được audit và dùng làm bộ chính cho lần 
 tại. Báo cáo thống kê nằm ở:
 
 ```text
-outputs/dataset_v7_same_lane_report.md
-outputs/dataset_v7_same_lane_stats.json
+$AEB_WORKSPACE_ROOT/runs/diagnostics/dataset_v7_same_lane_report.md
+$AEB_WORKSPACE_ROOT/runs/diagnostics/dataset_v7_same_lane_stats.json
 ```
 
 ## Train Và Export

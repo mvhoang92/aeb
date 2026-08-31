@@ -19,7 +19,7 @@ from docx.shared import Cm, Pt
 
 REPORT_DIR = Path(__file__).resolve().parent
 MARKDOWN = REPORT_DIR / "report_v3.md"
-TEMPLATE = REPORT_DIR / "exports" / "aeb_report_draft.docx"
+TEMPLATE = REPORT_DIR / "templates" / "aeb_report_template_v3.docx"
 OUTPUT_DIR = REPORT_DIR / "exports"
 DOCX_PATH = OUTPUT_DIR / "aeb_report_v3.docx"
 

@@ -43,9 +43,9 @@ required-provider check passed. There were no inference errors.
 
 Local run directories (not paper evidence):
 
-- `logs/refactor_v1_smoke_radar_only_20260825/`
-- `logs/refactor_v1_smoke_hard_gate_cuda_20260825/`
-- `logs/refactor_v1_smoke_fallback_cuda_20260825/`
+- `$AEB_WORKSPACE_ROOT/runs/logs/refactor_v1_smoke_radar_only_20260825/`
+- `$AEB_WORKSPACE_ROOT/runs/logs/refactor_v1_smoke_hard_gate_cuda_20260825/`
+- `$AEB_WORKSPACE_ROOT/runs/logs/refactor_v1_smoke_fallback_cuda_20260825/`
 
 SHA-256:
 

@@ -38,60 +38,52 @@ aeb/
 │   └── scenarios/
 │       ├── car_to_car/   # tình huống gốc: CCRs, CCRm, CCRb, cut-in...
 │       └── suites/       # bộ gom để chạy smoke/regression/sweep/report demo
-├── control/              # logic phanh, AEB state, PID/staged PID
-├── core/                 # pipeline AEB, target selector, radar object data
+├── control/              # risk, state machine, staged/PID và actuation
+├── core/                 # pipeline, target, fusion gate và policy interface
+├── evaluation/           # schema, telemetry, scoring, severity và summary
+├── infrastructure/       # external-workspace path resolver
 ├── perception/           # radar tracker và xử lý cảm biến
-├── scripts/              # thu dataset, train/export model, chạy batch, video
-├── ui/                   # camera/radar/YOLO/fusion/final demo/launcher views
-├── tests/                # unit test cho logic core
+├── scripts/              # stable CLIs + categorized implementations
+├── ui/                   # camera/radar/YOLO/fusion/final demo views
+├── tests/                # unit, golden, compatibility và schema tests
+├── models/               # deployment model/manifest local
 ├── docs/
-│   ├── official/         # tài liệu kỹ thuật chính thức
-│   ├── research/         # tài liệu tham khảo và so sánh repo/cảm biến
-│   ├── log/              # nhật ký thí nghiệm, kết quả, quyết định kỹ thuật
-│   └── backup/           # tài liệu cũ để tra cứu
-├── report/               # báo cáo đồ án, source theo chương và export
-│   ├── chapters_v3/      # source of truth của report v3
-│   ├── assets/           # ảnh riêng và figures final evidence
-│   ├── build_report_v3.py
-│   ├── export_report_v3.py
-│   └── report_v3.md      # bản full v3 đã ghép
-├── paper/                # các phiên bản paper IEEE song ngữ
-│   ├── README.md         # quy tắc build PDF Anh và Việt
-│   ├── paper_v1..v4/     # manuscript và final-campaign revision lịch sử
-│   └── paper_v5/         # reviewer-driven scenario/severity study
-└── report_mini.md        # bản báo cáo ngắn để duyệt nhanh
+│   ├── INDEX.md          # canonical reading map
+│   ├── official/         # tài liệu kỹ thuật chi tiết
+│   ├── research/         # hướng nghiên cứu, gồm PERG-AEB
+│   ├── log/              # frozen evidence và experiment records
+│   └── history/          # tài liệu legacy chỉ để tra cứu
+├── report/
+│   ├── report_v3.md      # frozen current report
+│   ├── chapters_v3/
+│   ├── exports/          # frozen PDF/DOCX v3
+│   └── archive/          # report v1/v2, drafts và layout QA
+└── paper/
+    ├── CURRENT.md
+    ├── VERSION_INDEX.md
+    └── paper_v1/ ... paper_v5/
 ```
 
-Các thư mục sinh dữ liệu như `dataset*`, `logs/`, `outputs/`, `training_runs/`
-và các model artifact `models/*.pt`, `models/*.onnx` được giữ local và đã đưa
-vào `.gitignore`. Khi clone repo mới, cần train/export lại model hoặc đặt model
-đúng đường dẫn trong `configs/sensors.yaml`.
+Dataset và generated artifacts được giữ ngoài Git tree tại workspace mặc định
+`/home/mvhoang/CARLA_0.9.11/aeb_workspace`. Có thể đổi vị trí bằng biến
+`AEB_WORKSPACE_ROOT`. Chạy `../venv/bin/python scripts/check_workspace.py` để
+xem toàn bộ đường dẫn đã resolve. Các config lịch sử như
+`aeb/dataset_v7_same_lane` được ánh xạ có kiểm soát sang workspace.
 
 ## Thứ Tự Đọc Tài Liệu
 
-1. `README.md`: tổng quan nhanh, cách chạy chính.
-2. `report/report_v3.md`: báo cáo final đã ghép.
-3. `report/chapters_v3/*.md`: nguồn chính để sửa report v3.
-4. `paper/paper_v5/aeb_ieee_6page.pdf`: paper tiếng Anh sáu trang.
-5. `docs/official/16_REPORT_FORMAT_AND_CAPTIONS.md`: quy ước form báo cáo,
-   tên hình và tên bảng.
-6. `docs/official/00_PROJECT_INTRODUCTION.md`: mục tiêu, phạm vi, kết quả hiện
-   tại.
-7. `docs/official/01_SYSTEM_ARCHITECTURE.md`: kiến trúc hệ thống.
-8. `docs/official/02_SENSOR_CONFIGURATION.md`: cấu hình ego, camera, radar.
-9. `docs/official/03_RADAR_PROCESSING.md`: xử lý radar từ điểm đo đến đối tượng.
-10. `docs/official/04_CAMERA_YOLO_PROCESSING.md`: camera và YOLO.
-11. `docs/official/05_CAMERA_RADAR_FUSION.md`: hợp nhất dữ liệu camera-radar.
-12. `docs/official/06_AEB_DECISION_AND_BRAKING.md`: TTC, khoảng cách dừng,
-    staged PID.
-13. `docs/official/07_SCENARIOS_AND_VALIDATION.md`: kịch bản kiểm thử và cách
-    đánh giá.
-14. `docs/official/08_DATASET_AND_TRAINING.md`: dataset v7 same-lane và train
-    YOLO26n.
-15. `docs/log/PAPER_V4_EVALUATION_PROTOCOL.md`: protocol khóa trước hold-out.
-16. `docs/log/repeatability/paper_v4_gpu_final/FINAL_GPU_EVIDENCE.md`: kết quả final.
-17. `paper/paper_v5/CLAIM_EVIDENCE_MATRIX.md`: mapping claim và artifact.
-18. `docs/log/repeatability/artifacts/`: raw-log archive và SHA-256.
+1. `docs/INDEX.md`: chọn lộ trình theo vai trò.
+2. `docs/01_QUICK_START.md`: setup, workspace và smoke test.
+3. `docs/02_SYSTEM_ARCHITECTURE.md`: kiến trúc source hiện hành.
+4. `docs/03_BRAKE_POLICIES.md`: ba baseline và contract policy.
+5. `docs/04_SCENARIO_AND_EVALUATION.md`: scoring, severity và failure handling.
+6. `docs/05_WORKSPACE_AND_ARTIFACTS.md`: dữ liệu local, backup và checksum.
+7. `docs/06_REPRODUCIBILITY.md`: protocol tái lập evidence.
+8. `docs/07_EXTENDING_THE_SYSTEM.md`: thêm policy/scenario/metric.
+9. `paper/CURRENT.md` và `report/README.md`: manuscript/report hiện hành.
+
+Tài liệu chi tiết theo từng subsystem vẫn nằm trong `docs/official/`; historical
+notes và frozen evidence được index nhưng không dùng làm quick-start.
 
 ## Cài Đặt Nhanh
 
@@ -179,10 +171,13 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
 Headline evidence hiện nằm ở:
 
 ```text
-outputs/paper_v4_final_pipeline/paper_v4_gpu_final_locked_20260825/
+$AEB_WORKSPACE_ROOT/runs/campaigns/paper_v4_final_pipeline/
 docs/log/repeatability/paper_v4_gpu_final/
 docs/log/repeatability/artifacts/paper_v4_gpu_final_locked_20260825_raw_logs.tar.gz
 ```
+
+Đường dẫn workspace là local runtime storage; curated evidence trong `docs/`
+và frozen Git tags vẫn là nguồn claim chính.
 
 ## Dataset Và Train YOLO
 
@@ -221,12 +216,12 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
 
 ## Báo Cáo
 
-- `report/chapters_v3/*.md`: source of truth của report v3.
-- `report/report_v3.md`: bản Markdown full đã ghép.
+- `report/chapters_v3/*.md`: frozen chapter source của report v3.
+- `report/report_v3.md`: bản Markdown full đã khóa.
 - `report/exports/aeb_report_v3.docx`: bản DOCX theo form cũ.
 - `report/exports/aeb_report_v3.pdf`: bản PDF A4 để duyệt.
 
-Sau khi sửa source, build và export lại bằng:
+Để kiểm chứng khả năng build/export (không dùng để sửa đè report v3):
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb

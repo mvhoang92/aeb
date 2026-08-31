@@ -19,6 +19,7 @@ only describes the live source tree.
 | Control | `control/` | Risk model, staged/PID command, state machine and actuation; `brake.py` is the compatibility facade |
 | Script jobs | `scripts/{campaign,analysis,dataset,training,maintenance}/` | Categorized implementations behind historical root wrappers |
 | Configuration | `configs/` | Sensor, scenario, evaluation, dataset and training configuration |
+| Workspace infrastructure | `infrastructure/workspace.py` | Explicit legacy-to-external artifact path mapping |
 | Verification | `tests/`, validation scripts | Unit, schema, manuscript and campaign checks |
 
 Dependencies should point downward. UI and scenario scripts may orchestrate core,
@@ -34,8 +35,10 @@ an entry-point script.
 - `configs/legacy/`: retained compatibility inputs; do not silently reinterpret.
 - Dataset and training YAML files are independent of runtime evaluation.
 
-Relative paths continue to resolve from the repository root. Refactoring must
-preserve existing CLI defaults and YAML keys.
+Source/config/model paths continue to resolve from the repository/CARLA root.
+Known historical dataset/log/output/training paths resolve through
+`AEB_WORKSPACE_ROOT` when the repository-local path does not exist. Refactoring
+must preserve existing CLI defaults and YAML keys.
 
 ## Evidence and manuscripts
 
@@ -44,7 +47,7 @@ preserve existing CLI defaults and YAML keys.
 - `docs/log/repeatability/artifacts/`: archived raw evidence and checksums.
 - `paper/paper_v1/` through `paper/paper_v5/`: immutable paper generations.
 - `report/chapters_v3/`, `report/report_v3.md`, `report/exports/`: report v3.
-- `logs/` and `outputs/`: local runtime products, mostly ignored by Git.
+- `$AEB_WORKSPACE_ROOT/runs/`: machine-local logs, campaigns and generated review products.
 
 The tags `baseline-hard-camera-gate-v1`, `safe-fallback-eval-v1`,
 `paper-v4-final-gpu-evidence-v1`, `paper-v5-scenario-severity-v1` and
@@ -53,10 +56,11 @@ them.
 
 ## Large local data
 
-Dataset generations, training runs, logs, outputs and local environments are
-intentionally kept in place but are not source modules. They must never be
-moved or deleted as a side effect of structural refactoring. See
-`docs/ARTIFACT_POLICY.md`.
+Dataset generations, training runs, logs and outputs live in the sibling local
+workspace and are not source modules. The migration preserved all 46,099 files
+and verified SHA-256 at the destination. Local environments remain
+machine-specific. See `docs/ARTIFACT_POLICY.md` and
+`docs/maintenance/WORKSPACE_MIGRATION_MANIFEST.md`.
 
 ## Supported compatibility entry points
 

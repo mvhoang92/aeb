@@ -90,7 +90,7 @@ góc nhìn trên xuống/ngang, gần/xa:
 cd /home/mvhoang/CARLA_0.9.11
 venv/bin/python aeb/scripts/visualize_sensor_coverage.py \
   --config aeb/configs/sensors.yaml \
-  --output-dir aeb/outputs/sensor_coverage \
+  --output-dir "$AEB_WORKSPACE_ROOT/runs/sensor_coverage/manual_capture" \
   --map-name Town06 \
   --spawn-index 0
 ```
@@ -101,7 +101,7 @@ hình chiếu cạnh. Scenario AEB chính vẫn ưu tiên chạy trên `Town04`.
 Kết quả:
 
 ```text
-aeb/outputs/sensor_coverage/
+$AEB_WORKSPACE_ROOT/runs/sensor_coverage/manual_capture/
 ├── near_top_view.png
 ├── far_top_view.png
 ├── near_side_view.png
@@ -220,7 +220,7 @@ Train YOLO26n:
 Weight tốt nhất nằm trong:
 
 ```text
-training_runs/detect/<run_name>/weights/best.pt
+$AEB_WORKSPACE_ROOT/training/detect/<run_name>/weights/best.pt
 ```
 
 Export weight mới nhất sang ONNX:
@@ -233,7 +233,7 @@ Hoặc chỉ định rõ weight:
 
 ```bash
 .venv_yolo310/bin/python scripts/export_yolo26n_onnx.py \
-  --weights training_runs/detect/<run_name>/weights/best.pt
+  --weights "$AEB_WORKSPACE_ROOT/training/detect/<run_name>/weights/best.pt"
 ```
 
 Có thể thêm `--dry-run` vào lệnh train hoặc export để chỉ kiểm tra đường dẫn và
@@ -248,6 +248,6 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
 
 ## Ghi Log
 
-Các script batch ghi vào `logs/<run_id>/`. Khi có kết quả quan trọng, chỉ cập
+Các script batch ghi vào `$AEB_WORKSPACE_ROOT/runs/logs/<run_id>/`. Khi có kết quả quan trọng, chỉ cập
 nhật tóm tắt vào `docs/log/EXPERIMENT_LOG.md`; không đưa toàn bộ log thô vào
 tài liệu chính thức.

@@ -18,4 +18,5 @@ use the historical path until a versioned CLI migration is announced.
 
 Do not classify algorithmic FAIL as a technical failure in campaign scripts.
 CUDA provider mismatch and inference errors remain hard-stops for final
-evidence.
+evidence. Generated paths use `AEB_WORKSPACE_ROOT`; run
+`scripts/check_workspace.py` to inspect active dataset/log/output locations.

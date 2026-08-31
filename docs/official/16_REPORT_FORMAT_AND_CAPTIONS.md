@@ -165,15 +165,15 @@ Danh sách này là khung ban đầu, có thể chỉnh khi viết báo cáo ful
 | Hình 2.8 | Máy trạng thái AEB: Safe, Warning, Soft Brake, Emergency Brake, Release | Tự vẽ |
 | Hình 3.1 | Kiến trúc tổng thể hệ thống AEB trong CARLA | Từ code/project |
 | Hình 3.2 | Cấu trúc thư mục mã nguồn AEB | Screenshot hoặc sơ đồ |
-| Hình 3.3 | Vị trí camera và radar trên Tesla Model 3 | `outputs/sensor_coverage` |
-| Hình 3.4 | Tầm phủ camera và radar theo góc nhìn từ trên xuống | `outputs/sensor_coverage` |
+| Hình 3.3 | Vị trí camera và radar trên Tesla Model 3 | `$AEB_WORKSPACE_ROOT/runs/sensor_coverage` |
+| Hình 3.4 | Tầm phủ camera và radar theo góc nhìn từ trên xuống | `$AEB_WORKSPACE_ROOT/runs/sensor_coverage` |
 | Hình 3.5 | Giao diện kiểm thử 3 màn của hệ thống | Screenshot UI |
 | Hình 3.6 | Launcher dùng để chạy demo, test và quay video | Screenshot launcher |
 | Hình 4.1 | Ví dụ dữ liệu phiên bản v7 same-lane cho huấn luyện YOLO26n | Screenshot ảnh preview dataset |
-| Hình 4.2 | Ví dụ ảnh dataset có bounding box | `dataset_v7_same_lane/previews` |
+| Hình 4.2 | Ví dụ ảnh dataset có bounding box | `$AEB_WORKSPACE_ROOT/datasets/active/v7_same_lane/previews` |
 | Hình 4.3 | Biểu đồ thống kê số ảnh và số nhãn trong dataset | Tạo từ script thống kê |
-| Hình 4.4 | Kết quả huấn luyện YOLO26n | `training_runs/.../results.png` |
-| Hình 4.5 | Ma trận nhầm lẫn hoặc biểu đồ precision-recall của YOLO | `training_runs/...` |
+| Hình 4.4 | Kết quả huấn luyện YOLO26n | `$AEB_WORKSPACE_ROOT/training/.../results.png` |
+| Hình 4.5 | Ma trận nhầm lẫn hoặc biểu đồ precision-recall của YOLO | `$AEB_WORKSPACE_ROOT/training/...` |
 | Hình 4.6 | Nhóm kịch bản car-to-car đứng yên | Tự vẽ hoặc screenshot |
 | Hình 4.7 | Nhóm kịch bản cut-in | Tự vẽ hoặc screenshot |
 | Hình 4.8 | Biểu đồ phanh của một case pass | Từ log final |
@@ -293,4 +293,4 @@ Cần trình bày:
   - `07_SCENARIOS_AND_VALIDATION.md`
   - `08_DATASET_AND_TRAINING.md`
   - `11_ENVIRONMENT_AND_INSTALLATION.md`
-- Khi có hình/video/log mới, cập nhật danh sách hình/bảng trong tài liệu này hoặc đưa trực tiếp vào chương tương ứng trong `report/chapters/`.
+- Khi có hình/video/log mới, cập nhật danh sách hình/bảng trong tài liệu này hoặc đưa trực tiếp vào chương tương ứng trong `report/chapters_v3/`.

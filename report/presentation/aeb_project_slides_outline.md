@@ -1,6 +1,6 @@
 # Dàn Ý Slide Đồ Án AEB
 
-File PowerPoint: `report/exports/aeb_project_slides.pptx`
+File PowerPoint: `report/presentation/aeb_project_slides.pptx`
 
 ## Danh sách slide
 
