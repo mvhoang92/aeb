@@ -22,11 +22,18 @@ from typing import Dict, List, Optional
 
 import yaml
 
+from infrastructure.workspace import environments_root
+
 
 AEB_ROOT = Path(__file__).resolve().parent
 CARLA_ROOT = AEB_ROOT.parent
 CARLA_PYTHON = CARLA_ROOT / "venv" / "bin" / "python"
-YOLO_PYTHON = AEB_ROOT / ".venv_yolo310" / "bin" / "python"
+YOLO_PYTHON = Path(
+    os.environ.get(
+        "AEB_YOLO_PYTHON",
+        str(environments_root() / "yolo310" / "bin" / "python"),
+    )
+)
 CARLA_SCRIPT = CARLA_ROOT / "CarlaUE4.sh"
 SENSOR_CONFIG = AEB_ROOT / "configs" / "sensors.yaml"
 DEFAULT_SCENARIO_CONFIG = (

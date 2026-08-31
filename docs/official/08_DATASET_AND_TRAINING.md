@@ -74,28 +74,29 @@ Luồng train hiện tại tách thành ba bước để dễ theo dõi và dễ
 2. Train YOLO26n.
 3. Export ONNX để dùng trong UI/runtime CARLA.
 
-Các lệnh train/export dùng môi trường Python 3.10 `.venv_yolo310`, vì runtime
-CARLA 0.9.11 vẫn dùng Python 3.7 nhưng Ultralytics YOLO mới cần Python mới hơn.
+Các lệnh train/export dùng Python 3.10 tại
+`$AEB_WORKSPACE_ROOT/environments/yolo310`, vì runtime CARLA 0.9.11 vẫn dùng
+Python 3.7 nhưng Ultralytics YOLO mới cần Python mới hơn.
 
 Audit dataset:
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
-.venv_yolo310/bin/python scripts/check_yolo_dataset.py
+$AEB_WORKSPACE_ROOT/environments/yolo310/bin/python scripts/check_yolo_dataset.py
 ```
 
 Train YOLO26n:
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
-.venv_yolo310/bin/python scripts/train_yolo26n.py
+$AEB_WORKSPACE_ROOT/environments/yolo310/bin/python scripts/train_yolo26n.py
 ```
 
 Export ONNX từ run mới nhất:
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
-.venv_yolo310/bin/python scripts/export_yolo26n_onnx.py
+$AEB_WORKSPACE_ROOT/environments/yolo310/bin/python scripts/export_yolo26n_onnx.py
 ```
 
 Model đang dùng hiện tại:

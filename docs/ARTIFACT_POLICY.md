@@ -18,7 +18,7 @@
 | Curated evidence | `docs/log/repeatability/`, claim matrices, CSV summaries | Track when required for reproducibility; never rewrite frozen generations |
 | Manuscript/report | `paper/paper_v*/`, `report/chapters_v3/`, approved exports | Preserve each version; create a new version instead of overwriting history |
 | Raw local runtime data | `$AEB_WORKSPACE_ROOT/datasets`, `runs`, `training` | Keep outside Git; move only with manifest/checksum verification |
-| Models/environments | `models/`, `.venv_yolo310/`, CARLA `venv/` | Machine-local or release assets; do not commit new large binaries |
+| Models/environments | `models/`, `$AEB_WORKSPACE_ROOT/environments/`, CARLA `venv/` | Machine-local or release assets; do not commit new large binaries |
 | Raw release archive | tarballs, model weights, large datasets | Use GitHub Release, LFS or an external archive after license review |
 
 Existing tracked binaries remain in history. Do not rewrite history merely to

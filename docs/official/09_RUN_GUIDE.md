@@ -208,13 +208,13 @@ Kiểm tra dataset:
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
-.venv_yolo310/bin/python scripts/check_yolo_dataset.py
+$AEB_WORKSPACE_ROOT/environments/yolo310/bin/python scripts/check_yolo_dataset.py
 ```
 
 Train YOLO26n:
 
 ```bash
-.venv_yolo310/bin/python scripts/train_yolo26n.py
+$AEB_WORKSPACE_ROOT/environments/yolo310/bin/python scripts/train_yolo26n.py
 ```
 
 Weight tốt nhất nằm trong:
@@ -226,13 +226,13 @@ $AEB_WORKSPACE_ROOT/training/detect/<run_name>/weights/best.pt
 Export weight mới nhất sang ONNX:
 
 ```bash
-.venv_yolo310/bin/python scripts/export_yolo26n_onnx.py
+$AEB_WORKSPACE_ROOT/environments/yolo310/bin/python scripts/export_yolo26n_onnx.py
 ```
 
 Hoặc chỉ định rõ weight:
 
 ```bash
-.venv_yolo310/bin/python scripts/export_yolo26n_onnx.py \
+$AEB_WORKSPACE_ROOT/environments/yolo310/bin/python scripts/export_yolo26n_onnx.py \
   --weights "$AEB_WORKSPACE_ROOT/training/detect/<run_name>/weights/best.pt"
 ```
 

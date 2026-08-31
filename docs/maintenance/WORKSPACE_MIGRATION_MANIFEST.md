@@ -54,3 +54,7 @@ bundle remain unchanged.
 - Dataset-v7 audit: 1,505 train, 300 validation and 200 test images; all quality
   gates passed.
 - Repository unit/claim/compile gates passed before and after migration.
+- The 6.1 GB YOLO Python environment was moved atomically to
+  `environments/yolo310`; Python/CV/NumPy/ORT imports and PyTorch CUDA passed.
+  Independent-backup comparison found only generated cache/directory-time
+  differences, not package files.

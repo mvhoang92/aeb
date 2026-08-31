@@ -104,7 +104,9 @@ source venv/bin/activate
 pip install numpy==1.21.6 pygame PyYAML opencv-python
 ```
 
-Môi trường YOLO dùng Python 3.10 riêng trong `aeb/.venv_yolo310`.
+Môi trường YOLO dùng Python 3.10 tại
+`$AEB_WORKSPACE_ROOT/environments/yolo310`; có thể override launcher bằng
+`AEB_YOLO_PYTHON`.
 
 ## Chạy CARLA
 
@@ -185,19 +187,19 @@ Kiểm tra dataset:
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
-.venv_yolo310/bin/python scripts/check_yolo_dataset.py
+${AEB_WORKSPACE_ROOT:-/home/mvhoang/CARLA_0.9.11/aeb_workspace}/environments/yolo310/bin/python scripts/check_yolo_dataset.py
 ```
 
 Train YOLO26n:
 
 ```bash
-.venv_yolo310/bin/python scripts/train_yolo26n.py
+${AEB_WORKSPACE_ROOT:-/home/mvhoang/CARLA_0.9.11/aeb_workspace}/environments/yolo310/bin/python scripts/train_yolo26n.py
 ```
 
 Export ONNX:
 
 ```bash
-.venv_yolo310/bin/python scripts/export_yolo26n_onnx.py
+${AEB_WORKSPACE_ROOT:-/home/mvhoang/CARLA_0.9.11/aeb_workspace}/environments/yolo310/bin/python scripts/export_yolo26n_onnx.py
 ```
 
 Model đang dùng:

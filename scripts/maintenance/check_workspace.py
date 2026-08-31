@@ -35,13 +35,24 @@ def collect_status():
             "exists": path.is_dir(),
             "dataset_yaml": (path / "dataset.yaml").is_file(),
         }
-    passed = all(item["exists"] for item in checks.values()) and all(
-        item["exists"] and item["dataset_yaml"] for item in datasets.values()
+    yolo_python = directories["environments"] / "yolo310" / "bin" / "python"
+    environment = {
+        "yolo_python": str(yolo_python),
+        "exists": yolo_python.is_file(),
+    }
+    passed = (
+        all(item["exists"] for item in checks.values())
+        and all(
+            item["exists"] and item["dataset_yaml"]
+            for item in datasets.values()
+        )
+        and environment["exists"]
     )
     return {
         "status": "PASS" if passed else "FAIL",
         "directories": checks,
         "datasets": datasets,
+        "environment": environment,
     }
 
 
@@ -61,6 +72,14 @@ def main():
         for name, item in status["datasets"].items():
             marker = "OK" if item["exists"] and item["dataset_yaml"] else "MISSING"
             print("{:<24} {:<7} {}".format(name, marker, item["path"]))
+        marker = "OK" if status["environment"]["exists"] else "MISSING"
+        print(
+            "{:<24} {:<7} {}".format(
+                "yolo_python",
+                marker,
+                status["environment"]["yolo_python"],
+            )
+        )
         print("Status: {}".format(status["status"]))
     return 0 if status["status"] == "PASS" else 2
 
