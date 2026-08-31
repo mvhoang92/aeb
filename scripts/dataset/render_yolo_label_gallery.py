@@ -7,10 +7,17 @@ import argparse
 import csv
 import random
 import shutil
+import sys
 from pathlib import Path
 
 import cv2
 
+
+AEB_ROOT = Path(__file__).resolve().parents[2]
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
+
+from infrastructure.workspace import dataset_checks_root, dataset_root  # noqa: E402
 
 IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp")
 DEFAULT_SPLITS = ("train", "val", "test")
@@ -32,13 +39,13 @@ def parse_args():
     parser.add_argument(
         "--dataset-root",
         type=Path,
-        default=Path("dataset_v5"),
+        default=dataset_root("dataset_v5"),
         help="Dataset root containing images/ and labels/ directories.",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("outputs/dataset_v5_box_check"),
+        default=dataset_checks_root() / "dataset_v5_box_check",
         help="Directory for rendered review images.",
     )
     parser.add_argument(

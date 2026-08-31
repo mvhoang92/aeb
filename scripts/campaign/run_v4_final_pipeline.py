@@ -31,6 +31,7 @@ CARLA_ROOT = AEB_ROOT.parent
 if str(AEB_ROOT) not in sys.path:
     sys.path.insert(0, str(AEB_ROOT))
 
+from infrastructure.workspace import campaigns_root, logs_root  # noqa: E402
 from scripts.run_v4_campaign import (  # noqa: E402
     CONFIGURATIONS,
     FUSION_RUNNER,
@@ -49,8 +50,8 @@ from scripts.run_v4_campaign import (  # noqa: E402
 )
 
 
-DEFAULT_OUTPUT_ROOT = AEB_ROOT / "outputs" / "paper_v4_final_pipeline"
-DEFAULT_LOG_ROOT = AEB_ROOT / "logs"
+DEFAULT_OUTPUT_ROOT = campaigns_root() / "paper_v4_final_pipeline"
+DEFAULT_LOG_ROOT = logs_root()
 EXPERIMENT_SPEC = AEB_ROOT / "configs" / "evaluation" / "paper_v4_experiments.yaml"
 DEVELOPMENT_SUITE = SUITE_ROOT / "fusion_fallback_development.yaml"
 PERTURBATION_SUITE = SUITE_ROOT / "fusion_perturbation_robustness.yaml"

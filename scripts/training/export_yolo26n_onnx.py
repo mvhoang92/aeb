@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import shutil
+import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -13,8 +14,13 @@ from ultralytics import YOLO
 
 
 AEB_ROOT = Path(__file__).resolve().parents[2]
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
+
+from infrastructure.workspace import training_root  # noqa: E402
+
 DEFAULT_CONFIG = AEB_ROOT / "configs" / "model_training.yaml"
-DEFAULT_RUNS = AEB_ROOT / "training_runs" / "detect"
+DEFAULT_RUNS = training_root() / "detect"
 
 
 def load_yaml(path: Path) -> Dict[str, Any]:

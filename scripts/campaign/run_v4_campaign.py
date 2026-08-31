@@ -22,8 +22,13 @@ import yaml
 
 
 AEB_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_LOG_ROOT = AEB_ROOT / "logs"
-DEFAULT_OUTPUT_ROOT = AEB_ROOT / "outputs" / "paper_v4_campaign"
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
+
+from infrastructure.workspace import campaigns_root, logs_root  # noqa: E402
+
+DEFAULT_LOG_ROOT = logs_root()
+DEFAULT_OUTPUT_ROOT = campaigns_root() / "paper_v4_campaign"
 FUSION_RUNNER = AEB_ROOT / "scripts" / "run_fusion_aeb_scenarios.py"
 RADAR_RUNNER = AEB_ROOT / "scripts" / "run_radar_aeb_scenarios.py"
 SUMMARIZER = AEB_ROOT / "scripts" / "summarize_repeatability.py"

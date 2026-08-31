@@ -41,6 +41,7 @@ from evaluation.scoring import summarize_scenario
 from evaluation.schemas import SUMMARY_FIELDS, TICK_FIELDS
 from evaluation.summary_writer import SummaryWriter, aggregate_summaries
 from evaluation.telemetry import add_motion_metrics
+from infrastructure.workspace import logs_root
 from ui.manual_control_common import RadarPoint, RadarSensor, carla, load_yaml
 
 
@@ -48,7 +49,7 @@ DEFAULT_SENSOR_CONFIG = AEB_ROOT / "configs" / "sensors.yaml"
 DEFAULT_SCENARIO_CONFIG = (
     AEB_ROOT / "configs" / "scenarios" / "suites" / "smoke_basic.yaml"
 )
-DEFAULT_LOG_ROOT = AEB_ROOT / "logs"
+DEFAULT_LOG_ROOT = logs_root()
 
 
 class HeadlessRadarAEB(PolicyControlledAEBRuntime):

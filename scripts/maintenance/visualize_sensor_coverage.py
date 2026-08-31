@@ -22,6 +22,8 @@ CARLA_DIST = PROJECT_ROOT / "PythonAPI" / "carla" / "dist"
 if str(AEB_ROOT) not in sys.path:
     sys.path.insert(0, str(AEB_ROOT))
 
+from infrastructure.workspace import sensor_coverage_root  # noqa: E402
+
 try:
     sys.path.append(
         glob.glob(
@@ -60,7 +62,7 @@ except ImportError:
 
 
 DEFAULT_CONFIG = AEB_ROOT / "configs" / "sensors.yaml"
-DEFAULT_OUTPUT_DIR = AEB_ROOT / "outputs" / "sensor_coverage"
+DEFAULT_OUTPUT_DIR = sensor_coverage_root() / "sensor_coverage"
 TESLA_MODEL3 = "vehicle.tesla.model3"
 
 CAMERA_COLOR = carla.Color(0, 120, 255)

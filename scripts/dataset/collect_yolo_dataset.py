@@ -60,6 +60,7 @@ try:
 except ImportError:
     raise RuntimeError("Không import được PyYAML.")
 
+from infrastructure.workspace import resolve_project_path
 from core.ground_truth_labels import (
     camera_intrinsic,
     decode_carla_depth,
@@ -216,9 +217,11 @@ class GroundTruthCollector(object):
         configured = Path(
             self.args.output or self.dataset_config.get("root", "aeb/dataset")
         )
-        if not configured.is_absolute():
-            configured = ROOT / configured
-        return configured
+        return resolve_project_path(
+            configured,
+            project_root=PROJECT_ROOT,
+            aeb_root=AEB_ROOT,
+        )
 
     def _ensure_map(self):
         expected_map = str(self.world_config.get("map", "Town04"))

@@ -8,6 +8,7 @@ import csv
 import json
 import math
 import shutil
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -18,6 +19,11 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 
 AEB_ROOT = Path(__file__).resolve().parents[2]
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
+
+from infrastructure.workspace import campaigns_root, logs_root  # noqa: E402
+
 CORE_SUITES = (
     "system_limit_extended_sweep",
     "radar_only_regression",
@@ -290,11 +296,11 @@ def generate_figures(output_dir, core_metrics, section_metrics, ablation_rows, l
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--campaign-id", default="paper_v4_gpu_final_locked_20260825")
-    parser.add_argument("--log-root", type=Path, default=AEB_ROOT / "logs")
+    parser.add_argument("--log-root", type=Path, default=logs_root())
     parser.add_argument(
         "--campaign-root",
         type=Path,
-        default=AEB_ROOT / "outputs" / "paper_v4_final_pipeline",
+        default=campaigns_root() / "paper_v4_final_pipeline",
     )
     parser.add_argument(
         "--output-dir",

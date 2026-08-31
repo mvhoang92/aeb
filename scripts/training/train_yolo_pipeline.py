@@ -26,6 +26,8 @@ ROOT = PROJECT_ROOT
 if str(AEB_ROOT) not in sys.path:
     sys.path.insert(0, str(AEB_ROOT))
 
+from infrastructure.workspace import resolve_project_path  # noqa: E402
+
 DEFAULT_CONFIG = AEB_ROOT / "configs" / "model_training.yaml"
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png"}
 SPLITS = ("train", "val", "test")
@@ -37,8 +39,11 @@ def load_yaml(path: Path) -> Dict[str, Any]:
 
 
 def resolve_path(value: Union[str, Path]) -> Path:
-    path = Path(value)
-    return path if path.is_absolute() else ROOT / path
+    return resolve_project_path(
+        value,
+        project_root=PROJECT_ROOT,
+        aeb_root=AEB_ROOT,
+    )
 
 
 def image_paths(dataset_root: Path, split: str) -> List[Path]:

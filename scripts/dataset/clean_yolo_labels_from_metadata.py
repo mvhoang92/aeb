@@ -6,6 +6,7 @@ from __future__ import print_function
 import argparse
 import json
 import shutil
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -14,7 +15,12 @@ import yaml
 
 
 AEB_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_DATASET_ROOT = AEB_ROOT / "dataset_v6"
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
+
+from infrastructure.workspace import dataset_root  # noqa: E402
+
+DEFAULT_DATASET_ROOT = dataset_root("dataset_v6")
 DEFAULT_CONFIG = AEB_ROOT / "configs" / "dataset_collection.yaml"
 SPLITS = ("train", "val", "test")
 

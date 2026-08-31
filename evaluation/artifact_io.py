@@ -8,6 +8,8 @@ import hashlib
 import subprocess
 from pathlib import Path
 
+from infrastructure.workspace import resolve_project_path as resolve_workspace_path
+
 
 AEB_ROOT = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = AEB_ROOT.parent
@@ -25,14 +27,11 @@ def sha256_file(path):
 def resolve_project_path(value):
     if not value:
         return None
-    path = Path(str(value))
-    if path.is_absolute():
-        return path
-    for base in (PROJECT_ROOT, AEB_ROOT):
-        candidate = base / path
-        if candidate.exists():
-            return candidate
-    return PROJECT_ROOT / path
+    return resolve_workspace_path(
+        value,
+        project_root=PROJECT_ROOT,
+        aeb_root=AEB_ROOT,
+    )
 
 def git_state(repository):
     try:

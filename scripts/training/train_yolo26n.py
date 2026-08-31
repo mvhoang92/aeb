@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Union
@@ -14,6 +15,11 @@ from ultralytics import YOLO
 
 AEB_ROOT = Path(__file__).resolve().parents[2]
 PROJECT_ROOT = AEB_ROOT.parent
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
+
+from infrastructure.workspace import resolve_project_path  # noqa: E402
+
 DEFAULT_CONFIG = AEB_ROOT / "configs" / "model_training.yaml"
 
 
@@ -23,8 +29,11 @@ def load_yaml(path: Path) -> Dict[str, Any]:
 
 
 def resolve_path(value: Union[str, Path]) -> Path:
-    path = Path(value)
-    return path if path.is_absolute() else PROJECT_ROOT / path
+    return resolve_project_path(
+        value,
+        project_root=PROJECT_ROOT,
+        aeb_root=AEB_ROOT,
+    )
 
 
 def parse_args() -> argparse.Namespace:

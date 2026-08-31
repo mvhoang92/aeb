@@ -29,6 +29,11 @@ from pathlib import Path
 import yaml
 
 AEB_ROOT = Path(__file__).resolve().parents[2]
+if str(AEB_ROOT) not in sys.path:
+    sys.path.insert(0, str(AEB_ROOT))
+
+from infrastructure.workspace import videos_root  # noqa: E402
+
 VENV_PYTHON = str((AEB_ROOT.parent / "venv" / "bin" / "python").resolve())
 
 
@@ -220,7 +225,7 @@ def parse_args():
         default=AEB_ROOT / "configs" / "scenarios" / "suites" / "report_demo.yaml",
     )
     parser.add_argument(
-        "--output-dir", default=str(AEB_ROOT / "outputs" / "scenario_videos"),
+        "--output-dir", default=str(videos_root() / "scenario_videos"),
     )
     parser.add_argument(
         "--ui-script",

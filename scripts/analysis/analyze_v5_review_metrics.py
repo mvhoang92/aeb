@@ -12,6 +12,7 @@ import json
 import math
 import shutil
 import statistics
+import sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -22,8 +23,13 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from infrastructure.workspace import logs_root  # noqa: E402
+
 CAMPAIGN = "paper_v4_gpu_final_locked_20260825"
-LOG_ROOT = ROOT / "logs"
+LOG_ROOT = logs_root()
 OUT = ROOT / "docs" / "log" / "repeatability" / "paper_v5_derived"
 CONFIGS = ("radar_only", "hard_gate", "safe_fallback")
 CORE_SUITES = (

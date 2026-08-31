@@ -24,6 +24,7 @@ PROJECT_ROOT = AEB_ROOT.parent
 if str(AEB_ROOT) not in sys.path:
     sys.path.insert(0, str(AEB_ROOT))
 
+from infrastructure.workspace import logs_root  # noqa: E402
 from scripts.run_radar_aeb_scenarios import (  # noqa: E402
     actor_distances,
 )
@@ -43,8 +44,8 @@ DEFAULT_SENSOR_CONFIG = AEB_ROOT / "configs" / "sensors.yaml"
 DEFAULT_SCENARIO_CONFIG = (
     AEB_ROOT / "configs" / "scenarios" / "suites" / "radar_only_regression.yaml"
 )
-DEFAULT_OUTPUT = AEB_ROOT / "logs" / "smoke_yolo_fusion_full_latest.json"
-DEFAULT_DEBUG_DIR = AEB_ROOT / "logs" / "smoke_debug"
+DEFAULT_OUTPUT = logs_root() / "smoke_yolo_fusion_full_latest.json"
+DEFAULT_DEBUG_DIR = logs_root() / "smoke_debug"
 
 
 def parse_args():
@@ -413,7 +414,7 @@ def run_full_scenario(args):
         text=True,
         check=False,
     )
-    summary_path = AEB_ROOT / "logs" / args.run_id / "summary.json"
+    summary_path = logs_root() / args.run_id / "summary.json"
     summary = None
     if summary_path.exists():
         with summary_path.open("r", encoding="utf-8") as stream:
@@ -421,7 +422,7 @@ def run_full_scenario(args):
     return {
         "status": "PASS" if result.returncode == 0 and summary else "FAIL",
         "returncode": result.returncode,
-        "log_dir": str(AEB_ROOT / "logs" / args.run_id),
+        "log_dir": str(logs_root() / args.run_id),
         "stdout_tail": result.stdout.splitlines()[-12:],
         "summary": summary,
     }
