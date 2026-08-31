@@ -83,6 +83,24 @@ BRAKE_MODES = (
     "staged_pid",
 )
 
+COLORS = {
+    "background": "#F3F6FB",
+    "surface": "#FFFFFF",
+    "surface_muted": "#EAF0F8",
+    "navy": "#10243E",
+    "navy_soft": "#183653",
+    "primary": "#2563EB",
+    "primary_hover": "#1D4ED8",
+    "success": "#0F9D78",
+    "warning": "#D97706",
+    "danger": "#DC3545",
+    "text": "#172033",
+    "muted": "#607089",
+    "border": "#D8E1ED",
+    "console": "#0B1220",
+    "console_text": "#D7E3F4",
+}
+
 
 def load_yaml(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as stream:
@@ -228,9 +246,9 @@ class ManagedProcess:
 class AebLauncher:
     def __init__(self, root: tk.Tk):
         self.root = root
-        self.root.title("CARLA AEB Project Launcher")
-        self.root.geometry("1180x820")
-        self.root.minsize(980, 680)
+        self.root.title("AEB Control Center · CARLA 0.9.11")
+        self.root.geometry("1240x900")
+        self.root.minsize(1080, 760)
         self.output_queue: queue.Queue = queue.Queue()
         self.processes: Dict[str, ManagedProcess] = {}
         self.scenario_config_name = tk.StringVar(value="Suite / report demo")
@@ -286,6 +304,13 @@ class AebLauncher:
 
         self._configure_style()
         self._build_layout()
+        self.root.bind("<F5>", lambda _event: self._check_server_now())
+        self.root.bind("<Control-l>", lambda _event: self._clear_log())
+        for index in range(4):
+            self.root.bind(
+                "<Control-{}>".format(index + 1),
+                lambda _event, selected=index: self.notebook.select(selected),
+            )
         self.host.trace_add("write", lambda *_args: self._refresh_command_preview())
         self.port.trace_add("write", lambda *_args: self._refresh_command_preview())
         self._refresh_command_preview()
@@ -294,75 +319,273 @@ class AebLauncher:
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _configure_style(self) -> None:
-        style = ttk.Style()
+        self.root.configure(background=COLORS["background"])
+        style = ttk.Style(self.root)
         try:
             style.theme_use("clam")
         except tk.TclError:
             pass
-        style.configure("TButton", padding=(10, 6))
-        style.configure("Primary.TButton", padding=(12, 7))
-        style.configure("Status.TLabel", font=("TkDefaultFont", 10, "bold"))
-        style.configure("Title.TLabel", font=("TkDefaultFont", 17, "bold"))
+
+        default_font = ("DejaVu Sans", 10)
+        style.configure(".", font=default_font, foreground=COLORS["text"])
+        style.configure("TFrame", background=COLORS["background"])
+        style.configure("Card.TFrame", background=COLORS["surface"])
+        style.configure("Hero.TFrame", background=COLORS["navy"])
+        style.configure(
+            "HeroTitle.TLabel",
+            background=COLORS["navy"],
+            foreground="#FFFFFF",
+            font=("DejaVu Sans", 20, "bold"),
+        )
+        style.configure(
+            "HeroSubtitle.TLabel",
+            background=COLORS["navy"],
+            foreground="#BFD0E5",
+            font=("DejaVu Sans", 10),
+        )
+        style.configure(
+            "SectionTitle.TLabel",
+            background=COLORS["background"],
+            foreground=COLORS["navy"],
+            font=("DejaVu Sans", 13, "bold"),
+        )
+        style.configure(
+            "SectionHint.TLabel",
+            background=COLORS["background"],
+            foreground=COLORS["muted"],
+        )
+        style.configure(
+            "CardTitle.TLabel",
+            background=COLORS["surface"],
+            foreground=COLORS["navy"],
+            font=("DejaVu Sans", 11, "bold"),
+        )
+        style.configure(
+            "Muted.TLabel",
+            background=COLORS["surface"],
+            foreground=COLORS["muted"],
+        )
+        style.configure(
+            "Status.TLabel",
+            background=COLORS["navy_soft"],
+            foreground="#FFFFFF",
+            font=("DejaVu Sans", 10, "bold"),
+            padding=(12, 7),
+        )
+        style.configure("Online.Status.TLabel", background=COLORS["success"])
+        style.configure("Offline.Status.TLabel", background=COLORS["danger"])
+        style.configure("Warning.Status.TLabel", background=COLORS["warning"])
+
+        style.configure(
+            "TButton",
+            background=COLORS["surface_muted"],
+            foreground=COLORS["text"],
+            padding=(12, 7),
+            borderwidth=0,
+        )
+        style.map("TButton", background=[("active", COLORS["border"])])
+        style.configure(
+            "Primary.TButton",
+            background=COLORS["primary"],
+            foreground="#FFFFFF",
+            font=("DejaVu Sans", 10, "bold"),
+            padding=(15, 8),
+        )
+        style.map(
+            "Primary.TButton",
+            background=[("active", COLORS["primary_hover"])],
+            foreground=[("disabled", "#E5E7EB")],
+        )
+        style.configure(
+            "Danger.TButton",
+            background="#FDE8EA",
+            foreground=COLORS["danger"],
+            padding=(12, 7),
+        )
+        style.map("Danger.TButton", background=[("active", "#F8CDD2")])
+        style.configure(
+            "Hero.TButton",
+            background="#FFFFFF",
+            foreground=COLORS["navy"],
+            padding=(12, 7),
+            borderwidth=0,
+        )
+        style.map("Hero.TButton", background=[("active", "#DCE8F6")])
+
+        style.configure(
+            "TNotebook",
+            background=COLORS["background"],
+            borderwidth=0,
+            tabmargins=(0, 0, 0, 0),
+        )
+        style.configure(
+            "TNotebook.Tab",
+            background=COLORS["surface_muted"],
+            foreground=COLORS["muted"],
+            padding=(18, 10),
+            font=("DejaVu Sans", 10, "bold"),
+            borderwidth=0,
+        )
+        style.map(
+            "TNotebook.Tab",
+            background=[("selected", COLORS["surface"])],
+            foreground=[("selected", COLORS["primary"])],
+        )
+        style.configure(
+            "Card.TLabelframe",
+            background=COLORS["surface"],
+            bordercolor=COLORS["border"],
+            relief=tk.SOLID,
+            borderwidth=1,
+        )
+        style.configure(
+            "Card.TLabelframe.Label",
+            background=COLORS["surface"],
+            foreground=COLORS["navy"],
+            font=("DejaVu Sans", 10, "bold"),
+        )
+        style.configure(
+            "Panel.TLabelframe",
+            background=COLORS["background"],
+            bordercolor=COLORS["border"],
+            relief=tk.SOLID,
+            borderwidth=1,
+        )
+        style.configure(
+            "Panel.TLabelframe.Label",
+            background=COLORS["background"],
+            foreground=COLORS["navy"],
+            font=("DejaVu Sans", 10, "bold"),
+        )
+        style.configure("TLabel", background=COLORS["background"])
+        style.configure("TCheckbutton", background=COLORS["background"])
+        style.map("TCheckbutton", background=[("active", COLORS["background"])])
+        style.configure("TEntry", padding=5, fieldbackground=COLORS["surface"])
+        style.configure("TCombobox", padding=5, fieldbackground=COLORS["surface"])
+        style.configure("TSpinbox", padding=5, fieldbackground=COLORS["surface"])
 
     def _build_layout(self) -> None:
-        outer = ttk.Frame(self.root, padding=12)
+        outer = ttk.Frame(self.root, padding=(18, 16, 18, 12))
         outer.pack(fill=tk.BOTH, expand=True)
 
-        header = ttk.Frame(outer)
-        header.pack(fill=tk.X)
-        ttk.Label(header, text="CARLA AEB Project Launcher", style="Title.TLabel").pack(
-            side=tk.LEFT
-        )
-        ttk.Label(header, textvariable=self.server_status, style="Status.TLabel").pack(
-            side=tk.RIGHT, padx=(8, 0)
-        )
-        ttk.Button(header, text="Kiểm tra server", command=self._check_server_now).pack(
-            side=tk.RIGHT
-        )
+        hero = ttk.Frame(outer, style="Hero.TFrame", padding=(22, 16))
+        hero.pack(fill=tk.X)
+        identity = ttk.Frame(hero, style="Hero.TFrame")
+        identity.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Label(
+            identity,
+            text="AEB Control Center",
+            style="HeroTitle.TLabel",
+        ).pack(anchor=tk.W)
+        ttk.Label(
+            identity,
+            text="Khởi động CARLA, chạy demo, kiểm thử và ghi video tại một nơi.",
+            style="HeroSubtitle.TLabel",
+        ).pack(anchor=tk.W, pady=(3, 0))
 
-        notebook = ttk.Notebook(outer)
-        notebook.pack(fill=tk.BOTH, expand=True, pady=(12, 8))
-        self.server_tab = ttk.Frame(notebook, padding=14)
-        self.ui_tab = ttk.Frame(notebook, padding=14)
-        self.test_tab = ttk.Frame(notebook, padding=14)
-        self.video_tab = ttk.Frame(notebook, padding=14)
-        notebook.add(self.server_tab, text="CARLA Server")
-        notebook.add(self.ui_tab, text="Ứng dụng UI")
-        notebook.add(self.test_tab, text="Kiểm thử")
-        notebook.add(self.video_tab, text="Quay video")
+        hero_actions = ttk.Frame(hero, style="Hero.TFrame")
+        hero_actions.pack(side=tk.RIGHT)
+        ttk.Button(
+            hero_actions,
+            text="Kiểm tra kết nối",
+            style="Hero.TButton",
+            command=self._check_server_now,
+        ).pack(side=tk.LEFT, padx=(0, 10))
+        self.server_status_label = ttk.Label(
+            hero_actions,
+            textvariable=self.server_status,
+            style="Status.TLabel",
+        )
+        self.server_status_label.pack(side=tk.LEFT)
+
+        guide = ttk.Frame(outer, style="Card.TFrame", padding=(16, 9))
+        guide.pack(fill=tk.X, pady=(10, 8))
+        ttk.Label(guide, text="QUY TRÌNH", style="CardTitle.TLabel").pack(side=tk.LEFT)
+        ttk.Label(
+            guide,
+            text="  1  Bật CARLA   →   2  Chạy ứng dụng   →   3  Kiểm thử   →   4  Ghi video",
+            style="Muted.TLabel",
+        ).pack(side=tk.LEFT, padx=(10, 0))
+
+        body = ttk.Panedwindow(outer, orient=tk.VERTICAL)
+        body.pack(fill=tk.BOTH, expand=True)
+
+        notebook = ttk.Notebook(body)
+        self.notebook = notebook
+        self.server_tab = ttk.Frame(notebook, padding=(18, 14))
+        self.ui_tab = ttk.Frame(notebook, padding=(18, 14))
+        self.test_tab = ttk.Frame(notebook, padding=(18, 14))
+        self.video_tab = ttk.Frame(notebook, padding=(18, 14))
+        notebook.add(self.server_tab, text="1   CARLA SERVER")
+        notebook.add(self.ui_tab, text="2   ỨNG DỤNG")
+        notebook.add(self.test_tab, text="3   KIỂM THỬ")
+        notebook.add(self.video_tab, text="4   GHI VIDEO")
 
         self._build_server_tab()
         self._build_ui_tab()
         self._build_test_tab()
         self._build_video_tab()
 
-        process_bar = ttk.Frame(outer)
-        process_bar.pack(fill=tk.X, pady=(0, 6))
-        ttk.Label(process_bar, text="Tiến trình đang quản lý:").pack(side=tk.LEFT)
-        self.process_label = ttk.Label(process_bar, text="Không có")
-        self.process_label.pack(side=tk.LEFT, padx=6)
+        console = ttk.Frame(body, style="Card.TFrame", padding=(14, 10))
+        console_header = ttk.Frame(console, style="Card.TFrame")
+        console_header.pack(fill=tk.X, pady=(0, 7))
+        ttk.Label(console_header, text="NHẬT KÝ TIẾN TRÌNH", style="CardTitle.TLabel").pack(
+            side=tk.LEFT
+        )
+        ttk.Label(console_header, text="Đang chạy:", style="Muted.TLabel").pack(
+            side=tk.LEFT, padx=(22, 5)
+        )
+        self.process_label = ttk.Label(
+            console_header,
+            text="Không có",
+            style="CardTitle.TLabel",
+        )
+        self.process_label.pack(side=tk.LEFT)
         ttk.Button(
-            process_bar,
-            text="Dừng tiến trình...",
+            console_header,
+            text="Dừng tiến trình…",
+            style="Danger.TButton",
             command=self._stop_selected_process,
         ).pack(side=tk.RIGHT)
+        ttk.Button(
+            console_header,
+            text="Xóa nhật ký",
+            command=self._clear_log,
+        ).pack(side=tk.RIGHT, padx=(0, 8))
 
-        log_header = ttk.Frame(outer)
-        log_header.pack(fill=tk.X)
-        ttk.Label(log_header, text="Log").pack(side=tk.LEFT)
-        ttk.Button(log_header, text="Xóa log", command=self._clear_log).pack(
-            side=tk.RIGHT
-        )
         self.log = ScrolledText(
-            outer,
-            height=15,
+            console,
+            height=2,
             wrap=tk.WORD,
-            font=("DejaVu Sans Mono", 10),
+            font=("DejaVu Sans Mono", 9),
+            background=COLORS["console"],
+            foreground=COLORS["console_text"],
+            insertbackground="#FFFFFF",
+            selectbackground=COLORS["primary"],
+            relief=tk.FLAT,
+            padx=10,
+            pady=8,
             state=tk.DISABLED,
         )
         self.log.pack(fill=tk.BOTH, expand=True)
+        body.add(notebook, weight=7)
+        body.add(console, weight=1)
+
+    @staticmethod
+    def _section_intro(parent: ttk.Frame, title: str, hint: str) -> None:
+        ttk.Label(parent, text=title, style="SectionTitle.TLabel").pack(anchor=tk.W)
+        ttk.Label(
+            parent,
+            text=hint,
+            style="SectionHint.TLabel",
+        ).pack(anchor=tk.W, pady=(2, 11))
 
     def _build_server_tab(self) -> None:
+        self._section_intro(
+            self.server_tab,
+            "CARLA server",
+            "Cấu hình simulator trước, sau đó kiểm tra trạng thái kết nối ở góc trên bên phải.",
+        )
         form = ttk.Frame(self.server_tab)
         form.pack(anchor=tk.NW, fill=tk.X)
         ttk.Label(form, text="Host").grid(row=0, column=0, sticky=tk.W, pady=6)
@@ -374,7 +597,7 @@ class AebLauncher:
             row=0, column=3, sticky=tk.W, padx=8
         )
 
-        ttk.Label(form, text="Quality").grid(row=1, column=0, sticky=tk.W, pady=6)
+        ttk.Label(form, text="Chất lượng đồ họa").grid(row=1, column=0, sticky=tk.W, pady=6)
         quality = ttk.Combobox(
             form,
             textvariable=self.server_quality,
@@ -405,9 +628,12 @@ class AebLauncher:
             style="Primary.TButton",
             command=self._start_server,
         ).pack(side=tk.LEFT)
-        ttk.Button(actions, text="Dừng CARLA đã bật từ launcher", command=self._stop_server).pack(
-            side=tk.LEFT, padx=8
-        )
+        ttk.Button(
+            actions,
+            text="Dừng CARLA",
+            style="Danger.TButton",
+            command=self._stop_server,
+        ).pack(side=tk.LEFT, padx=8)
         ttk.Button(actions, text="Dọn CARLA treo", command=self._cleanup_carla_processes).pack(
             side=tk.LEFT
         )
@@ -424,6 +650,11 @@ class AebLauncher:
         self.server_command = self._command_preview(self.server_tab)
 
     def _build_ui_tab(self) -> None:
+        self._section_intro(
+            self.ui_tab,
+            "Ứng dụng trực quan",
+            "Chọn màn hình quan sát và scenario. Các tùy chọn AEB chỉ xuất hiện trong lệnh khi phù hợp.",
+        )
         form = ttk.Frame(self.ui_tab)
         form.pack(anchor=tk.NW, fill=tk.X)
 
@@ -462,7 +693,12 @@ class AebLauncher:
             command=self._refresh_command_preview,
         ).grid(row=1, column=2, sticky=tk.W)
 
-        scenario_frame = ttk.LabelFrame(form, text="Radar AEB live scenario", padding=10)
+        scenario_frame = ttk.LabelFrame(
+            form,
+            text="Scenario AEB trực tiếp",
+            style="Panel.TLabelframe",
+            padding=10,
+        )
         scenario_frame.grid(
             row=2,
             column=0,
@@ -490,7 +726,7 @@ class AebLauncher:
             width=30,
         )
         self.live_scenario_combo.grid(row=0, column=3, sticky=tk.W, padx=8)
-        ttk.Label(scenario_frame, text="Control").grid(row=1, column=0, sticky=tk.W, pady=(8, 0))
+        ttk.Label(scenario_frame, text="Điều khiển").grid(row=1, column=0, sticky=tk.W, pady=(8, 0))
         ttk.Combobox(
             scenario_frame,
             textvariable=self.live_control_mode,
@@ -506,7 +742,7 @@ class AebLauncher:
             state="readonly",
             width=14,
         ).grid(row=1, column=3, sticky=tk.W, padx=8, pady=(8, 0))
-        ttk.Label(scenario_frame, text="Warm-up").grid(row=2, column=0, sticky=tk.W, pady=(8, 0))
+        ttk.Label(scenario_frame, text="Warm-up (s)").grid(row=2, column=0, sticky=tk.W, pady=(8, 0))
         ttk.Spinbox(
             scenario_frame,
             from_=0.0,
@@ -584,12 +820,20 @@ class AebLauncher:
             style="Primary.TButton",
             command=self._start_ui,
         ).pack(side=tk.LEFT)
-        ttk.Button(actions, text="Dừng ứng dụng", command=self._stop_ui).pack(
-            side=tk.LEFT, padx=8
-        )
+        ttk.Button(
+            actions,
+            text="Dừng ứng dụng",
+            style="Danger.TButton",
+            command=self._stop_ui,
+        ).pack(side=tk.LEFT, padx=8)
         self.ui_command_preview = self._command_preview(self.ui_tab)
 
     def _build_test_tab(self) -> None:
+        self._section_intro(
+            self.test_tab,
+            "Kiểm thử có kiểm soát",
+            "Chạy scenario radar/fusion, unit test hoặc audit dataset từ cùng một giao diện.",
+        )
         form = ttk.Frame(self.test_tab)
         form.pack(anchor=tk.NW, fill=tk.X)
         ttk.Label(form, text="Loại kiểm thử").grid(row=0, column=0, sticky=tk.W, pady=6)
@@ -618,7 +862,7 @@ class AebLauncher:
         )
         self.test_scenario_combo.grid(row=0, column=3, sticky=tk.W, padx=8)
 
-        ttk.Label(form, text="Control mode").grid(row=1, column=0, sticky=tk.W, pady=6)
+        ttk.Label(form, text="Chế độ điều khiển").grid(row=1, column=0, sticky=tk.W, pady=6)
         self.test_control_combo = ttk.Combobox(
             form,
             textvariable=self.test_control_mode,
@@ -644,7 +888,7 @@ class AebLauncher:
             sticky=tk.W,
             padx=(8, 24),
         )
-        ttk.Label(form, text="Cooldown").grid(row=2, column=2, sticky=tk.W)
+        ttk.Label(form, text="Cooldown (s)").grid(row=2, column=2, sticky=tk.W)
         ttk.Spinbox(
             form,
             from_=0.0,
@@ -704,13 +948,21 @@ class AebLauncher:
             style="Primary.TButton",
             command=self._start_test,
         ).pack(side=tk.LEFT)
-        ttk.Button(actions, text="Dừng kiểm thử", command=self._stop_test).pack(
-            side=tk.LEFT, padx=8
-        )
+        ttk.Button(
+            actions,
+            text="Dừng kiểm thử",
+            style="Danger.TButton",
+            command=self._stop_test,
+        ).pack(side=tk.LEFT, padx=8)
         self.test_command_preview = self._command_preview(self.test_tab)
         self._on_test_selection()
 
     def _build_video_tab(self) -> None:
+        self._section_intro(
+            self.video_tab,
+            "Ghi video scenario",
+            "Chọn encoder, độ phân giải và thời gian nán; video được lưu trong external workspace.",
+        )
         form = ttk.Frame(self.video_tab)
         form.pack(anchor=tk.NW, fill=tk.X)
 
@@ -758,7 +1010,7 @@ class AebLauncher:
             width=18,
         ).grid(row=2, column=1, sticky=tk.W, padx=(8, 24))
 
-        ttk.Label(form, text="Nán sau test").grid(row=2, column=2, sticky=tk.W, pady=6)
+        ttk.Label(form, text="Chờ sau test (s)").grid(row=2, column=2, sticky=tk.W, pady=6)
         ttk.Spinbox(
             form,
             from_=0.0,
@@ -768,7 +1020,7 @@ class AebLauncher:
             width=8,
         ).grid(row=2, column=3, sticky=tk.W, padx=8)
 
-        ttk.Label(form, text="Max seconds").grid(row=3, column=0, sticky=tk.W)
+        ttk.Label(form, text="Tối đa (s)").grid(row=3, column=0, sticky=tk.W)
         ttk.Spinbox(
             form,
             from_=10.0,
@@ -778,7 +1030,7 @@ class AebLauncher:
             width=8,
         ).grid(row=3, column=1, sticky=tk.W, padx=(8, 24))
 
-        ttk.Label(form, text="Cooldown").grid(row=3, column=2, sticky=tk.W)
+        ttk.Label(form, text="Cooldown (s)").grid(row=3, column=2, sticky=tk.W)
         ttk.Spinbox(
             form,
             from_=0.0,
@@ -830,21 +1082,44 @@ class AebLauncher:
             style="Primary.TButton",
             command=self._start_video,
         ).pack(side=tk.LEFT)
-        ttk.Button(actions, text="Dừng quay", command=self._stop_video).pack(
-            side=tk.LEFT, padx=8
-        )
+        ttk.Button(
+            actions,
+            text="Dừng quay",
+            style="Danger.TButton",
+            command=self._stop_video,
+        ).pack(side=tk.LEFT, padx=8)
         self.video_command_preview = self._command_preview(self.video_tab)
 
     @staticmethod
     def _command_preview(parent: ttk.Frame) -> tk.Text:
-        ttk.Label(parent, text="Lệnh sẽ chạy:").pack(anchor=tk.W, pady=(10, 4))
+        header = ttk.Frame(parent)
+        header.pack(fill=tk.X, pady=(9, 4))
+        ttk.Label(
+            header,
+            text="LỆNH SẼ CHẠY",
+            style="SectionHint.TLabel",
+        ).pack(side=tk.LEFT)
         widget = tk.Text(
             parent,
             height=3,
             wrap=tk.WORD,
-            font=("DejaVu Sans Mono", 10),
+            font=("DejaVu Sans Mono", 9),
+            background=COLORS["console"],
+            foreground=COLORS["console_text"],
+            selectbackground=COLORS["primary"],
+            relief=tk.FLAT,
+            padx=10,
+            pady=7,
             state=tk.DISABLED,
         )
+
+        def copy_command() -> None:
+            text = widget.get("1.0", tk.END).strip()
+            if text:
+                widget.clipboard_clear()
+                widget.clipboard_append(text)
+
+        ttk.Button(header, text="Sao chép lệnh", command=copy_command).pack(side=tk.RIGHT)
         widget.pack(fill=tk.X)
         return widget
 
@@ -1318,18 +1593,23 @@ class AebLauncher:
         port = self._int_value(self.port, 2000)
         opened = port_open(self.host.get(), port, timeout=0.5)
         if opened:
-            status = "CARLA: ONLINE {}:{}".format(self.host.get(), port)
+            status = "ONLINE  {}:{}".format(self.host.get(), port)
+            status_style = "Online.Status.TLabel"
         else:
             rows = carla_process_rows()
             if rows:
-                status = "CARLA: PROCESS TREO, PORT OFFLINE {}:{} ({})".format(
+                status = "CẦN DỌN  {}:{} · {} process".format(
                     self.host.get(),
                     port,
                     len(rows),
                 )
+                status_style = "Warning.Status.TLabel"
             else:
-                status = "CARLA: OFFLINE {}:{}".format(self.host.get(), port)
+                status = "OFFLINE  {}:{}".format(self.host.get(), port)
+                status_style = "Offline.Status.TLabel"
         self.server_status.set(status)
+        if hasattr(self, "server_status_label"):
+            self.server_status_label.configure(style=status_style)
 
     def _poll_processes(self) -> None:
         self._check_server_now()

@@ -19,11 +19,14 @@ Launcher có giao diện để bật CARLA, chạy các app UI và chạy từng
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
-python3 laucher.py
+/usr/bin/python3 launcher.py
 ```
 
 Launcher chạy bằng `python3` hệ thống vì môi trường `venv` CARLA/YOLO có thể
 không có `tkinter`. Các nút bên trong vẫn gọi đúng Python riêng cho từng phần.
+
+Giao diện trình bày theo bốn bước `CARLA → ứng dụng → kiểm thử → ghi video`,
+có trạng thái kết nối theo màu, command preview và nhật ký tiến trình tập trung.
 
 Các chức năng chính:
 
@@ -41,7 +44,7 @@ Các chức năng chính:
 Kiểm tra dependency mà không mở cửa sổ:
 
 ```bash
-python3 laucher.py --check
+/usr/bin/python3 launcher.py --check
 ```
 
 ## Scenario Config

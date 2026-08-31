@@ -122,18 +122,20 @@ control.
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
-python3 launcher.py
+/usr/bin/python3 launcher.py
 ```
 
-Tên lịch sử `python3 laucher.py` vẫn được hỗ trợ qua compatibility wrapper.
+`launcher.py` là entry point duy nhất. Tên viết sai lịch sử `laucher.py` đã được
+loại bỏ để tránh nhầm lẫn.
 
-Launcher có các tab chính:
+Launcher dùng giao diện `AEB Control Center` với quy trình trực quan:
 
-- `CARLA Server`: bật/tắt CARLA với NVIDIA offload và quality Low.
-- `Ứng dụng UI`: chạy final demo 3 màn, camera, radar, YOLO, fusion hoặc radar
-  AEB live scenario.
-- `Kiểm thử`: chạy scenario batch, unit test, audit dataset.
-- `Quay video`: quay video từ giao diện final demo và sinh report video.
+1. `CARLA Server`: bật/tắt simulator và xem trạng thái online theo màu.
+2. `Ứng dụng`: chạy final demo, camera, radar, YOLO hoặc fusion.
+3. `Kiểm thử`: chạy scenario batch, unit test hoặc audit dataset.
+4. `Ghi video`: chọn encoder, độ phân giải và scenario.
+
+Mỗi màn đều hiển thị lệnh thực thi và có nút sao chép trước khi chạy.
 
 Kiểm tra dependency launcher:
 

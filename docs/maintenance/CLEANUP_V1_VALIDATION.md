@@ -28,7 +28,8 @@ See `WORKSPACE_MIGRATION_MANIFEST.md` and external
 - Paper-v4/report-v3 claim validator: PASS.
 - Paper-v5 scenario/severity/bilingual validator: PASS.
 - Compile audit and `git diff --check`: PASS.
-- Canonical and historical launcher checks: identical PASS, 66 scenarios.
+- Canonical launcher prerequisite check: PASS, 66 scenarios. The misspelled
+  historical wrapper was subsequently retired by maintainer decision.
 - Workspace resolver/check: all seven dataset generations and directories PASS.
 - Report-v3 PDF/DOCX checksums remain equal to the frozen checksum file.
 

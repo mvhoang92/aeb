@@ -17,7 +17,9 @@ three CARLA policy smokes passed. Validation details are recorded in
 
 - No algorithm tuning, threshold changes or PERG-AEB implementation.
 - Preserve radar-only, hard camera gate and emergency-fallback behavior.
-- Preserve `laucher.py`, both historical runner paths and existing CLI options.
+- Preserve historical runner paths and existing CLI options. The temporary
+  `laucher.py` compatibility wrapper was retired after cleanup by explicit
+  maintainer decision; `launcher.py` is now the only desktop entry point.
 - Preserve YAML keys/defaults and CSV/JSON summary fields.
 - Do not delete dataset, log, output, model or training artifacts.
 - Do not modify frozen evidence, paper generations or frozen tags.
@@ -27,8 +29,8 @@ three CARLA policy smokes passed. Validation details are recorded in
 1. **Inventory and baseline**
    - Add structure/artifact documentation and capture baseline test gates.
 2. **Launcher compatibility**
-   - Introduce correctly spelled `launcher.py`; retain `laucher.py` as a thin
-     compatibility wrapper.
+   - Introduce correctly spelled `launcher.py`; the temporary `laucher.py`
+     wrapper was later removed after callers and documentation migrated.
 3. **Brake-permission policy boundary**
    - Add a common policy result/interface and adapters for radar-only, hard gate
      and emergency fallback. Keep `FusionBrakeGate` as the frozen mechanism.
@@ -56,7 +58,7 @@ After every structural checkpoint:
 /home/mvhoang/CARLA_0.9.11/venv/bin/python -m unittest discover -s tests -q
 /home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/validate_v4_manuscript_claims.py
 /home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/validate_v5_manuscript_claims.py
-/home/mvhoang/CARLA_0.9.11/venv/bin/python -m compileall -q control core evaluation perception scripts tests ui launcher.py laucher.py
+/home/mvhoang/CARLA_0.9.11/venv/bin/python -m compileall -q control core evaluation perception scripts tests ui launcher.py
 git diff --check
 ```
 

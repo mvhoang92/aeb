@@ -8,7 +8,7 @@ only describes the live source tree.
 
 | Layer | Location | Responsibility |
 |---|---|---|
-| Entry points | `launcher.py`, `laucher.py`, `ui/`, `scripts/` | Desktop launcher, interactive views and command-line jobs |
+| Entry points | `launcher.py`, `ui/`, `scripts/` | Desktop launcher, interactive views and command-line jobs |
 | Scenario runtime | `scripts/run_*_aeb_scenarios.py` | CARLA actor lifecycle, simulation loop and compatibility CLIs |
 | Runtime composition | `core/headless_aeb_runtime.py` | Shared radar pipeline → permission policy → actuation order |
 | Evaluation | `evaluation/` | Frozen schemas, scoring, telemetry, severity and summary output |
@@ -65,8 +65,7 @@ machine-specific. See `docs/ARTIFACT_POLICY.md` and
 ## Supported compatibility entry points
 
 ```bash
-/usr/bin/python3 launcher.py
-/usr/bin/python3 laucher.py          # historical spelling, retained wrapper
+/usr/bin/python3 launcher.py        # canonical desktop control center
 /home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/run_radar_aeb_scenarios.py --help
 /home/mvhoang/CARLA_0.9.11/venv/bin/python scripts/run_fusion_aeb_scenarios.py --help
 ```
