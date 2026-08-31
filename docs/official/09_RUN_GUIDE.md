@@ -22,8 +22,10 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
 /usr/bin/python3 launcher.py
 ```
 
-Launcher chạy bằng `python3` hệ thống vì môi trường `venv` CARLA/YOLO có thể
-không có `tkinter`. Các nút bên trong vẫn gọi đúng Python riêng cho từng phần.
+Launcher dùng Python hệ thống vì môi trường `venv` CARLA/YOLO có thể không có
+`tkinter`. Nếu gọi `python3 launcher.py` trong một venv thiếu Tkinter, launcher
+tự khởi động lại bằng `/usr/bin/python3`. Các nút bên trong vẫn gọi đúng Python
+riêng cho từng phần.
 
 Giao diện trình bày theo bốn bước `CARLA → ứng dụng → kiểm thử → ghi video`,
 có trạng thái kết nối theo màu, command preview và nhật ký tiến trình tập trung.

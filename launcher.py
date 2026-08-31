@@ -13,12 +13,42 @@ import subprocess
 import sys
 import threading
 import time
-import tkinter as tk
 from dataclasses import dataclass
 from pathlib import Path
-from tkinter import messagebox, ttk
-from tkinter.scrolledtext import ScrolledText
 from typing import Dict, List, Optional
+
+
+def _load_tkinter():
+    """Load Tk, falling back to the system GUI Python when a venv omits it."""
+    try:
+        import tkinter as tkinter_module
+        from tkinter import messagebox as messagebox_module
+        from tkinter import ttk as ttk_module
+        from tkinter.scrolledtext import ScrolledText as scrolled_text_class
+
+        return tkinter_module, messagebox_module, ttk_module, scrolled_text_class
+    except ModuleNotFoundError as exc:
+        if exc.name != "tkinter":
+            raise
+        gui_python = Path(
+            os.environ.get("AEB_LAUNCHER_PYTHON", "/usr/bin/python3")
+        )
+        already_reexeced = os.environ.get("AEB_LAUNCHER_REEXEC") == "1"
+        if gui_python.is_file() and not already_reexeced:
+            environment = os.environ.copy()
+            environment["AEB_LAUNCHER_REEXEC"] = "1"
+            os.execve(
+                str(gui_python),
+                [str(gui_python), str(Path(__file__).resolve())] + sys.argv[1:],
+                environment,
+            )
+        raise SystemExit(
+            "Tkinter không có trong {}. Hãy chạy bằng /usr/bin/python3 "
+            "launcher.py hoặc đặt AEB_LAUNCHER_PYTHON.".format(sys.executable)
+        ) from exc
+
+
+tk, messagebox, ttk, ScrolledText = _load_tkinter()
 
 import yaml
 

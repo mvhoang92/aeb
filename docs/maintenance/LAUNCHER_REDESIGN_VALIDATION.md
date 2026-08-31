@@ -9,6 +9,8 @@
   resizable process console and clearer Vietnamese labels.
 - Added keyboard shortcuts: `Ctrl+1` … `Ctrl+4` switch workflow tabs, `F5`
   checks CARLA and `Ctrl+L` clears the process log.
+- Added automatic re-execution through `/usr/bin/python3` when the currently
+  activated CARLA/YOLO virtual environment does not provide Tkinter.
 - Updated current documentation and launcher tests. Frozen report/paper history
   was not rewritten.
 
@@ -23,6 +25,8 @@ previous commit matched all command builders and start/stop methods.
 
 - 96 unit/golden/compatibility tests: PASS.
 - Canonical `launcher.py --check`: PASS, 66 scenarios.
+- `python3 launcher.py --check` from the Tkinter-free CARLA venv: PASS via
+  deterministic system-Python fallback.
 - Headless Tk build at 1240×900: PASS.
 - All four tabs instantiated and command previews remained visible: PASS.
 - Compile audit and `git diff --check`: PASS.

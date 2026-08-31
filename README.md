@@ -126,7 +126,9 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
 ```
 
 `launcher.py` là entry point duy nhất. Tên viết sai lịch sử `laucher.py` đã được
-loại bỏ để tránh nhầm lẫn.
+loại bỏ để tránh nhầm lẫn. Nếu shell đang activate CARLA `venv` không có
+Tkinter, `python3 launcher.py` sẽ tự chuyển sang `/usr/bin/python3`; có thể
+override bằng `AEB_LAUNCHER_PYTHON`.
 
 Launcher dùng giao diện `AEB Control Center` với quy trình trực quan:
 
