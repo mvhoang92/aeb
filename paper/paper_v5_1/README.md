@@ -23,7 +23,9 @@ Euro NCAP compliance or functional-safety certification.
 ## Files
 
 - `aeb_ieee_6page.tex/.pdf`: English submission draft, exactly six pages.
-- `aeb_ieee_6page_vi.tex/.pdf`: Vietnamese copy for author review.
+- `aeb_ieee_6page_vi.tex/.pdf`: Vietnamese technical translation for author review.
+- `AUTHOR_READING_GUIDE_VI.md`: plain-language Vietnamese explanation for the
+  author/supervisor; recommended first reading.
 - `references.bib`: bibliography including the closest verification, ghost,
   corner-case and probabilistic-threat studies.
 - `figures/scenario_level_tradeoff.png`: copied unchanged from v5-derived
@@ -32,7 +34,8 @@ Euro NCAP compliance or functional-safety certification.
 - `SOURCE_MAP.md`: frozen campaign and derivation paths.
 - `SELF_REVIEW.md`: scope and reviewer-risk review.
 - `CHANGELOG.md`: differences from v5.
-- `SHA256SUMS.txt`: hashes of the manuscript package.
+- `SHA256SUMS.txt`: hashes of the manuscript package. The plain-language
+  guide is intentionally a reading aid and is not the submission manuscript.
 
 ## Rebuild and validate
 

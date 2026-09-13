@@ -131,7 +131,7 @@ def validate_texts(english, vietnamese, bibliography):
           'bilingual equations')
     for text, phrases in [(english, ['post-hoc', 'knowledge of the rule', 'not a calibrated',
                                      'not an impossibility theorem', 'road-population inference']),
-                          (vietnamese, ['hậu nghiệm', 'đã biết luật', 'không phải', 'không phải định lý bất khả'])]:
+                          (vietnamese, ['hậu nghiệm', 'đã biết luật', 'không phải', 'không phải kết luận về mọi'])]:
         flat = ' '.join(text.split())
         for phrase in phrases:
             if phrase not in flat:
@@ -146,6 +146,11 @@ def pdf_pages(path):
 def validate_package():
     english = (PAPER / 'aeb_ieee_6page.tex').read_text(encoding='utf-8')
     vietnamese = (PAPER / 'aeb_ieee_6page_vi.tex').read_text(encoding='utf-8')
+    guide = (PAPER / 'AUTHOR_READING_GUIDE_VI.md').read_text(encoding='utf-8')
+    for token in ('Radar-only', 'Camera gate cứng', 'emergency fallback',
+                  'Điểm mới', 'Những gì bài báo chưa chứng minh'):
+        if token not in guide:
+            raise AssertionError('Author reading guide missing {}'.format(token))
     validate_texts(english, vietnamese, (PAPER / 'references.bib').read_text(encoding='utf-8'))
     equal(pdf_pages(PAPER / 'aeb_ieee_6page.pdf'), 6, 'English page budget')
     if pdf_pages(PAPER / 'aeb_ieee_6page_vi.pdf') < 1:

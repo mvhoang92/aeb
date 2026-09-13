@@ -10,7 +10,7 @@
 \graphicspath{{figures/}}
 \usepackage{amsmath,amssymb,booktabs,array,url,balance,microtype}
 
-\title{Khi xác nhận của camera có lợi và có hại: Chính sách cấp quyền phanh AEB radar--camera và mức độ nghiêm trọng của thất bại trong CARLA}
+\title{Camera giúp và gây khó khăn cho AEB như thế nào? So sánh ba cách quyết định phanh radar--camera trong CARLA}
 \author{
 \IEEEauthorblockN{Mai Việt Hoàng và Phạm Đức An}
 \IEEEauthorblockA{\textit{Đại học Bách khoa Hà Nội}\\
@@ -20,29 +20,31 @@ Hà Nội, Việt Nam\\hoangmai04222@gmail.com}
 \maketitle
 
 \begin{abstract}
-Camera có thể chặn phanh nhầm do radar kích hoạt, nhưng việc không nhận diện
-được xe không chứng minh rằng đường phía trước trống. Bài báo đánh giá ba
-chính sách cấp quyền phanh ở cuối chuỗi xử lý---radar-only, camera gate cứng
-và camera gate có radar emergency fallback---trong cùng một hệ thống từ cảm
-biến đến phanh trên CARLA. Đơn vị phân tích chính là điều kiện định danh
-(\emph{named condition}): 105 điều kiện core và tập hold-out bất lợi đã khóa gồm
-14 điều kiện; mỗi điều kiện lặp năm lần để kiểm tra tính nhất quán, không phải
-tần suất giao thông. Precision/recall trên core lần lượt là 0.913/0.988,
-1.000/0.965 và 1.000/0.988. Fallback phục hồi hai tình huống vật cản không phải
-xe giữa làn bị camera gate cứng chặn, đồng thời chặn tám trường hợp phanh nhầm
-trước vật thể gần mép đường. Thứ hạng đảo chiều trên hold-out: camera gate cứng
-đạt 11/14 điều kiện, so với 7/14 của fallback, do bốn điều kiện mục tiêu radar
-ảo tổng hợp tồn tại ổn định thỏa mãn các luật khẩn cấp. Cả 20 lượt fallback với
-mục tiêu ảo đều dừng dưới 1~km/h, từ tốc độ bắt đầu phanh có trung vị
-78.4~km/h, thời gian phanh 3.60~s và trung vị giảm tốc cực đại
-9.02~m/s$^2$. Một ghế dài chưa dùng khi phát triển cho thấy đánh đổi ngược lại:
+Camera có thể giúp tránh phanh nhầm do radar, nhưng camera không nhận ra xe
+không có nghĩa là phía trước không có vật cản. Nghiên cứu này so sánh ba cách
+quyết định phanh trong cùng một hệ thống AEB trên CARLA: radar-only, cổng
+camera cứng (chỉ phanh khi camera xác nhận có xe), và cổng camera có radar
+emergency fallback (chỉ cho radar bỏ qua cổng trong tình huống rất khẩn cấp).
+
+Đơn vị thống kê là một điều kiện thử nghiệm được đặt tên, không phải từng lần
+chạy. Bộ thử nghiệm chính có 105 điều kiện; bộ kiểm tra bất lợi đã khóa có 14
+điều kiện. Mỗi điều kiện được lặp năm lần để xem kết quả có ổn định không.
+Trên bộ chính, ba cách lần lượt đạt precision/recall là 0.913/0.988,
+1.000/0.965 và 1.000/0.988. Fallback phục hồi hai trường hợp vật cản không
+phải xe ở giữa làn mà cổng camera cứng bỏ sót, đồng thời chặn tám trường hợp
+radar-only phanh nhầm trước vật thể gần mép đường. Tuy nhiên, trên bộ kiểm tra
+bất lợi, cổng camera cứng đạt 11/14 điều kiện còn fallback chỉ đạt 7/14. Bốn
+loại radar ảo được tạo có chủ ý đã đủ giống mục tiêu thật để vượt qua luật
+fallback. Trong cả 20 lần fallback phanh nhầm, xe đều dừng dưới 1~km/h; tốc độ
+khi bắt đầu phanh có trung vị 78.4~km/h, thời gian phanh 3.60~s và giảm tốc
+cực đại 9.02~m/s$^2$. Ở chiều ngược lại, với một chướng ngại vật dạng ghế dài,
 tốc độ ở tick cuối trước va chạm là 32.57~km/h với radar-only, 54.93~km/h với
-fallback và 59.95~km/h với camera gate cứng. So sánh theo cặp, loại bỏ thành
-phần, nhiễu loạn có kiểm soát và log truy nguyên từ chiến dịch CUDA 2,461 lượt
-đã khóa giúp xác định thất bại ở khâu hình thành track, cấp quyền và dừng xe
-sau khi được cấp quyền. Đóng góp là so sánh thực nghiệm có kiểm soát về chính
-sách phanh và mức độ nghiêm trọng của thất bại, không phải một cơ chế fusion
-mới hay ưu thế an toàn tổng quát.
+fallback và 59.95~km/h với cổng camera cứng.
+
+Kết quả cho thấy cần đánh giá cả phanh nhầm, bỏ sót và mức độ giảm nhẹ va chạm.
+Đóng góp của bài báo là một so sánh thực nghiệm có kiểm soát về ba cách cấp
+quyền phanh, không phải một thuật toán fusion mới hay bằng chứng rằng fusion
+luôn tốt hơn.
 \end{abstract}
 \begin{IEEEkeywords}
 phanh khẩn cấp tự động, camera gate, radar emergency fallback,
@@ -50,90 +52,79 @@ phanh nhầm, chèn lỗi tổng hợp, đánh giá theo tình huống
 \end{IEEEkeywords}
 
 \section{Giới thiệu}
-Phanh khẩn cấp tự động (AEB) không chỉ cần xác định có phát hiện vật thể hay
-không, mà còn phải quyết định bằng chứng hiện có đã đủ để phanh kịp thời chưa.
-Radar cung cấp khoảng cách và vận tốc tương đối; thông tin ngữ nghĩa của camera
-có thể loại bỏ mục tiêu radar không hợp lý. Tuy nhiên, bộ nhận diện camera chỉ
-có lớp xe cũng có thể từ chối cấp quyền trước vật cản thật không phải xe. Do
-đó, hiệu quả AEB phụ thuộc toàn bộ chuỗi nhận thức--rủi ro--chấp hành, thay vì
-chỉ độ chính xác của bộ nhận diện \cite{yang2022aebreview}.
+AEB phải trả lời hai câu hỏi: phía trước có nguy hiểm không, và bằng chứng đã
+đủ chắc chắn để tự động phanh chưa? Radar đo khoảng cách và vận tốc tương đối
+rất tốt, nhưng đôi khi nhận nhầm vật thể hoặc tín hiệu phản xạ. Camera có thể
+giúp kiểm tra mục tiêu đó có phải xe hay không. Ngược lại, nếu camera chỉ nhận
+một lớp ``car'', nó có thể bỏ qua một vật cản thật như thùng hoặc ghế dài
+\cite{yang2022aebreview}.
 
-Nghiên cứu tách riêng \emph{chính sách cấp quyền phanh ở cuối chuỗi xử lý}:
-quy tắc chấp nhận hoặc phủ quyết yêu cầu phanh đã được khâu đánh giá rủi ro
-radar dùng chung đưa ra. Camera gate cứng yêu cầu xác nhận bằng hình ảnh.
-Emergency fallback chỉ nới quyền phủ quyết đối với track radar ổn định, gần
-tâm quỹ đạo, có đủ điểm hỗ trợ và đồng thời có TTC cùng biên khoảng cách dừng
-ở mức nguy hiểm. Lợi ích mong muốn là phục hồi có chọn lọc, không quay lại
-phanh radar-only không bị camera hạn chế. Câu hỏi còn mở là liệu cùng quy tắc
-đó có phân biệt được vật cản ngoài lớp nhận diện với mục tiêu ảo đủ thuyết
-phục hay không.
+Vì vậy, nghiên cứu này chỉ thay đổi \emph{bước quyết định cuối cùng}: có cho
+phép yêu cầu phanh từ radar đi tới bộ điều khiển hay không. Các bước xử lý
+radar, tính nguy cơ và bộ điều khiển đều giữ nguyên. Có ba lựa chọn:
 
-Ba câu hỏi nghiên cứu là: (RQ1) điều kiện định danh nào thay đổi kết quả hệ
-thống khi đổi chính sách cấp quyền; (RQ2) cơ chế thất bại nào vẫn tồn tại khi
-cho phép radar vượt camera gate; và (RQ3) điều gì bị che khuất nếu đánh giá chỉ
-dừng ở recall kích hoạt phanh và số va chạm? CARLA hỗ trợ thay thế thành phần
-có kiểm soát và lặp lại thí nghiệm cận va chạm
-\cite{dosovitskiy2017carla,kang2019testing}. Điều đó không làm cho tập tình
-huống được xây dựng trở thành đại diện của giao thông đường bộ.
+\begin{itemize}
+\item radar-only: radar yêu cầu phanh thì phanh;
+\item camera gate cứng: radar yêu cầu phanh nhưng chỉ phanh khi camera xác nhận
+xe;
+\item camera gate có emergency fallback: bình thường vẫn cần camera, nhưng
+radar được phép vượt qua cổng nếu mục tiêu đã được theo dõi ổn định và nguy cơ
+đã rất cao.
+\end{itemize}
 
-Các đóng góp gồm: (1) so sánh ba chính sách theo cặp, giữ chung xử lý radar,
-bộ điều khiển và cách chấm điểm; (2) phân tích theo cơ chế, liên hệ quyền phủ
-quyết của camera, điều kiện khẩn cấp và track bị thiếu với kết quả core cùng
-hold-out bất lợi; và (3) báo cáo theo điều kiện kết hợp mức độ nghiêm trọng
-của phanh nhầm và tốc độ trước va chạm, có dấu vết thực thi CUDA và artifact
-đã khóa. Đây là các đóng góp thực nghiệm. Cách tổ chức và trình bày theo cặp
-bổ sung trong bản sửa đổi này sử dụng lại evidence đã khóa, không đưa vào
-thuật toán hay chiến dịch thí nghiệm mới.
+Câu hỏi của bài báo là: (RQ1) đổi cách quyết định cuối cùng thì những điều kiện
+nào đổi kết quả; (RQ2) những kiểu thất bại nào vẫn còn; và (RQ3) điều gì bị bỏ
+qua nếu chỉ đếm có phanh hay có va chạm? CARLA cho phép thay từng thành phần
+một cách có kiểm soát và lặp lại các tình huống cận va chạm
+\cite{dosovitskiy2017carla,kang2019testing}. Tuy nhiên, các tình huống được
+thiết kế không đại diện cho toàn bộ giao thông thực tế.
+
+Đóng góp của bài báo gồm: (1) so sánh ba cách cấp quyền phanh trong cùng một
+chuỗi xử lý; (2) chỉ ra nguyên nhân của từng nhóm thất bại; và (3) kết hợp
+precision/recall với thời điểm phanh, tốc độ trước va chạm, thời gian phanh
+nhầm và giảm tốc cực đại. Đây là đóng góp thực nghiệm. Bài báo không giới thiệu
+một detector fusion mới và không kết luận fusion luôn tốt hơn radar-only.
 
 \section{Nghiên cứu liên quan và ranh giới đóng góp}
-Nhận diện xe bằng radar--camera cho AEB đã được nghiên cứu. Kim và Song xử lý
-chọn nhầm mục tiêu bằng bằng chứng hình dạng và chuyển động
-\cite{kim2013vehicle}; Hsu và cộng sự lọc nhiễu radar/camera, gồm các tín hiệu
-liên quan đến phản xạ \cite{hsu2015noise}. Bae và cộng sự dùng fusion
-LiDAR--camera để ước lượng xe gần nhất trên quỹ đạo \cite{bae2021cipv}.
-Zhang và cộng sự kết hợp chọn mục tiêu trên đường cong, TTC, khoảng cách an
-toàn và phanh phân tầng \cite{zhang2023curved}. Những phương pháp học máy như
-CenterFusion hướng đến phát hiện vật thể 3-D \cite{nabati2021centerfusion}.
-Vì vậy, bài báo không nhận xác nhận bằng camera hoặc phanh phân tầng là điểm mới.
+Các nghiên cứu trước đã dùng radar và camera để nhận diện xe, lọc nhiễu và
+chọn mục tiêu cho AEB \cite{kim2013vehicle,hsu2015noise}. Một số nghiên cứu
+kết hợp camera với LiDAR hoặc radar để theo dõi vật thể, chọn mục tiêu trên
+đường cong và điều khiển phanh \cite{bae2021cipv,zhang2023curved}. Các phương
+pháp như CenterFusion đi xa hơn, hướng tới phát hiện vật thể 3-D bằng mô hình
+học máy \cite{nabati2021centerfusion}. Vì vậy, chúng tôi không nhận camera
+xác nhận hay phanh phân tầng là ý tưởng mới.
 
-Nghiên cứu gần nhất theo hướng xác minh là bản tiền công bố của Akula và cộng
-sự \cite{akula2026radarguided}. Họ thử nghiệm xác minh mật độ biên trong vùng
-ảnh do radar chỉ định trên xe có gắn thiết bị, thay vì nhận diện ngữ nghĩa
-toàn ảnh. Kết quả dàn dựng báo cáo không bỏ sót phanh trong 33 phiên có nguy
-cơ và có phanh ở cả ba phiên không nguy cơ tại điểm vận hành ưu tiên recall.
-Điều này củng cố nhu cầu kiểm tra các can thiệp không cần thiết, nhưng không
-phải baseline số liệu cho kết quả CARLA của chúng tôi: cảm biến, tốc độ,
-nhãn và cách xác minh khác nhau. So sánh hẹp hơn của chúng tôi giữ cố định
-chuỗi xử lý phía trước và thay ba luật cấp quyền phanh, trong đó có cơ chế
-radar vượt quyền phủ quyết của gate chỉ nhận diện xe.
+Công trình gần nhất với ý tưởng ``radar chỉ vị trí, camera kiểm tra'' là Akula
+và cộng sự \cite{akula2026radarguided}. Công trình đó dùng mật độ biên trong
+một vùng ảnh nhỏ do radar chỉ định và thử trên xe thật. Họ báo cáo không bỏ sót
+phanh trong 33 tình huống có nguy cơ, nhưng cũng phanh ở cả ba tình huống không
+nguy cơ. Đây không phải baseline số liệu trực tiếp cho bài này vì cảm biến,
+tốc độ, nhãn và cách xác minh khác nhau. Điểm khác của chúng tôi là giữ nguyên
+chuỗi xử lý phía trước rồi so sánh ba luật cho phép phanh.
 
-Đánh giá hệ thống bằng mô phỏng \cite{gomez2022carla} và các dạng cảm biến
-thị giác khác cho AEB trong CARLA \cite{feng2025dvs} cũng đã có nghiên cứu.
-Rao và cộng sự tái dựng các trường hợp AEB ngoài chuẩn và phân tích định lượng
-thất bại \cite{rao2024corner}; bản thân kiểm thử corner case không phải tính
-mới của chúng tôi. Kraus và cộng sự cung cấp dữ liệu mục tiêu radar ảo có gán
-nhãn \cite{kraus2021ghost}. Khác với đa đường đo thực tế, tín hiệu tổng hợp
-trong nghiên cứu này là \emph{synthetic fault injection}, tức chèn lỗi theo
-thuộc tính của luật. Mức trừu tượng của mô hình radar giới hạn mạnh khả năng
-chuyển kết luận từ kiểm thử ảo \cite{magosi2022radar}.
+Đánh giá AEB bằng mô phỏng CARLA và kiểm thử các tình huống ngoài chuẩn cũng
+đã được nghiên cứu \cite{gomez2022carla,feng2025dvs,rao2024corner}. Radar ghost
+và cách nhận diện chúng cũng là một chủ đề riêng \cite{kraus2021ghost}. Trong
+bài này, các tín hiệu radar ảo được gọi đúng là \emph{synthetic fault injection}
+(chèn lỗi tổng hợp); chúng không phải phép đo hiện tượng đa đường ngoài đời.
+Mô hình radar trong mô phỏng vì thế là một giới hạn khi suy rộng kết quả
+\cite{magosi2022radar}.
 
-Đánh giá đe dọa theo xác suất \cite{sandblom2011threat} và ước lượng Bayesian
-về xác suất tồn tại vật thể trong theo dõi radar--camera
-\cite{lindenmaier2022existence} tiếp tục xác định ranh giới đóng góp. Fallback
-ở đây là luật cấp quyền tất định, không phải suy luận xác suất tồn tại đã
-hiệu chỉnh. Câu hỏi là luật đơn giản này được gì, mất gì và không giải quyết
-được gì trong so sánh có kiểm soát từ cảm biến đến phanh. Tình huống lấy cảm
-hứng từ protocol không cấu thành kiểm thử tuân thủ ISO hoặc Euro NCAP
-\cite{iso15623,euroncap_aeb}.
+Ngoài ra, đã có nghiên cứu dùng đánh giá nguy cơ Bayesian và xác suất tồn tại
+của mục tiêu \cite{sandblom2011threat,lindenmaier2022existence}. Fallback trong
+bài này chỉ là một luật tất định, không phải tracker xác suất đã hiệu chỉnh.
+Đóng góp được giới hạn ở việc cho thấy luật đó được gì, mất gì và thất bại ở
+đâu khi đưa đến quyết định phanh. Các tình huống lấy cảm hứng từ protocol không
+phải kiểm thử tuân thủ ISO hay Euro NCAP \cite{iso15623,euroncap_aeb}.
 
 \section{Chuỗi xử lý dùng chung và các chính sách cấp quyền}
 \subsection{Cảm biến, bộ nhận diện và ranh giới thông tin}
-Xe ego Tesla Model 3 hoạt động tại Town04 với bước mô phỏng đồng bộ 0.05 s.
-Chỉ điểm radar và ảnh RGB được dùng để nhận thức mục tiêu trực tuyến; trạng
-thái ego hỗ trợ dự đoán quỹ đạo và phanh. Quyết định phanh không truy vấn
-định danh actor, nhãn thật, vận tốc thật của mục tiêu hay bounding box ground
-truth. Điều phối tình huống và nhãn ngoại tuyến nằm ngoài ranh giới thông tin
-này. Không dùng sự thật actor để sửa một track radar yếu.
+Xe Tesla Model 3 chạy trong Town04 với bước mô phỏng đồng bộ 0.05 s. Khi chạy,
+hệ thống chỉ dùng điểm radar, ảnh RGB và trạng thái của xe ego. Nó không dùng
+thông tin biết trước từ mô phỏng như tên actor, nhãn thật, vận tốc thật của mục
+tiêu hay bounding box ground truth để quyết định phanh. Các nhãn dùng để chấm
+kết quả chỉ được dùng sau khi chạy xong. Vì vậy, một track radar yếu không được
+``sửa'' bằng đáp án đúng từ CARLA.
 
 \begin{table}[t]
 \caption{Cấu hình cảm biến và bộ nhận diện dùng chung, đã khóa.}
@@ -165,12 +156,11 @@ gian thực của máy. Thời gian giữ 0.35 s giống nhau ở hai chính sá
 nối các lần suy luận nhưng cho phép xác nhận cũ còn hiệu lực trong khoảng
 hữu hạn.
 
-\subsection{Rủi ro và ba gate thay thế}
-Điểm radar được lọc theo khoảng cách, độ cao mặt đường và quỹ đạo độ cong
-không đổi dự đoán; sau đó gom cụm theo vị trí/vận tốc và liên kết qua các
-frame. Hệ thống chọn một track đã xác nhận, chưa cũ và có liên quan đến va
-chạm. Với khoảng cách $d$, vận tốc tương đối radar $v_r<0$ và vận tốc ego
-$v_e$,
+\subsection{Tính nguy hiểm và ba cách cho phép phanh}
+Hệ thống lọc điểm radar theo khoảng cách, độ cao và vùng quỹ đạo dự đoán.
+Các điểm còn lại được gom thành cụm, rồi theo dõi qua nhiều frame. Chỉ một
+mục tiêu đã được xác nhận, còn mới và có nguy cơ va chạm mới được chọn. Với
+khoảng cách $d$, vận tốc tương đối radar $v_r<0$ và vận tốc xe ego $v_e$,
 \begin{equation}
 v_c=-v_r,\qquad \mathrm{TTC}=d/v_c,\qquad v_t=\max(0,v_e+v_r).
 \end{equation}
@@ -179,31 +169,31 @@ Khoảng cách dừng yêu cầu và biên khoảng cách được tính bởi
 d_{\rm req}=\max\!\left(d_0,v_et_r+\frac{v_e^2}{2a_e}-\frac{v_t^2}{2a_t}+d_0\right),
 \quad m=d-d_{\rm req},
 \end{equation}
-trong đó $t_r=0.20$ s, $a_e=8$, $a_t=6$ m/s$^2$ và $d_0=1$ m là tham số
-rủi ro mô phỏng. Bộ staged PID dùng chung tạo lệnh phanh liên tục.
+trong đó $t_r=0.20$ s, $a_e=8$, $a_t=6$ m/s$^2$ và $d_0=1$ m là các tham số
+rủi ro trong mô phỏng. Bộ staged PID dùng chung tạo lực phanh thay đổi liên tục.
 
-Gọi $B_r$ là yêu cầu AEB từ radar, $C$ là xác nhận camera hiện tại, $H$ là
-xác nhận còn được giữ, và $E_r$ là điều kiện khẩn cấp bao gồm trạng thái chốt
-(latch). Các chính sách cấp quyền là
+Gọi $B_r$ là yêu cầu phanh do radar đưa ra, $C$ là camera vừa xác nhận có xe,
+$H$ là xác nhận camera còn được giữ trong thời gian ngắn, và $E_r$ là điều
+kiện khẩn cấp kèm trạng thái ghi nhớ (latch). Ba cách cấp quyền là:
 \begin{align}
  B_{\rm radar}&=B_r,\\
  B_{\rm hard}&=B_r\land(C\lor H),\\
  B_{\rm fallback}&=B_r\land(C\lor H\lor E_r).
 \end{align}
-Một lần chấp nhận khẩn cấp mới yêu cầu track đã xác nhận/chưa cũ, tuổi và
-chuỗi hit $\geq3$, ít nhất sáu điểm, confidence của track $\geq0.70$, độ lệch
-quỹ đạo tuyệt đối $\leq0.65$ m, TTC $\leq1.10$ s \emph{và} biên
-$m\leq-2.0$ m. TTC và biên khoảng cách phải đồng thời thỏa mãn, không phải
-hai lựa chọn thay thế. Sau khi được chấp nhận, fallback được chốt tới khi
-radar rời \texttt{BRAKE}. Confidence ở đây là điểm số của tracker, không phải
-xác suất tồn tại vật lý đã hiệu chỉnh.
+Để kích hoạt fallback, mục tiêu phải đã được xác nhận và còn mới; tuổi cùng
+chuỗi hit phải $\geq3$, có ít nhất sáu điểm, điểm tin cậy của tracker phải
+$\geq0.70$, lệch khỏi quỹ đạo không quá $0.65$ m, TTC $\leq1.10$ s
+\emph{và} biên $m\leq-2.0$ m. Hai điều kiện TTC và biên phải cùng đúng.
+Sau khi kích hoạt, fallback tiếp tục giữ quyền phanh cho tới khi radar ra khỏi
+trạng thái \texttt{BRAKE}. Điểm tin cậy này chỉ là điểm của tracker, không phải
+xác suất đã được hiệu chỉnh rằng mục tiêu là vật thể thật.
 
-Mọi gate đều cần $B_r$: car box riêng lẻ không tạo được rủi ro động học.
-Radar-only vì vậy là tham chiếu không bị camera hạn chế cho cùng yêu cầu
-radar. Fallback không phải radar-only, vì khi thiếu xác nhận camera nó có thể
-chặn yêu cầu đó tới khi các điều kiện khẩn cấp chặt hơn được thỏa mãn.
-Thứ tự xử lý là cập nhật quỹ đạo ego, track, mục tiêu, rủi ro radar, suy luận
-camera theo lịch, cấp quyền và chấp hành; sau đó ghi trạng thái mô phỏng kế tiếp.
+Cả ba cách đều bắt đầu từ yêu cầu $B_r$; riêng camera không thể tự tạo ra
+nguy cơ động học. Radar-only cho phép phanh ngay khi radar yêu cầu. Fallback
+không giống radar-only: khi camera chưa xác nhận, nó vẫn chặn phanh cho đến
+khi các điều kiện khẩn cấp chặt hơn cùng đúng. Thứ tự xử lý là cập nhật quỹ
+đạo xe, theo dõi mục tiêu, tính nguy cơ radar, chạy camera theo lịch, quyết
+định quyền phanh, rồi gửi lệnh tới bộ điều khiển và ghi log.
 
 Với cùng trạng thái đầu vào, các phương trình cho
 $B_{\rm hard}\leq B_{\rm fallback}\leq B_{\rm radar}$ đối với quyền phanh
@@ -213,83 +203,81 @@ sau đó và thời điểm vượt ngưỡng. Vì vậy so sánh theo cặp dù
 được thực thi riêng, không dùng phát lại phản thực tế với giả định quan sát
 tương lai giống nhau sau những hành động phanh khác nhau.
 
-\section{Protocol, nhãn và phân tích}
-\subsection{Thực thi đã khóa và các bộ tình huống được xây dựng}
-Ngưỡng, suite và protocol được gắn tag repository trước khi thực thi hold-out,
-tại \texttt{safe-fallback-eval-v1}. Các tình huống bất lợi được thiết kế khi
-đã biết luật; kết quả của chúng không được dùng để chọn hoặc chỉnh lại
-ngưỡng. Đây là \emph{hold-out cơ chế bất lợi đã khóa}, không phải mẫu mù từ
-phân bố triển khai. Thống kê theo điều kiện và severity được suy ra hậu nghiệm
-từ log đã khóa; không được nhầm chúng với đầu ra mới đã đăng ký trước.
+\section{Protocol, nhãn và cách đánh giá}
+\subsection{Cách chạy thử đã được khóa}
+Các ngưỡng, bộ tình huống và cách chạy được gắn với tag
+\texttt{safe-fallback-eval-v1} trước khi chạy hold-out. Bộ hold-out được tạo
+để kiểm tra những điểm yếu dự đoán được của fallback. Vì vậy, đây là
+\emph{bộ kiểm tra cơ chế bất lợi đã khóa}, không phải một mẫu ngẫu nhiên đại
+diện cho giao thông thực tế. Các bảng thống kê và mức độ nghiêm trọng trong bài được tính hậu nghiệm
+(tức là tính sau khi chạy) từ log đã lưu, không phải kết quả của một chiến dịch mới.
 
-Chiến dịch gồm 2,461 lượt chạy trong 639 phiên CARLA tách biệt. Các lượt lặp
-của một điều kiện chạy xong trước khi chuyển sang tiến trình server mới.
-Cả hai chính sách camera bắt buộc dùng \texttt{CUDAExecutionProvider}; sai
-provider hoặc lỗi suy luận là điều kiện dừng kỹ thuật bắt buộc. Lượt FAIL do
-thuật toán nhưng đã chạy hoàn chỉnh phải được giữ; chỉ thực thi không hoàn
-chỉnh về kỹ thuật mới được phép chạy lại.
+Toàn bộ chiến dịch có 2,461 lượt chạy trong 639 phiên CARLA độc lập. Các lần
+lặp của cùng một điều kiện được chạy xong trước khi chuyển sang phiên server
+mới. Hai chính sách có camera đều bắt buộc dùng
+\texttt{CUDAExecutionProvider}; nếu sai provider hoặc lỗi suy luận thì dừng
+về mặt kỹ thuật. Một lần chạy FAIL do thuật toán vẫn được giữ lại; chỉ lần
+chạy hỏng vì kỹ thuật mới được phép chạy lại.
 
-Core gồm 66 điều kiện tốc độ--khoảng cách thuộc CCRm, CCRb, cut-in và các
-giới hạn liên quan; 29 điều kiện regression hỗn hợp có xe/âm tính; tám vật
-thể lệch ngang gần mép; và hai vật cản box/barrel giữa làn: tổng cộng 105 điều
-kiện. Sáu điều kiện lỗi tổng hợp yếu bốn điểm được đánh giá riêng, không nằm
-trong ma trận nhầm lẫn core chính. Hai mươi nhiễu loạn cục bộ thay đổi tốc độ
-$\pm2$ km/h, khoảng cách $\pm1$ m, thời điểm cut-in $\pm0.1$ s hoặc vị trí
-vật thể $\pm0.15$ m. Mười điều kiện tắt detector loại bỏ toàn bộ detection
-camera; đây là mất phát hiện hoàn toàn, không phải phân bố thời tiết tự nhiên.
+Bộ chính có 105 điều kiện: 66 điều kiện tốc độ--khoảng cách của CCRm, CCRb,
+cut-in và các giới hạn liên quan; 29 bài regression với xe và trường hợp âm
+tính; tám vật thể gần mép đường; và hai vật cản box/barrel ở giữa làn. Sáu
+điều kiện chèn lỗi tổng hợp chỉ có bốn điểm radar được báo cáo riêng. Hai mươi
+điều kiện nhiễu loạn thay đổi tốc độ $\pm2$ km/h, khoảng cách $\pm1$ m, thời
+điểm cut-in $\pm0.1$ s hoặc vị trí vật thể $\pm0.15$ m. Mười điều kiện tắt
+hoàn toàn phát hiện camera để kiểm tra mất detection.
 
-Hold-out bất lợi gồm 14 điều kiện: ba loại vật thể mới giữa làn, bốn biến thể
-ngoại hình xe, hai vật thể gần mép và năm hình học mục tiêu ảo tổng hợp tồn
-tại ổn định với 6--10 điểm được chèn. Core và hold-out lặp năm lần; development
-và perturbation lần lượt lặp hai và ba lần. Seed 2026 được ghi lại. Kết quả
-hệ thống theo điều kiện được báo cáo nhất quán toàn PASS hoặc toàn FAIL qua
-các lần lặp. Lặp lại đo tính nhất quán, không phải các lần gặp giao thông độc lập.
+Bộ hold-out có 14 điều kiện: ba loại vật cản giữa làn chưa dùng trước đó,
+bốn kiểu xe, hai vật thể gần mép và năm hình dạng radar ảo tồn tại ổn định
+với 6--10 điểm được chèn. Core và hold-out được lặp năm lần; các thử nghiệm
+phát triển và nhiễu loạn được lặp hai và ba lần. Seed 2026 được ghi lại.
+Kết quả của một điều kiện được xem là ổn định nếu tất cả các lần lặp cùng PASS
+hoặc cùng FAIL. Các lần lặp dùng để kiểm tra tính ổn định, không phải các mẫu
+giao thông độc lập.
 
-\subsection{Dự đoán phanh, thành công hệ thống và severity}
-YAML đã khóa cung cấp nhãn phanh/va chạm mong đợi. Dự đoán có phanh nghĩa là
-ít nhất một tick ghi \texttt{aeb\_override=true}; có va chạm nghĩa là một tick
-bất kỳ ghi \texttt{collision\_count>0}. PASS hệ thống yêu cầu kết quả phanh và
-va chạm khớp kỳ vọng. Trường hợp dương tính không mong đợi va chạm còn cần
-khoảng cách cản trước tối thiểu $\geq0.5$ m, cùng các ràng buộc làn/mục tiêu
-nếu được chỉ định. Vì vậy TP về phanh vẫn có thể va chạm hoặc vi phạm khoảng
-cách dừng.
+\subsection{Nhãn và cách tính kết quả}
+File YAML cung cấp trước nhãn cần phanh và nhãn va chạm cho từng điều kiện.
+Một hệ thống được tính là có phanh nếu có ít nhất một tick ghi
+\texttt{aeb\_override=true}. Có va chạm nếu bất kỳ tick nào ghi
+\texttt{collision\_count>0}. Một điều kiện PASS khi kết quả phanh và va chạm
+đúng với nhãn. Với tình huống cần phanh nhưng không được va chạm, khoảng cách
+cản trước nhỏ nhất còn phải $\geq0.5$ m; một số tình huống còn có yêu cầu về
+làn và mục tiêu. Vì thế, hệ thống có thể đã phanh đúng nhưng vẫn FAIL vì phanh
+quá muộn.
 
-Bài báo trình bày TP/FP/TN/FN, precision/recall, PASS và số va chạm theo điều
-kiện định danh. Ma trận theo cặp ghép đúng cùng định danh điều kiện. Khoảng
-Wilson là khoảng tham chiếu nhị thức mang tính mô tả, tính từ số điều kiện;
-không phải bảo đảm độ phủ hay suy luận quần thể giao thông cho lưới phi ngẫu
-nhiên này. Không kiểm định ý nghĩa thống kê bằng cách coi lần lặp là mẫu độc
-lập. Tỷ lệ lớp được thiết kế ảnh hưởng precision, và mẫu số hold-out nhỏ giới
-hạn diễn giải.
+Bài báo tính TP/FP/TN/FN, precision/recall, PASS và va chạm theo từng điều
+kiện được đặt tên. Khi so sánh hai chính sách, chúng tôi ghép đúng cùng một
+điều kiện. Khoảng Wilson chỉ là khoảng tham khảo mô tả trên lưới thử nghiệm
+được xây dựng; nó không phải khoảng tin cậy cho toàn bộ giao thông. Tỷ lệ các
+loại tình huống đã được thiết kế từ trước và số hold-out nhỏ, nên không được
+suy ra tần suất ngoài đường.
 
-Nhãn phản ánh nhu cầu phanh dự kiến trong từng điều kiện được xây dựng,
-không phải việc YOLO dự đoán lớp \emph{car}. Vật cản không phải xe ở giữa
-làn vì vậy là nguy cơ dương tính dù nằm ngoài không gian nhãn detector;
-ghost tổng hợp không có nguy cơ vật lý là âm tính dù track radar ổn định.
-Các nhãn cho phép đánh giá riêng sự phủ quyết ngữ nghĩa và tính liên quan
-của nguy cơ vật lý. Tổng hợp theo điều kiện cũng giữ các dạng thất bại
-riêng: thiếu khoảng cách, không phanh và va chạm không thể hoán đổi;
-PASS rate bằng nhau không nhất thiết có thời điểm phanh giống nhau.
+Nhãn của một điều kiện nói rằng tình huống đó có cần phanh hay không, chứ
+không nói YOLO có nhận ra lớp \emph{car} hay không. Vì vậy, box hoặc barrel ở
+giữa làn vẫn là nguy cơ cần phanh dù không thuộc lớp car; ngược lại, radar
+ghost không có vật thể thật vẫn là trường hợp không cần phanh. Cách đặt nhãn
+này giúp tách hai vấn đề: camera có xác nhận được mục tiêu không, và mục tiêu
+có thật sự nguy hiểm không. Không phanh, thiếu khoảng cách và va chạm là ba
+loại FAIL khác nhau.
 
-Tốc độ trước va chạm là tốc độ ego được ghi cuối cùng trước va chạm đầu tiên,
-là đại lượng đại diện theo bước 0.05 s thay vì tốc độ đúng thời điểm tiếp xúc.
-Thời gian phanh nhầm đếm các tick có override; giảm tốc cực đại loại trừ
-khởi tạo, tick dưới 1 km/h và tick va chạm. Bài báo cũng báo cáo tốc độ/khoảng
-cách khi bắt đầu phanh và việc ego có dừng dưới 1 km/h hay không. Trung vị
-qua lần lặp mô tả thực thi, không phải mức độ nghiêm trọng trong quần thể.
-Khi chưa có mô hình người ngồi trong xe hoặc xe đi phía sau, đây là đại lượng
-động học, không phải ước lượng chấn thương hay nguy cơ va chạm thứ cấp.
+Tốc độ trước va chạm là tốc độ xe ở tick cuối trước va chạm, với bước thời
+gian 0.05 s. Đây là giá trị gần đúng, không phải tốc độ chính xác tại điểm
+va chạm. Với phanh nhầm, bài báo tính thời gian phanh, giảm tốc cực đại,
+tốc độ và khoảng cách khi bắt đầu phanh, cùng việc xe có dừng dưới 1 km/h
+hay không. Các giá trị này là mô tả động học trong mô phỏng. Do chưa có mô
+hình người ngồi trong xe hoặc xe chạy phía sau, chúng không phải ước lượng
+chấn thương hay nguy cơ va chạm thứ cấp.
 
-\section{Kết quả: Lợi ích, phản ví dụ và mức độ nghiêm trọng}
-\subsection{Các điểm vận hành theo cặp}
-Bảng~\ref{tab:primary} và Hình~\ref{fig:primary} trình bày core và hold-out.
-Fallback đạt 101/105 điều kiện core, so với 99 của camera gate cứng và 93 của
-radar-only. Cả hai chính sách camera chặn tám trường hợp phanh nhầm do vật
-thể gần mép (bốn loại vật thể, mỗi loại ở hai độ lệch ngang). Radar-only và
-fallback phanh ở cả hai vật cản box/barrel giữa làn; gate cứng phủ quyết và
-tạo thêm hai điều kiện FN/va chạm. Cả ba cùng có một FN tại biên hành lang
-của cut-out muộn và ba điều kiện va chạm ở tốc độ cao. Do đó số điều kiện va
-chạm core theo thứ tự chính sách là 3/5/3, hay 15/25/15 lượt lặp.
+\section{Kết quả: khi nào mỗi cách hoạt động và thất bại}
+\subsection{So sánh theo từng điều kiện}
+Bảng~\ref{tab:primary} và Hình~\ref{fig:primary} trình bày kết quả của bộ
+chính và bộ hold-out. Trên bộ chính, fallback PASS 101/105 điều kiện, camera
+gate cứng PASS 99/105 và radar-only PASS 93/105. Hai chính sách có camera đều
+chặn tám trường hợp radar-only phanh nhầm trước vật thể gần mép đường. Radar-
+only và fallback phanh được ở hai vật cản box/barrel giữa làn, còn gate cứng
+chặn cả hai vì camera không nhận đó là xe. Cả ba cùng bỏ sót một tình huống
+cut-out muộn và cùng có ba nhóm va chạm tốc độ cao. Số điều kiện va chạm core
+lần lượt là 3, 5 và 3, tương đương 15, 25 và 15 lượt lặp.
 
 \begin{table*}[t]
 \caption{Kết quả chính theo điều kiện định danh. CI: khoảng Wilson tham chiếu 95\% trên lưới được xây dựng; Coll.: số điều kiện va chạm.}
@@ -310,12 +298,12 @@ Hold-out & Radar & 14 & 6 & 5 & 2 & 1 & .545 [.280,.787] & .857 [.487,.974] & 6 
 \end{tabular}
 \end{table*}
 
-Bảng~\ref{tab:paired} làm rõ thay đổi bị che khuất bởi tỷ lệ tổng hợp. Trên
-core, gate cứng đạt thêm tám điều kiện nhưng mất hai so với radar; fallback
-giữ được cả hai phần phục hồi. Trên hold-out, gate cứng đạt thêm bốn điều
-kiện so với fallback và không mất điều kiện nào xét PASS nhị phân. Cả ba vẫn
-va chạm với ba vật thể giữa làn. Điều này không có nghĩa mức giảm nhẹ hậu
-quả bằng nhau, như kết quả ghế dài bên dưới cho thấy.
+Bảng~\ref{tab:paired} cho thấy chính sách nào thực sự làm thay đổi kết quả.
+Trên bộ chính, gate cứng thắng radar-only ở tám điều kiện nhưng thua ở hai;
+fallback giữ được cả hai điều kiện mà gate cứng bỏ sót. Trên hold-out, gate
+cứng PASS hơn fallback bốn điều kiện và không thua điều kiện nào theo tiêu chí
+PASS. Tuy nhiên, PASS không nói hết về mức độ giảm nhẹ va chạm; ví dụ ghế dài
+ở phần sau cho thấy phanh sớm hay muộn tạo ra khác biệt lớn.
 
 \begin{table}[t]
 \caption{Kết quả hệ thống theo cặp điều kiện. Các cột xét chính sách A/B, không phải TP/FP về phanh.}
@@ -334,48 +322,46 @@ Hold-out & Radar / Hard & 6 & 0 & 5 & 3\\
 \end{tabular}
 \end{table}
 
-Cả sáu điều kiện lỗi bốn điểm yếu riêng biệt đều gây phanh nhầm ở radar-only
-và bị cả hai chính sách camera chặn. Ngược lại, fallback chấp nhận bốn trong
-năm mục tiêu ảo hỗ trợ cao của hold-out, chỉ chặn điều kiện lệch 0.75 m.
-Các biến thể ngoại hình xe không phân biệt gate cứng với fallback vì vẫn
-thuộc không gian nhãn camera. Thứ hạng chính sách thay đổi theo cơ chế có
-mặt trong suite, không chỉ theo số lượt thực thi lặp lại.
+Sáu điều kiện chèn lỗi yếu, mỗi điều kiện chỉ có bốn điểm radar, đều làm
+radar-only phanh nhầm; cả hai chính sách camera đều chặn được. Ngược lại,
+fallback chấp nhận bốn trong năm mục tiêu radar ảo có nhiều điểm hỗ trợ, và
+chỉ chặn mục tiêu lệch 0.75 m. Bốn kiểu xe trong hold-out không tạo khác biệt
+giữa hai chính sách camera vì camera vẫn nhận ra chúng. Như vậy, thứ hạng
+chính sách phụ thuộc vào loại tình huống, không phụ thuộc đơn giản vào số
+lần chạy.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.90\textwidth]{scenario_level_tradeoff.png}
-\caption{Evidence theo điều kiện đã khóa. Trái: precision--recall core và khoảng Wilson mô tả. Phải: PASS hệ thống trên hold-out bất lợi 14 điều kiện. Không lưới nào ước lượng tần suất giao thông thực. Hình giữ nhãn tiếng Anh để đối chiếu với bản nộp.}
+\caption{Kết quả theo từng điều kiện đã khóa. Trái: precision--recall của bộ chính và khoảng Wilson tham khảo. Phải: số điều kiện PASS trên bộ hold-out bất lợi gồm 14 điều kiện. Các bộ này không cho biết tần suất tình huống ngoài đường. Hình giữ nhãn tiếng Anh để đối chiếu với bản nộp.}
 \label{fig:primary}
 \end{figure*}
 
-\subsection{Cơ chế ở các khâu khác nhau của chuỗi xử lý}
-\emph{Thiếu track.} Xe đẩy hàng trong hold-out tạo tối đa hai điểm ứng viên
-trên quỹ đạo và không tạo cụm được xác nhận. Không yêu cầu phanh radar nào
-đến gate; cơ chế cấp quyền muộn không thể phục hồi thất bại ở khâu trước
-này. Cả ba va chạm mà không phanh, với trung vị tốc độ đại diện 49.96 km/h.
+\subsection{Bốn nguyên nhân thất bại chính}
+\emph{1) Radar không tạo được mục tiêu.} Xe đẩy hàng chỉ tạo tối đa hai điểm
+ứng viên và không tạo được cụm đủ tin cậy. Vì radar chưa yêu cầu phanh nên
+không chính sách nào có cơ hội cứu tình huống này. Cả ba xe đều va chạm mà
+không phanh, với tốc độ trung vị 49.96 km/h.
 
-\emph{Phủ quyết ngữ nghĩa và cấp quyền muộn.} Ghế dài tạo track radar nhưng
-không có xác nhận car dùng được. Radar-only phanh tại 12.624 m; fallback đủ
-điều kiện tại 4.295 m; camera gate cứng không phanh.
-Bảng~\ref{tab:severity} ghi tốc độ trước va chạm lần lượt 32.57, 54.93 và
-59.95 km/h. Fallback phục hồi TP về phanh, không phục hồi dừng kịp thời.
-So với gate cứng, radar-only giảm đại lượng tốc độ này khoảng 27.4 km/h,
-trong khi fallback chỉ giảm 5.0 km/h.
+\emph{2) Camera chặn vật cản thật.} Ghế dài tạo được mục tiêu radar nhưng
+camera không xác nhận đó là xe. Radar-only bắt đầu phanh ở 12.624 m; fallback
+chỉ đủ điều kiện ở 4.295 m; gate cứng không phanh. Tốc độ trước va chạm lần
+lượt là 32.57, 54.93 và 59.95 km/h. Fallback đã cho phép phanh nhưng phanh
+quá muộn để dừng kịp. So với gate cứng, radar-only giảm tốc độ va chạm khoảng
+27.4 km/h, còn fallback chỉ giảm khoảng 5.0 km/h.
 
-\emph{Va chạm dù đã được cấp quyền.} Với vật thể cảnh báo giao thông, cả ba
-chính sách phanh tại 21.871 m; log chính sách camera cho thấy camera xác
-nhận thay vì fallback. Cả ba va chạm tại 7.82 km/h. Log xác lập rằng quyền
-phanh đã được cấp, nhưng không tự xác định được lỗi động lực học tiếp xúc
-hay bộ điều khiển. Trường hợp này cho thấy giảm nhẹ hậu quả bị che khuất
-bởi chỉ số va chạm nhị phân.
+\emph{3) Phanh nhưng vẫn va chạm.} Với vật thể cảnh báo giao thông, cả ba
+chính sách đều phanh từ 21.871 m và va chạm ở 7.82 km/h. Log camera cho thấy
+đây là phanh do camera xác nhận, không phải do fallback. Trường hợp này cho
+thấy ``đã phanh'' và ``đã tránh được va chạm'' là hai kết quả khác nhau.
 
-\emph{Track giả đủ thuyết phục.} Chèn sáu điểm giữa quỹ đạo tạo track được
-xác nhận trước hoặc tại 0.15 s, confidence 1.0, TTC 0.89 s và biên
-$-15.21$ m. Radar-only và fallback yêu cầu phanh khẩn cấp; gate cứng không có
-xác nhận car. Ghost tám và mười điểm ở tâm/độ lệch 0.50 m có hành vi tương
-tự. Dịch điểm chèn tới 0.75 m vượt biên fallback 0.65 m đã khóa nhưng không
-ngăn radar-only phanh. Đây là phản ví dụ tổng hợp đối với tính đầy đủ của
-luật khẩn cấp, không phải phép đo tần suất ghost thực.
+\emph{4) Radar ghost đủ giống vật thật.} Khi chèn sáu điểm vào giữa làn,
+tracker xác nhận mục tiêu ở 0.15 s, với confidence 1.0, TTC 0.89 s và biên
+$-15.21$ m. Radar-only và fallback đều phanh; gate cứng không phanh vì không
+có xác nhận car. Ghost có tám hoặc mười điểm cũng cho kết quả tương tự. Khi
+dịch ghost lệch 0.75 m, nó vượt giới hạn 0.65 m của fallback nên bị chặn,
+nhưng radar-only vẫn phanh. Đây là một phản ví dụ do chèn lỗi tổng hợp, không
+phải phép đo tần suất radar ghost ngoài đời.
 
 \begin{table}[t]
 \caption{Severity hold-out: trung vị năm lượt cho mỗi điều kiện vật thể; hàng ghost tổng hợp 25/20 lượt. Tốc độ trước va chạm là đại lượng đại diện tick cuối.}
@@ -396,24 +382,23 @@ Ghost FP & Radar (25 lượt) & 78.4 km/h & 3.60 s / 9.02 m/s$^2$\\
 \end{tabular}
 \end{table}
 
-Mỗi lần phanh nhầm trước ghost đều dừng xe mô phỏng dưới 1 km/h, không phải
-xung phanh một tick. Hàng ghost trình bày tốc độ bắt đầu, thời gian override
-và giảm tốc cực đại; các quan sát này làm rõ ý nghĩa vận hành của suy giảm
-precision trong mô phỏng. Chúng không định lượng chấn thương hoặc nguy cơ
-xe sau đâm vào. FN cut-out muộn dùng chung và va chạm ở giới hạn dừng tốc
-độ cao là nhóm khác: không thể coi chúng là bằng chứng camera phủ quyết,
-vì radar-only cũng thất bại.
+Trong mọi lần phanh nhầm trước ghost, xe đều dừng dưới 1 km/h; đây không phải
+một xung phanh chỉ kéo dài một tick. Các con số trong bảng cho biết tốc độ bắt
+đầu phanh, thời gian phanh và giảm tốc cực đại. Chúng giúp thấy phanh nhầm
+nghiêm trọng đến đâu trong mô phỏng, nhưng không cho biết nguy cơ chấn thương
+hay nguy cơ xe phía sau đâm vào. Tình huống cut-out muộn và các va chạm ở giới
+hạn dừng tốc độ cao là nhóm khác, vì radar-only cũng thất bại.
 
-\subsection{Loại bỏ thành phần, nhiễu loạn và mất phát hiện}
-Trong ablation development 12 điều kiện (hai lần lặp), fallback đầy đủ đạt
-12/12. Gate cứng và biến thể không latch đều không đạt hai điều kiện
-box/barrel giữa làn. Bỏ ràng buộc quỹ đạo thêm ba điều kiện phanh nhầm vật
-thể gần mép; bỏ số điểm tối thiểu thêm hai điều kiện phanh nhầm ghost yếu.
-Bỏ stability/confidence hoặc đổi TTC-AND-margin thành OR không thay kết quả
-trên lưới tập trung này. Vì vậy tính cần thiết độc lập của chúng chưa được
-xác lập. Sáu điều kiện sensitivity một yếu tố cho thấy một phanh nhầm khi
-hạ số điểm và một vật cản giữa làn bị bỏ sót khi siết stability hoặc TTC.
-Không tuyên bố tìm được tối ưu toàn cục.
+\subsection{Thử bỏ thành phần, thay đổi điều kiện và tắt camera}
+Trong 12 điều kiện phát triển, fallback đầy đủ PASS 12/12. Gate cứng và biến
+thể không ghi nhớ trạng thái đều FAIL hai tình huống box/barrel giữa làn. Bỏ
+kiểm tra vị trí trên quỹ đạo làm xuất hiện ba trường hợp phanh nhầm gần mép;
+bỏ số điểm tối thiểu làm xuất hiện hai trường hợp phanh nhầm ghost yếu.
+Một số thay đổi khác không làm đổi kết quả trên bộ nhỏ này, nên chưa thể nói
+chúng luôn không cần thiết. Sáu phép thử thay đổi từng yếu tố cho thấy hạ số
+điểm có thể gây phanh nhầm, còn siết điều kiện ổn định hoặc TTC có thể bỏ sót
+vật cản giữa làn. Đây là các phép thử tìm cơ chế, không phải quá trình tìm
+ngưỡng tối ưu toàn cục.
 
 \begin{table}[t]
 \caption{Kết quả mở rộng theo điều kiện định danh, không theo lượt lặp.}
@@ -432,21 +417,21 @@ Camera off & Hard & 4/10 & 0 & 0 & 4 & 6 & 6\\
 \end{tabular}
 \end{table}
 
-Bảng~\ref{tab:extended} tách hai thất bại perturbation: fallback va chạm ở
-gap box 19 m, nhưng tránh va chạm ở 21 m và dừng tại 0.353 m, nhỏ hơn
-ngưỡng PASS 0.5 m. Đồng nhất mọi FAIL với va chạm là sai. Khi tắt detection,
-fallback phanh ở cả sáu điều kiện dương tính nhưng va chạm ở hai điều kiện.
-Bốn PASS của gate cứng đều là âm tính, không phải ứng phó thành công với
-nguy cơ. Các phép thử cục bộ cho thấy phụ thuộc vào luật, không chứng minh
-độ bền vững qua map, thời tiết hoặc lỗi cảm biến ngẫu nhiên.
+Bảng~\ref{tab:extended} cho thấy hai kiểu FAIL khác nhau: fallback va chạm ở
+box gap 19 m, nhưng ở 21 m thì không va chạm và dừng ở 0.353 m, vẫn thấp hơn
+ngưỡng PASS 0.5 m. Vì vậy không thể coi mọi FAIL là va chạm. Khi tắt camera,
+fallback phanh ở cả sáu tình huống dương tính nhưng vẫn va chạm ở hai. Bốn
+PASS của gate cứng đều là tình huống âm tính, không phải phanh thành công
+trước nguy cơ. Các phép thử này cho thấy kết quả phụ thuộc vào luật; chúng
+không chứng minh hệ thống bền vững trên map, thời tiết hoặc lỗi cảm biến khác.
 
 \subsection{Tính toán và khả năng tái lập}
-Trong 474 phiên bắt buộc CUDA có 74,928 lần suy luận và không có lỗi suy
-luận. Trung vị theo phiên của p50/p95 là 9.95/11.53 ms; trung bình có trọng
-số theo số lần suy luận là 11.56 ms. Mỗi tiến trình mới có một lần khởi động
-nguội trên 150 ms; cực đại là 276.10 ms. Đây là thời gian ONNX đo trên máy
-chủ, không gồm radar, truyền dữ liệu, điều khiển, hiển thị và chấp hành;
-không phải deadline end-to-end của ECU.
+Trong 474 phiên dùng CUDA có 74,928 lần suy luận và không có lỗi. Trung vị
+p50/p95 theo phiên là 9.95/11.53 ms; trung bình theo số lần suy luận là
+11.56 ms. Mỗi tiến trình mới có một lần khởi động nguội trên 150 ms; lớn nhất
+là 276.10 ms. Đây chỉ là thời gian xử lý ONNX đo trên máy tính. Nó không gồm
+radar, truyền dữ liệu, điều khiển, hiển thị hay cơ cấu phanh, nên không phải
+thời gian đáp ứng end-to-end của ECU.
 
 Manifest phiên ghi commit, seed, phiên bản CARLA, hash model/config, provider
 cấu hình/thực tế, số suy luận và lỗi. Log tick giữ số điểm hỗ trợ track,
@@ -466,66 +451,62 @@ không bảo đảm hành vi giống từng bit trên mọi phần cứng. Phân
 gốc rất quan trọng: regression của phần mềm về sau không làm tăng mẫu
 khoa học hoặc thay thế chiến dịch đã lưu.
 
-\section{Thảo luận và giới hạn giá trị kết luận}
-\subsection{Điều so sánh này xác lập}
-Kết quả tách ba câu hỏi: radar có tạo mục tiêu không, chính sách có cho phanh
-không, và hành động đã được cấp quyền có giảm nhẹ hậu quả đủ hay không?
-Gộp cả ba thành một tỷ lệ thành công che khuất cả cấp quyền muộn ở ghế dài
-lẫn va chạm tốc độ thấp ở vật thể cảnh báo. Tương tự, luật khẩn cấp cải
-thiện recall core nhưng chấp nhận ghost có cùng thuộc tính đạt điều kiện.
-Track tồn tại bền và nhiều điểm hỗ trợ làm mạnh một ước lượng mà không tự
-chứng minh có vật cản vật lý.
+\section{Thảo luận và giới hạn}
+\subsection{Ý nghĩa của kết quả}
+Kết quả nên được đọc theo ba bước. Thứ nhất, radar có tạo được mục tiêu để
+tính nguy cơ hay không? Thứ hai, chính sách có cho phép phanh hay không?
+Thứ ba, xe đã phanh có tránh được va chạm hoặc giảm tốc đủ nhiều không?
+Gộp ba câu hỏi này thành một tỷ lệ duy nhất sẽ che khuất việc fallback phanh
+muộn trước ghế dài và việc vật thể cảnh báo vẫn va chạm ở tốc độ thấp.
+Tương tự, fallback tăng recall trên bộ chính nhưng vẫn cho radar ghost đủ
+mạnh đi qua luật khẩn cấp.
 
-Đây là giới hạn của thông tin và ngưỡng được thử, không phải định lý bất khả
-thi cho radar--camera fusion. Gate cứng có lợi hơn theo PASS hold-out nhị
-phân ở đây nhưng không theo mức giảm nhẹ va chạm ghế dài; fallback có lợi
-trên core nhưng phanh nhầm hold-out đều dừng hẳn xe. Bài báo không chỉ định
-chính sách phổ quát bằng cách tự gán trọng số cho các hậu quả khác loại.
-So sánh tiếp theo cần có xác minh camera không phụ thuộc lớp và soft gate
-được so ở mức confidence tương ứng trước khi quy lợi ích cho một thuật
-toán fusion mới. Phương pháp xác suất cần hiệu chỉnh và bằng chứng vượt ra
-ngoài việc đổi tên điểm tracker thành xác suất
+Gate cứng tốt hơn fallback nếu chỉ nhìn PASS của hold-out, nhưng radar-only
+giảm tốc độ va chạm ở ghế dài nhiều hơn. Vì các mục tiêu ``tránh va chạm'',
+``giảm nhẹ va chạm'' và ``không phanh nhầm'' khác nhau, bài báo không chọn
+một chính sách chung cho mọi tình huống. So sánh tiếp theo nên bổ sung cách
+kiểm tra vật cản không phụ thuộc lớp ``car'' và một soft gate có mức tin cậy
+được so sánh công bằng. Các phương pháp xác suất cũng cần được hiệu chỉnh,
+không thể chỉ đổi tên điểm tracker thành xác suất
 \cite{sandblom2011threat,lindenmaier2022existence}.
 
-Câu trả lời cho RQ1--RQ3 có điều kiện nhưng hữu ích cho thiết kế. Lợi ích
-của chính sách có thể truy về một số cơ chế được xác định thay vì gọi chung
-là ``fusion tốt hơn''. Cơ chế vượt gate không sửa được việc thiếu track ở
-khâu trước; ngưỡng chất lượng radar vừa có thể nhận ghost vừa trì hoãn
-vật cản thật. Cuối cùng, tránh va chạm, giảm nhẹ va chạm và hạn chế can thiệp
-không cần thiết là các mục tiêu khác nhau. Không nên chọn chính sách chỉ
-từ F1 hoặc PASS tổng hợp khi chưa xác định điều kiện vận hành và chi phí
-sai sót chấp nhận được. Suite hiện tại hỗ trợ so sánh trong lưới của nó,
-không ước lượng chi phí cho triển khai cụ thể.
+Trả lời ngắn gọn cho ba câu hỏi nghiên cứu: đổi luật cấp quyền thực sự làm
+đổi kết quả; các lỗi ở khâu tạo track không thể được sửa ở khâu cấp quyền;
+và chỉ số phanh/va chạm nhị phân chưa mô tả đủ mức độ hậu quả. Đây là kết
+luận trong lưới thử nghiệm hiện tại, không phải kết luận về mọi con đường
+hay mọi hệ thống AEB.
 
-\subsection{Giới hạn của evidence}
-Thí nghiệm chỉ có một map, nền tảng ego, seed cố định, hình ảnh thuận lợi
-và detector một lớp xe trong miền. Các lần lặp tương quan; hold-out 14 điều
-kiện được chủ động xây dựng khi biết luật. Nó kiểm tra cơ chế bất lợi,
-không phải tổng quát hóa không thiên lệch. Radar mức điểm của CARLA không
-tái hiện đầy đủ vật lý đa đường; chèn lỗi không ước lượng tần suất radar
-ghost thực \cite{kraus2021ghost,magosi2022radar}. Tick cuối trước va chạm có
-rời rạc hóa 0.05 s và động học phanh nhầm không phải chi phí chấn thương.
-Chưa có sweep nhiều map/thời tiết/ma sát, thí nghiệm cảm biến thật, HIL,
-chứng minh functional safety hay chứng nhận theo tiêu chuẩn.
+\subsection{Giới hạn của bằng chứng}
+Thí nghiệm chỉ dùng một map, một xe ego, một seed cố định, hình ảnh thuận lợi
+và detector chỉ có lớp car. Các lần lặp có tương quan. Bộ hold-out 14 điều
+kiện được chủ động xây dựng để kiểm tra cơ chế bất lợi sau khi đã biết luật;
+do đó nó không phải mẫu ngẫu nhiên đại diện cho triển khai. Radar dạng điểm
+trong CARLA không mô phỏng đầy đủ hiện tượng đa đường; các ghost ở đây là
+chèn lỗi tổng hợp, không phải tần suất ghost ngoài đời
+\cite{kraus2021ghost,magosi2022radar}. Tốc độ ở tick cuối trước va chạm có
+độ phân giải 0.05 s. Các chỉ số phanh nhầm chưa phải chi phí chấn thương.
+Chưa có thử nghiệm nhiều map, thời tiết, ma sát, cảm biến thật hoặc HIL;
+nghiên cứu cũng không chứng minh functional safety hay tuân thủ tiêu chuẩn.
 
-Cũng chưa có baseline soft gate được ghép tương ứng, không phụ thuộc lớp,
-học máy hoặc xác suất. Giới hạn camera phủ quyết phụ thuộc không gian nhãn
-chỉ gồm xe đã chọn, không phải kết luận về mọi hệ thống camera. Baseline
-mở rộng cần protocol phát triển/đánh giá mới; hold-out đã xem có thể giữ làm
-dữ liệu regression nhưng không còn là evidence kiểm thử chưa từng thấy.
-Ràng buộc này bảo toàn kết quả bất lợi hiện tại thay vì chỉnh ngưỡng để
-xóa các phản ví dụ.
+Bài chưa có baseline soft gate, xác minh camera không phụ thuộc lớp, fusion
+học máy hoặc tracker xác suất được ghép công bằng. Vì detector chỉ nhận lớp
+car, kết luận về camera gate không được mở rộng thành kết luận về mọi camera.
+Nếu thêm baseline, phải tạo protocol phát triển và đánh giá mới. Hold-out đã
+được xem có thể dùng làm dữ liệu regression, nhưng không được tiếp tục gọi là
+bằng chứng chưa từng thấy. Không được chỉnh ngưỡng để xóa các phản ví dụ hiện
+có.
 
 \section{Kết luận}
-Trong một hệ thống CARLA cố định, emergency fallback phục hồi hai nguy cơ
-core bị camera phủ quyết và vẫn chặn phanh nhầm do vật thể gần mép. Bốn điều
-kiện ghost tổng hợp tồn tại ổn định đảo ngược lợi thế của nó so với camera
-gate cứng trên hold-out bất lợi. Phanh nhầm dừng hẳn và giảm nhẹ va chạm
-ghế dài bị muộn cho thấy recall phanh cùng số va chạm riêng lẻ là chưa đủ.
-Evidence hỗ trợ so sánh chính sách cấp quyền theo cơ chế và severity,
-không hỗ trợ ưu thế fusion tổng quát. Thiếu xác nhận camera không chứng
-minh đường trống, và radar có hỗ trợ ổn định không chứng minh có nguy cơ
-vật lý.
+Trong cùng một hệ thống CARLA, emergency fallback phục hồi hai nguy cơ giữa
+làn mà camera gate cứng bỏ sót và vẫn chặn được các trường hợp radar-only
+phanh nhầm gần mép đường. Tuy nhiên, bốn điều kiện radar ghost đủ mạnh làm
+fallback kém hơn gate cứng trên hold-out bất lợi. Các lần phanh nhầm đều làm
+xe dừng hẳn, trong khi fallback phanh muộn trước ghế dài. Vì vậy, recall
+phanh và số va chạm riêng lẻ chưa đủ để đánh giá AEB.
+
+Kết quả ủng hộ cách so sánh theo cơ chế và mức độ hậu quả, không ủng hộ kết
+luận fusion luôn tốt hơn. Camera không xác nhận không có nghĩa là đường trống;
+rada có track ổn định cũng chưa chứng minh có vật cản thật.
 
 \balance
 \bibliographystyle{IEEEtran}
