@@ -19,10 +19,11 @@ Hanoi, Vietnam\\hoangmai04222@gmail.com}
 \maketitle
 
 \begin{abstract}
-A camera can suppress radar-triggered false braking, but failure to recognize a
-vehicle does not establish free road. We evaluate three late brake-permission
-policies---radar-only, hard camera gating, and camera gating with radar emergency
-fallback---in a shared sensor-to-brake CARLA pipeline. The primary unit is a
+A car-only camera detector can suppress radar-triggered false braking, but
+failure to recognize a vehicle does not establish free road. We evaluate three
+late brake-permission policies---radar-only, hard car-camera gating, and car
+camera gating with radar emergency fallback---in a shared sensor-to-brake CARLA
+pipeline. The primary unit is a
 named condition: 105 core conditions and a 14-condition frozen adverse hold-out,
 each repeated five times to assess consistency, not traffic prevalence. Core
 precision/recall is 0.913/0.988, 1.000/0.965, and 1.000/0.988, respectively.
@@ -31,8 +32,8 @@ suppressing eight edge-prop false brakes. The ordering reverses on hold-out:
 hard gating passes 11/14 conditions versus 7/14 for fallback, because four
 persistent synthetic-ghost conditions satisfy the emergency rules. All 20
 fallback ghost runs stop below 1~km/h from a median onset of 78.4~km/h, with
-3.60-s braking and 9.02~m/s$^2$ median peak deceleration. An unseen bench exposes
-the opposite cost: last-tick pre-impact speed is 32.57~km/h for radar-only,
+3.60-s braking and 9.02~m/s$^2$ median peak deceleration. A previously unused
+hold-out bench condition exposes the opposite cost: last-tick pre-impact speed is 32.57~km/h for radar-only,
 54.93~km/h for fallback, and 59.95~km/h for hard gating. Paired outcomes,
 component ablations, controlled perturbations, and traceable logs from a frozen
 2,461-run CUDA campaign locate failures at track formation, permission, and
@@ -145,10 +146,11 @@ Timing & Both sensors: 0.05 s; inference: 0.15 s; confirmation hold: 0.35 s; CUD
 Table~\ref{tab:setup} specifies the shared setup. Dataset splits contain
 1872/379/264 boxes and 21.2/16.3/18.0\% empty frames, with no exact cross-split
 image duplicates. Session separation prevents adjacent frames from being
-interleaved across splits, but all data remain Town04 in-domain. Validation
-precision, recall, $\mathrm{mAP}_{50}$, and $\mathrm{mAP}_{50:95}$ are 0.9919,
-0.9642, 0.9940, and 0.9495; these detector metrics do not establish out-of-domain
-AEB performance. Calibrated extrinsics project the selected radar target into
+interleaved across splits, but all data remain Town04 in-domain. The detector
+metrics reported here are validation metrics from model selection: precision,
+recall, $\mathrm{mAP}_{50}$, and $\mathrm{mAP}_{50:95}$ are 0.9919, 0.9642,
+0.9940, and 0.9495. The separate test split is retained in the dataset audit;
+neither split establishes out-of-domain AEB performance. Calibrated extrinsics project the selected radar target into
 the image. Confirmation requires the projected point inside a retained car box.
 Inference cadence and confirmation expiry use simulation timestamps, not host
 wall time. The identical 0.35-s hold in both camera policies bridges inference
@@ -167,8 +169,10 @@ The stopping requirement and margin are
 d_{\rm req}=\max\!\left(d_0,v_et_r+\frac{v_e^2}{2a_e}-\frac{v_t^2}{2a_t}+d_0\right),
 \quad m=d-d_{\rm req},
 \end{equation}
-where $t_r=0.20$ s, $a_e=8$, $a_t=6$ m/s$^2$, and $d_0=1$ m are simulation
-risk parameters. A shared staged PID supplies continuous brake commands.
+where $t_r=0.20$ s, $a_e=8$, $a_t=6$ m/s$^2$, and $d_0=1$ m are nominal
+simulation risk parameters. Later peak decelerations are logged closed-loop
+outcomes, not constraints imposed by $a_e$. A shared staged PID supplies
+continuous brake commands.
 
 Let $B_r$ denote the radar AEB request, $C$ current camera confirmation, $H$
 held confirmation, and $E_r$ the emergency condition, including its latch. The
@@ -228,9 +232,10 @@ detection loss rather than a natural-weather distribution.
 The 14-condition adverse hold-out contains three new central props, four vehicle
 appearances, two edge props, and five persistent synthetic-ghost geometries with
 6--10 injected points. Core and hold-out use five repeats; development and
-perturbation use two and three, respectively. Seed 2026 is recorded. Reported
-condition-level system outcomes are consistently all-PASS or all-FAIL over
-repeats. Repeated runs measure consistency, not independent traffic encounters.
+perturbation use two and three, respectively. Seed 2026 is recorded. No named
+condition produced mixed PASS/FAIL outcomes across its repeats: reported
+condition-level system outcomes are all-PASS or all-FAIL. Repeated runs therefore
+measure consistency, not independent traffic encounters.
 
 \subsection{Brake prediction, system success, and severity}
 Frozen YAML supplies expected brake/collision labels. A brake prediction means
@@ -276,12 +281,12 @@ boundary and three high-speed collision conditions. Consequently core collision
 counts are 3/5/3 by policy, or 15/25/15 repeated runs.
 
 \begin{table*}[t]
-\caption{Primary named-condition results. CI: 95\% Wilson reference interval on the constructed grid; Coll.: collision conditions.}
+\caption{Primary named-condition results. Bracketed ranges are descriptive Wilson intervals on the constructed grid only; Coll.: collision conditions.}
 \label{tab:primary}
 \centering\scriptsize
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{llrrrrrccrr}
-\toprule Scope & Policy & N & TP & FP & TN & FN & Precision [CI] & Recall [CI] & PASS & Coll.\\
+\toprule Scope & Policy & N & TP & FP & TN & FN & Precision [range] & Recall [range] & PASS & Coll.\\
 \midrule
 Core & Radar & 105 & 84 & 8 & 12 & 1 & .913 [.838,.955] & .988 [.936,.998] & 93 & 3\\
  & Hard & 105 & 82 & 0 & 20 & 3 & 1.000 [.955,1] & .965 [.901,.988] & 99 & 5\\
@@ -329,7 +334,7 @@ the number of repeated executions.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.90\textwidth]{scenario_level_tradeoff.png}
-\caption{Frozen named-condition evidence. Left: core precision--recall and descriptive Wilson intervals. Right: system PASS on the 14-condition adverse hold-out. Neither grid estimates road prevalence.}
+\caption{Frozen named-condition evidence. Left: core precision--recall with descriptive Wilson ranges on constructed named conditions. Right: system PASS on the 14-condition adverse hold-out. Neither grid estimates road prevalence.}
 \label{fig:primary}
 \end{figure*}
 
@@ -437,10 +442,12 @@ paired outcomes, and severity regenerate from the frozen logs without adding
 or removing a run. Repository refactoring and launcher changes occurred later
 and are not experimental contributions or new validation of these policies.
 
-Source and curated evidence are indexed at
+Source code, manuscript files, checksums, and curated derived evidence are indexed at
 \url{https://github.com/mvhoang92/aeb}; the companion source map identifies the
-frozen raw archive, derivation scripts, and checksums. Re-execution requires a
-compatible CARLA installation, local model artifact, and CUDA environment.
+frozen raw archive, derivation scripts, and checksum trail. Large runtime artifacts
+and local model files are referenced by hash and path policy rather than embedded
+in the manuscript package. Re-execution requires a compatible CARLA installation,
+local model artifact, and CUDA environment.
 Hashes establish artifact identity, not hardware-independent bitwise behavior.
 The provenance distinction matters: regression testing of later software does
 not enlarge the scientific sample or replace the archived campaign.

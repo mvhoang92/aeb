@@ -20,11 +20,12 @@ Hà Nội, Việt Nam\\hoangmai04222@gmail.com}
 \maketitle
 
 \begin{abstract}
-Camera có thể giúp tránh phanh nhầm do radar, nhưng camera không nhận ra xe
-không có nghĩa là phía trước không có vật cản. Nghiên cứu này so sánh ba cách
-quyết định phanh trong cùng một hệ thống AEB trên CARLA: radar-only, cổng
-camera cứng (chỉ phanh khi camera xác nhận có xe), và cổng camera có radar
-emergency fallback (chỉ cho radar bỏ qua cổng trong tình huống rất khẩn cấp).
+Bộ nhận dạng camera chỉ học lớp xe có thể giúp tránh phanh nhầm do radar, nhưng
+camera không nhận ra xe không có nghĩa là phía trước không có vật cản. Nghiên
+cứu này so sánh ba cách quyết định phanh trong cùng một hệ thống AEB trên
+CARLA: radar-only, cổng camera cứng theo lớp xe, và cổng camera theo lớp xe có
+radar emergency fallback (chỉ cho radar bỏ qua cổng trong tình huống rất khẩn
+cấp).
 
 Đơn vị thống kê là một điều kiện thử nghiệm được đặt tên, không phải từng lần
 chạy. Bộ thử nghiệm chính có 105 điều kiện; bộ kiểm tra bất lợi đã khóa có 14
@@ -37,8 +38,8 @@ bất lợi, cổng camera cứng đạt 11/14 điều kiện còn fallback ch�
 loại radar ảo được tạo có chủ ý đã đủ giống mục tiêu thật để vượt qua luật
 fallback. Trong cả 20 lần fallback phanh nhầm, xe đều dừng dưới 1~km/h; tốc độ
 khi bắt đầu phanh có trung vị 78.4~km/h, thời gian phanh 3.60~s và giảm tốc
-cực đại 9.02~m/s$^2$. Ở chiều ngược lại, với một chướng ngại vật dạng ghế dài,
-tốc độ ở tick cuối trước va chạm là 32.57~km/h với radar-only, 54.93~km/h với
+cực đại 9.02~m/s$^2$. Ở chiều ngược lại, với điều kiện hold-out ghế dài chưa
+được dùng trong phát triển, tốc độ ở tick cuối trước va chạm là 32.57~km/h với radar-only, 54.93~km/h với
 fallback và 59.95~km/h với cổng camera cứng.
 
 Kết quả cho thấy cần đánh giá cả phanh nhầm, bỏ sót và mức độ giảm nhẹ va chạm.
@@ -146,10 +147,11 @@ Thời gian & Hai cảm biến: 0.05 s; suy luận: 0.15 s; giữ xác nhận: 0
 Bảng~\ref{tab:setup} mô tả cấu hình dùng chung. Các tập dữ liệu chứa
 1872/379/264 box và 21.2/16.3/18.0\% ảnh rỗng, không có ảnh trùng hoàn toàn
 giữa các tập. Tách theo phiên ngăn các frame liền kề bị chia xen kẽ vào nhiều
-tập, nhưng toàn bộ vẫn nằm trong miền Town04. Precision, recall,
-$\mathrm{mAP}_{50}$ và $\mathrm{mAP}_{50:95}$ trên validation lần lượt là
-0.9919, 0.9642, 0.9940 và 0.9495; các chỉ số detector không xác lập hiệu quả
-AEB ngoài miền. Ngoại tham số đã hiệu chuẩn chiếu mục tiêu radar được chọn
+tập, nhưng toàn bộ vẫn nằm trong miền Town04. Các chỉ số detector được báo cáo
+ở đây là chỉ số validation dùng khi chọn model: precision, recall,
+$\mathrm{mAP}_{50}$ và $\mathrm{mAP}_{50:95}$ lần lượt là 0.9919, 0.9642,
+0.9940 và 0.9495. Split test riêng được giữ trong audit dataset; không split nào
+xác lập hiệu quả AEB ngoài miền. Ngoại tham số đã hiệu chuẩn chiếu mục tiêu radar được chọn
 lên ảnh. Xác nhận yêu cầu điểm chiếu nằm trong một car box được giữ lại.
 Nhịp suy luận và hết hạn xác nhận dùng timestamp mô phỏng, không dùng thời
 gian thực của máy. Thời gian giữ 0.35 s giống nhau ở hai chính sách camera
@@ -170,7 +172,9 @@ d_{\rm req}=\max\!\left(d_0,v_et_r+\frac{v_e^2}{2a_e}-\frac{v_t^2}{2a_t}+d_0\rig
 \quad m=d-d_{\rm req},
 \end{equation}
 trong đó $t_r=0.20$ s, $a_e=8$, $a_t=6$ m/s$^2$ và $d_0=1$ m là các tham số
-rủi ro trong mô phỏng. Bộ staged PID dùng chung tạo lực phanh thay đổi liên tục.
+rủi ro danh định trong mô phỏng. Các giá trị giảm tốc cực đại báo cáo về sau là
+kết quả closed-loop ghi trong log, không phải ràng buộc do $a_e$ áp đặt. Bộ
+staged PID dùng chung tạo lực phanh thay đổi liên tục.
 
 Gọi $B_r$ là yêu cầu phanh do radar đưa ra, $C$ là camera vừa xác nhận có xe,
 $H$ là xác nhận camera còn được giữ trong thời gian ngắn, và $E_r$ là điều
@@ -231,9 +235,9 @@ Bộ hold-out có 14 điều kiện: ba loại vật cản giữa làn chưa dù
 bốn kiểu xe, hai vật thể gần mép và năm hình dạng radar ảo tồn tại ổn định
 với 6--10 điểm được chèn. Core và hold-out được lặp năm lần; các thử nghiệm
 phát triển và nhiễu loạn được lặp hai và ba lần. Seed 2026 được ghi lại.
-Kết quả của một điều kiện được xem là ổn định nếu tất cả các lần lặp cùng PASS
-hoặc cùng FAIL. Các lần lặp dùng để kiểm tra tính ổn định, không phải các mẫu
-giao thông độc lập.
+Không có điều kiện định danh nào cho kết quả PASS/FAIL lẫn lộn giữa các lần
+lặp: kết quả theo điều kiện đều là cùng PASS hoặc cùng FAIL. Vì vậy các lần
+lặp dùng để kiểm tra tính ổn định, không phải các mẫu giao thông độc lập.
 
 \subsection{Nhãn và cách tính kết quả}
 File YAML cung cấp trước nhãn cần phanh và nhãn va chạm cho từng điều kiện.
@@ -280,12 +284,12 @@ cut-out muộn và cùng có ba nhóm va chạm tốc độ cao. Số điều ki
 lần lượt là 3, 5 và 3, tương đương 15, 25 và 15 lượt lặp.
 
 \begin{table*}[t]
-\caption{Kết quả chính theo điều kiện định danh. CI: khoảng Wilson tham chiếu 95\% trên lưới được xây dựng; Coll.: số điều kiện va chạm.}
+\caption{Kết quả chính theo điều kiện định danh. Các khoảng trong ngoặc là khoảng Wilson mô tả trên lưới được xây dựng; Coll.: số điều kiện va chạm.}
 \label{tab:primary}
 \centering\scriptsize
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{llrrrrrccrr}
-\toprule Phạm vi & Chính sách & N & TP & FP & TN & FN & Precision [CI] & Recall [CI] & PASS & Coll.\\
+\toprule Phạm vi & Chính sách & N & TP & FP & TN & FN & Precision [range] & Recall [range] & PASS & Coll.\\
 \midrule
 Core & Radar & 105 & 84 & 8 & 12 & 1 & .913 [.838,.955] & .988 [.936,.998] & 93 & 3\\
  & Hard & 105 & 82 & 0 & 20 & 3 & 1.000 [.955,1] & .965 [.901,.988] & 99 & 5\\
@@ -333,7 +337,7 @@ lần chạy.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.90\textwidth]{scenario_level_tradeoff.png}
-\caption{Kết quả theo từng điều kiện đã khóa. Trái: precision--recall của bộ chính và khoảng Wilson tham khảo. Phải: số điều kiện PASS trên bộ hold-out bất lợi gồm 14 điều kiện. Các bộ này không cho biết tần suất tình huống ngoài đường. Hình giữ nhãn tiếng Anh để đối chiếu với bản nộp.}
+\caption{Kết quả theo từng điều kiện đã khóa. Trái: precision--recall của bộ chính và khoảng Wilson mô tả trên điều kiện định danh được xây dựng. Phải: số điều kiện PASS trên bộ hold-out bất lợi gồm 14 điều kiện. Các bộ này không cho biết tần suất tình huống ngoài đường. Hình giữ nhãn tiếng Anh để đối chiếu với bản nộp.}
 \label{fig:primary}
 \end{figure*}
 
@@ -443,10 +447,12 @@ khóa mà không thêm hay bỏ lượt chạy. Refactor repository và thay đ�
 launcher diễn ra sau đó, không phải đóng góp thí nghiệm hoặc kiểm chứng mới
 cho các chính sách này.
 
-Mã nguồn và evidence được tuyển chọn được lập chỉ mục tại
-\url{https://github.com/mvhoang92/aeb}; bản đồ nguồn đi kèm xác định archive
-log đã khóa, script suy ra chỉ số và checksum. Chạy lại cần cài CARLA tương
-thích, model cục bộ và môi trường CUDA. Hash xác lập định danh artifact,
+Mã nguồn, file bản thảo, checksum và evidence dẫn xuất được tuyển chọn được lập
+chỉ mục tại \url{https://github.com/mvhoang92/aeb}; bản đồ nguồn đi kèm xác định
+archive log đã khóa, script suy ra chỉ số và chuỗi checksum. Các artifact chạy
+lớn và file model cục bộ được tham chiếu bằng hash/chính sách đường dẫn thay vì
+nhúng vào gói bản thảo. Chạy lại cần cài CARLA tương thích, model cục bộ và môi
+trường CUDA. Hash xác lập định danh artifact,
 không bảo đảm hành vi giống từng bit trên mọi phần cứng. Phân biệt nguồn
 gốc rất quan trọng: regression của phần mềm về sau không làm tăng mẫu
 khoa học hoặc thay thế chiến dịch đã lưu.

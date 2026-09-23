@@ -50,3 +50,12 @@ The validator checks all primary, paired, extended and severity tables against
 frozen CSV files, citation coverage, bilingual equations/table numerics, PDF
 text and page budget. A successful build is not a substitute for final author,
 venue and plagiarism review.
+
+## Artifact availability
+
+The public repository indexes source, manuscript files, checksums, curated
+derived evidence and the source map. Large runtime archives, local workspace
+outputs and model artifacts may be referenced by SHA/path policy instead of
+being embedded in this paper directory; reproduce or audit claims through
+`SOURCE_MAP.md`, `CLAIM_EVIDENCE_MATRIX.md`, `SHA256SUMS.txt` and the frozen
+evidence directories named there.
