@@ -13,7 +13,7 @@ Không dùng lịch sử chat làm nguồn chính. Khi có mâu thuẫn, ưu ti�
 3. Tài liệu chính thức trong `docs/official/`.
 4. Nhật ký thử nghiệm trong `docs/log/EXPERIMENT_LOG.md`.
 5. Tài liệu research trong `docs/research/`.
-6. Tài liệu cũ trong `docs/backup/` chỉ để tham khảo.
+6. Tài liệu cũ trong `docs/history/legacy_docs/` chỉ để tham khảo.
 
 Nếu code và tài liệu khác nhau, phải kiểm tra code trước, sau đó cập nhật tài
 liệu nếu thay đổi đã được xác nhận.
@@ -248,7 +248,7 @@ Quay video evidence:
 
 - Script hiện có: `scripts/record_scenario_videos.py`.
 - Cách làm: chạy UI scenario trên Xvfb, quay bằng `ffmpeg`/NVENC, lưu video vào
-  `outputs/scenario_videos/`.
+  `$AEB_WORKSPACE_ROOT/runs/videos/scenario_videos/`.
 - Batch số liệu và quay video nên tách nhau:
   - batch validation ưu tiên ổn định, log `.csv/.json/.md`;
   - video dùng để minh họa một vài scenario tiêu biểu trong báo cáo.
@@ -330,9 +330,9 @@ __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ./CarlaUE4.sh -qual
 
 Không commit mặc định:
 
-- `logs/`
-- `dataset/`
-- `dataset_v2/`
+- `$AEB_WORKSPACE_ROOT/runs/`
+- `$AEB_WORKSPACE_ROOT/datasets/`
+- `$AEB_WORKSPACE_ROOT/training/`
 - video/ảnh evidence nặng
 - model `.pt`, `.onnx`, `.engine`
 

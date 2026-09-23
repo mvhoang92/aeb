@@ -63,7 +63,7 @@ trong từng tầng và có logic nhả phanh khi nguy cơ không còn.
 
 ## Lộ Trình
 
-1. Viết lại `report/report.md` theo form đồ án, tập trung sâu vào thuật toán.
+1. Giữ `report/report_v3.md` làm báo cáo frozen; thuật toán mới phải tạo report generation mới.
 2. Bổ sung phần NCAP/Euro NCAP và mapping scenario của đồ án.
 3. Bổ sung so sánh các bộ phanh: binary, PID v1, PID v2, staged PID.
 4. Tạo/thu thập hình minh họa còn thiếu cho báo cáo.

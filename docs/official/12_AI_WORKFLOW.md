@@ -57,7 +57,7 @@ Người làm dự án cần:
 - `docs/official/*`: cập nhật khi pipeline/kết luận kỹ thuật đã tương đối chốt.
 - `docs/research/*`: cập nhật khi có nghiên cứu mới, so sánh repo hoặc so sánh
   với cảm biến/thực tế.
-- `docs/backup/*`: chỉ để tra cứu tài liệu cũ, không dùng làm nguồn chính.
+- `docs/history/legacy_docs/*`: chỉ để tra cứu tài liệu cũ, không dùng làm nguồn chính.
 
 ## Nguyên Tắc Test
 
@@ -86,9 +86,9 @@ Nếu thay đổi lớn, cần chạy regression rộng hơn và ghi kết quả
 
 Không commit/push mặc định:
 
-- `dataset/`
-- `dataset_v2/`
-- `logs/`
+- `$AEB_WORKSPACE_ROOT/datasets/`
+- `$AEB_WORKSPACE_ROOT/runs/`
+- `$AEB_WORKSPACE_ROOT/training/`
 - video/ảnh log nặng
 - model `.pt`, `.onnx`, `.engine`
 

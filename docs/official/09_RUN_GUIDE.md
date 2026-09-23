@@ -19,11 +19,16 @@ Launcher có giao diện để bật CARLA, chạy các app UI và chạy từng
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
-python3 laucher.py
+/usr/bin/python3 launcher.py
 ```
 
-Launcher chạy bằng `python3` hệ thống vì môi trường `venv` CARLA/YOLO có thể
-không có `tkinter`. Các nút bên trong vẫn gọi đúng Python riêng cho từng phần.
+Launcher dùng Python hệ thống vì môi trường `venv` CARLA/YOLO có thể không có
+`tkinter`. Nếu gọi `python3 launcher.py` trong một venv thiếu Tkinter, launcher
+tự khởi động lại bằng `/usr/bin/python3`. Các nút bên trong vẫn gọi đúng Python
+riêng cho từng phần.
+
+Giao diện trình bày theo bốn bước `CARLA → ứng dụng → kiểm thử → ghi video`,
+có trạng thái kết nối theo màu, command preview và nhật ký tiến trình tập trung.
 
 Các chức năng chính:
 
@@ -41,7 +46,7 @@ Các chức năng chính:
 Kiểm tra dependency mà không mở cửa sổ:
 
 ```bash
-python3 laucher.py --check
+/usr/bin/python3 launcher.py --check
 ```
 
 ## Scenario Config
@@ -90,7 +95,7 @@ góc nhìn trên xuống/ngang, gần/xa:
 cd /home/mvhoang/CARLA_0.9.11
 venv/bin/python aeb/scripts/visualize_sensor_coverage.py \
   --config aeb/configs/sensors.yaml \
-  --output-dir aeb/outputs/sensor_coverage \
+  --output-dir "$AEB_WORKSPACE_ROOT/runs/sensor_coverage/manual_capture" \
   --map-name Town06 \
   --spawn-index 0
 ```
@@ -101,7 +106,7 @@ hình chiếu cạnh. Scenario AEB chính vẫn ưu tiên chạy trên `Town04`.
 Kết quả:
 
 ```text
-aeb/outputs/sensor_coverage/
+$AEB_WORKSPACE_ROOT/runs/sensor_coverage/manual_capture/
 ├── near_top_view.png
 ├── far_top_view.png
 ├── near_side_view.png
@@ -208,32 +213,32 @@ Kiểm tra dataset:
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
-.venv_yolo310/bin/python scripts/check_yolo_dataset.py
+$AEB_WORKSPACE_ROOT/environments/yolo310/bin/python scripts/check_yolo_dataset.py
 ```
 
 Train YOLO26n:
 
 ```bash
-.venv_yolo310/bin/python scripts/train_yolo26n.py
+$AEB_WORKSPACE_ROOT/environments/yolo310/bin/python scripts/train_yolo26n.py
 ```
 
 Weight tốt nhất nằm trong:
 
 ```text
-training_runs/detect/<run_name>/weights/best.pt
+$AEB_WORKSPACE_ROOT/training/detect/<run_name>/weights/best.pt
 ```
 
 Export weight mới nhất sang ONNX:
 
 ```bash
-.venv_yolo310/bin/python scripts/export_yolo26n_onnx.py
+$AEB_WORKSPACE_ROOT/environments/yolo310/bin/python scripts/export_yolo26n_onnx.py
 ```
 
 Hoặc chỉ định rõ weight:
 
 ```bash
-.venv_yolo310/bin/python scripts/export_yolo26n_onnx.py \
-  --weights training_runs/detect/<run_name>/weights/best.pt
+$AEB_WORKSPACE_ROOT/environments/yolo310/bin/python scripts/export_yolo26n_onnx.py \
+  --weights "$AEB_WORKSPACE_ROOT/training/detect/<run_name>/weights/best.pt"
 ```
 
 Có thể thêm `--dry-run` vào lệnh train hoặc export để chỉ kiểm tra đường dẫn và
@@ -248,6 +253,6 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
 
 ## Ghi Log
 
-Các script batch ghi vào `logs/<run_id>/`. Khi có kết quả quan trọng, chỉ cập
+Các script batch ghi vào `$AEB_WORKSPACE_ROOT/runs/logs/<run_id>/`. Khi có kết quả quan trọng, chỉ cập
 nhật tóm tắt vào `docs/log/EXPERIMENT_LOG.md`; không đưa toàn bộ log thô vào
 tài liệu chính thức.

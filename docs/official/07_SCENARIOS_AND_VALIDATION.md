@@ -71,7 +71,7 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
   --load-map
 ```
 
-Log, ảnh và video nằm trong `logs/<run_id>/`. Nhật ký kết quả tổng hợp nằm ở
+Log, ảnh và video nằm trong `$AEB_WORKSPACE_ROOT/runs/logs/<run_id>/`. Nhật ký kết quả tổng hợp nằm ở
 `docs/log/EXPERIMENT_LOG.md`.
 
 ## Kết Quả Final Evidence Hiện Tại

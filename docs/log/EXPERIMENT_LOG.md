@@ -2,7 +2,7 @@
 
 File này chỉ ghi tóm tắt các lần thử nghiệm quan trọng, lỗi đã gặp và quyết định
 sửa chính. Log thô, ảnh và video vẫn nằm trong `logs/`. Tài liệu cũ được giữ ở
-`docs/backup/RADAR_ONLY_EXPERIMENT_LOG.md`.
+`docs/history/legacy_docs/RADAR_ONLY_EXPERIMENT_LOG.md`.
 
 ## Quy Ước Về Jerk Trong CARLA
 
