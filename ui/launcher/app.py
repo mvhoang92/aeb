@@ -75,7 +75,7 @@ PAGE_KEYS = tuple(page[0] for page in PAGES)
 DEFAULT_SIZE = (1140, 760)
 MINIMUM_SIZE = (940, 640)
 SIDEBAR_WIDTH = 204
-LOG_DEFAULT_HEIGHT = 196
+LOG_DEFAULT_HEIGHT = 140  # header bar + ~5 log lines
 LOG_MINIMUM_HEIGHT = 112
 TOP_MINIMUM_HEIGHT = 330
 # The log gives way (down to its minimum) before the page area drops below this.
