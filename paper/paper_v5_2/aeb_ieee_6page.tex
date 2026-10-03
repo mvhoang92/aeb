@@ -260,7 +260,12 @@ We report TP/FP/TN/FN, precision/recall, system PASS, and collision counts per
 named condition. Paired matrices match identical condition identifiers. Wilson
 intervals \cite{wilson1927} are descriptive binomial reference intervals computed from named
 counts, not coverage guarantees or road-population inference for this nonrandom
-grid. No significance test treats repetitions as independent. Designed class
+grid. Policy pairs are compared with the exact two-sided McNemar test
+\cite{mcnemar1947} on discordant named conditions, reported with the discordant
+counts; this conditional test is conservative at small counts
+\cite{fagerland2013mcnemar}. Its $p$-values describe how one-sided the
+discordance is on this grid, without multiplicity adjustment or road-population
+inference. No significance test treats repetitions as independent. Designed class
 ratios influence precision, and small hold-out denominators limit interpretation.
 
 The labels concern the intended need for braking in each constructed condition,
@@ -313,23 +318,25 @@ Hold-out & Radar & 14 & 6 & 5 & 2 & 1 & .545 [.280,.787] & .857 [.487,.974] & 6 
 Table~\ref{tab:paired} exposes the changes hidden by aggregate rates. On core,
 hard gating gains eight conditions but loses two relative to radar; fallback
 retains both recoveries. On hold-out, hard gating gains four conditions relative
-to fallback and loses none in binary system PASS. All three still collide with
-the three central props. This does not mean equal mitigation, as the bench
+to fallback and loses none in binary system PASS. Only the core radar/fallback
+discordance (0 vs.\ 8) gives $p<0.05$; with at most ten discordant conditions
+per pair, the other contrasts are best read through their counts. All three
+still collide with the three central props. This does not mean equal mitigation, as the bench
 severity below demonstrates.
 
 \begin{table}[t]
-\caption{Paired system outcomes by named condition. Columns refer to policies A and B, not brake TP/FP.}
+\caption{Paired system outcomes by named condition. Columns refer to policies A and B, not brake TP/FP; $p$: exact two-sided McNemar test on A-only vs.\ B-only conditions (descriptive, constructed grid).}
 \label{tab:paired}
 \centering\scriptsize
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{llrrrr}
-\toprule Scope & A / B & Both PASS & A only & B only & Both FAIL\\ \midrule
-Core & Radar / Hard & 91 & 2 & 8 & 4\\
- & Radar / Fallback & 93 & 0 & 8 & 4\\
- & Hard / Fallback & 99 & 0 & 2 & 4\\
-Hold-out & Radar / Hard & 6 & 0 & 5 & 3\\
- & Radar / Fallback & 6 & 0 & 1 & 7\\
- & Hard / Fallback & 7 & 4 & 0 & 3\\
+\begin{tabular}{llrrrrr}
+\toprule Scope & A / B & Both PASS & A only & B only & Both FAIL & $p$\\ \midrule
+Core & Radar / Hard & 91 & 2 & 8 & 4 & 0.1094\\
+ & Radar / Fallback & 93 & 0 & 8 & 4 & 0.0078\\
+ & Hard / Fallback & 99 & 0 & 2 & 4 & 0.5000\\
+Hold-out & Radar / Hard & 6 & 0 & 5 & 3 & 0.0625\\
+ & Radar / Fallback & 6 & 0 & 1 & 7 & 1.0000\\
+ & Hard / Fallback & 7 & 4 & 0 & 3 & 0.1250\\
 \bottomrule
 \end{tabular}
 \end{table}

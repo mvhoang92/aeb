@@ -1,5 +1,19 @@
 # v5.2 Change Log
 
+## Exact paired McNemar tests
+
+- New script `scripts/analysis/analyze_v52_paired_tests.py` recomputes the
+  named-condition 2x2 paired PASS tables from
+  `paper_v4_gpu_final/scenario_consistency.csv`, cross-checks them against the
+  frozen `paper_v5_derived/named_paired_outcomes.csv`, and adds the exact
+  two-sided McNemar p-value (conditional binomial on discordant pairs).
+  Outputs: `docs/log/repeatability/paper_v5_2_derived/paired_exact_mcnemar.{csv,json}`
+  with `SHA256SUMS.txt`.
+- Table II gains a `p` column; the analysis section frames it as descriptive
+  on a constructed grid (discordant counts shown, no multiplicity adjustment,
+  no population inference). References 29 -> 31 (McNemar 1947; Fagerland et
+  al. 2013). Vietnamese copy synchronized. EN remains six pages.
+
 ## References: 19 -> 29 verified entries
 
 Added (each checked against Crossref DOI metadata or the official

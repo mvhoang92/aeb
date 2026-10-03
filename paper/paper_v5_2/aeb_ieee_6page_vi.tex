@@ -265,7 +265,13 @@ quá muộn.
 Bài báo tính TP/FP/TN/FN, precision/recall, PASS và va chạm theo từng điều
 kiện được đặt tên. Khi so sánh hai chính sách, chúng tôi ghép đúng cùng một
 điều kiện. Khoảng Wilson \cite{wilson1927} chỉ là khoảng tham khảo mô tả trên lưới thử nghiệm
-được xây dựng; nó không phải khoảng tin cậy cho toàn bộ giao thông. Tỷ lệ các
+được xây dựng; nó không phải khoảng tin cậy cho toàn bộ giao thông. Mỗi cặp
+chính sách được so sánh bằng kiểm định McNemar chính xác hai phía
+\cite{mcnemar1947} trên các điều kiện bất đồng, luôn kèm số điều kiện bất đồng;
+kiểm định có điều kiện này thận trọng khi số đếm nhỏ \cite{fagerland2013mcnemar}.
+Giá trị $p$ chỉ mô tả mức lệch một phía của các điều kiện bất đồng trên lưới
+này, không hiệu chỉnh đa so sánh và không suy rộng ra giao thông thực tế. Không
+kiểm định nào coi các lần lặp là độc lập. Tỷ lệ các
 loại tình huống đã được thiết kế từ trước và số hold-out nhỏ, nên không được
 suy ra tần suất ngoài đường.
 
@@ -319,22 +325,24 @@ Bảng~\ref{tab:paired} cho thấy chính sách nào thực sự làm thay đổ
 Trên bộ chính, gate cứng thắng radar-only ở tám điều kiện nhưng thua ở hai;
 fallback giữ được cả hai điều kiện mà gate cứng bỏ sót. Trên hold-out, gate
 cứng PASS hơn fallback bốn điều kiện và không thua điều kiện nào theo tiêu chí
-PASS. Tuy nhiên, PASS không nói hết về mức độ giảm nhẹ va chạm; ví dụ ghế dài
+PASS. Chỉ cặp radar/fallback trên bộ chính (0 so với 8) có $p<0.05$; vì mỗi
+cặp có tối đa mười điều kiện bất đồng, các so sánh còn lại nên được đọc qua số
+đếm. Tuy nhiên, PASS không nói hết về mức độ giảm nhẹ va chạm; ví dụ ghế dài
 ở phần sau cho thấy phanh sớm hay muộn tạo ra khác biệt lớn.
 
 \begin{table}[t]
-\caption{Kết quả hệ thống theo cặp điều kiện. Các cột xét chính sách A/B, không phải TP/FP về phanh.}
+\caption{Kết quả hệ thống theo cặp điều kiện. Các cột xét chính sách A/B, không phải TP/FP về phanh; $p$: kiểm định McNemar chính xác hai phía giữa chỉ-A và chỉ-B (mô tả, lưới được xây dựng).}
 \label{tab:paired}
 \centering\scriptsize
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{llrrrr}
-\toprule Phạm vi & A / B & Cùng PASS & Chỉ A & Chỉ B & Cùng FAIL\\ \midrule
-Core & Radar / Hard & 91 & 2 & 8 & 4\\
- & Radar / Fallback & 93 & 0 & 8 & 4\\
- & Hard / Fallback & 99 & 0 & 2 & 4\\
-Hold-out & Radar / Hard & 6 & 0 & 5 & 3\\
- & Radar / Fallback & 6 & 0 & 1 & 7\\
- & Hard / Fallback & 7 & 4 & 0 & 3\\
+\begin{tabular}{llrrrrr}
+\toprule Phạm vi & A / B & Cùng PASS & Chỉ A & Chỉ B & Cùng FAIL & $p$\\ \midrule
+Core & Radar / Hard & 91 & 2 & 8 & 4 & 0.1094\\
+ & Radar / Fallback & 93 & 0 & 8 & 4 & 0.0078\\
+ & Hard / Fallback & 99 & 0 & 2 & 4 & 0.5000\\
+Hold-out & Radar / Hard & 6 & 0 & 5 & 3 & 0.0625\\
+ & Radar / Fallback & 6 & 0 & 1 & 7 & 1.0000\\
+ & Hard / Fallback & 7 & 4 & 0 & 3 & 0.1250\\
 \bottomrule
 \end{tabular}
 \end{table}
