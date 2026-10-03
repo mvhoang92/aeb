@@ -1,10 +1,59 @@
-# Paper v5.1 Reviewer Board Notes
+# Paper v5.2 Reviewer Board Notes
+
+## Status for v5.2
+
+No reviewer board has been run on the v5.2 manuscript. The repository has
+only the v5.1 board (`/review-paper-v51`, commits `53628db` and `d7c39a1`),
+whose notes are kept verbatim below as history. This file adds no new
+reviewer comments. It records how the v5.2 text (as of the "Text revision"
+step in `CHANGELOG.md`) handles the v5.1 board's required revisions, and which
+items remain open. A v5.2 board run, if wanted, is an author decision.
+
+## v5.1 required revisions, checked against the v5.2 text
+
+| v5.1 board item | Where it stands in v5.2 |
+|---|---|
+| Hold-out wording must not imply a blind test | Kept: "frozen adverse mechanism hold-out", designed "with knowledge of the rule" (Sec. IV-A); Limits repeats that it tests mechanisms, not unbiased generalization |
+| Car-only camera confirmation framing | Kept and moved earlier: the abstract opens with "A car-only camera detector..."; Fig. 1 caption says "car-only confirmation" |
+| Validation vs. test split metrics | Kept: detector metrics are "validation metrics from model selection"; the test split is retained in the dataset audit (Sec. III-A) |
+| Wilson intervals as descriptive ranges | Kept: Table II caption and Sec. IV-B call them descriptive intervals on the constructed grid |
+| Nominal $a_e=8$ m/s$^2$ vs. logged peak deceleration | Kept: "Later peak decelerations are logged closed-loop outcomes, not constraints imposed by $a_e$" (Sec. III-B) |
+| Artifact availability | Extended: repository URL plus `\artifactdoi` (Zenodo DOI placeholder), source map and hash/path policy for large artifacts |
+| Optional: no mixed PASS/FAIL repeats | Kept and sharpened: repeats now "measure the determinism of the simulated pipeline, not run-to-run variability" |
+
+## Changes in v5.2 that the v5.1 board did not see
+
+- Exact two-sided McNemar p-values in Table III (paired outcomes), described
+  as descriptive. The Limits subsection opens with "The conclusions rest on
+  identified mechanisms, not statistical significance". Only core radar-only
+  vs. fallback (0 vs. 8, p = 0.0078) is below 0.05.
+- Fig. 1 (pipeline and permission rules) and Fig. 2 (median fallback ghost
+  run vs. median hard-gate bench run from frozen tick logs). The v5 trade-off
+  figure was removed.
+- References 19 -> 31, all verified; pdfLaTeX English build; `\artifactdoi`;
+  validator v5.2.
+- Text revision: 178-word abstract without the core precision/recall trio,
+  "late" defined as pipeline position, the +/-1.25-m path corridor named for
+  the shared cut-out FN, and ghost medians stated next to Table IV.
+
+## Open items before submission (from `SELF_REVIEW.md`, not board output)
+
+- Small discordant counts and no multiplicity adjustment. The exact test is
+  conservative, so the p-values remain descriptive.
+- No estimate of run-to-run variability. Fig. 2 shows one run per mechanism.
+- No matched soft-gate, class-agnostic, learned or probabilistic baseline.
+- Fill `\artifactdoi` once the Zenodo DOI is minted, and re-check the status
+  of the Akula et al. preprint.
+- Author sign-off, venue template/page limit and supervisor review of the
+  McNemar wording.
+
+## Historical: Paper v5.1 Reviewer Board Notes (unchanged)
 
 Generated from the `/review-paper-v51` multi-reviewer board run after creating
 the paper-v5.1 reviewer agents. These notes are advisory review output, not
 frozen scientific evidence and not a new CARLA campaign.
 
-## Overall Chair Assessment
+### Overall Chair Assessment
 
 Decision before revision: **Major Revision nhẹ, không cần chạy CARLA mới**.
 
@@ -14,7 +63,7 @@ readiness claim, named conditions as the statistical unit, adverse hold-out
 framed as mechanism testing, and failures retained in evidence. Remaining issues
 were mainly wording, artifact availability, and reviewer-facing clarity.
 
-## Reviewer Verdicts
+### Reviewer Verdicts
 
 | Reviewer | Verdict | Confidence | Main concern |
 |---|---|---|---|
@@ -26,7 +75,7 @@ were mainly wording, artifact availability, and reviewer-facing clarity.
 | Reproducibility | Weak Accept if artifact availability is clear | Medium | Clarify what is public, what is local, and what is referenced by hash/path policy. |
 | Writing | Accept with Minor Revision | High | Abstract is dense; one ghost-severity sentence is hard to parse. |
 
-## Blocking Issues Identified
+### Blocking Issues Identified
 
 1. Artifact availability needed a clearer statement. If raw archives or model
    artifacts are local rather than public, the manuscript/package should say so.
@@ -44,7 +93,7 @@ were mainly wording, artifact availability, and reviewer-facing clarity.
 6. The stopping-risk parameter `$a_e=8$ m/s^2` should be distinguished from
    realized closed-loop peak deceleration in severity logs.
 
-## Required Revision Checklist
+### Required Revision Checklist
 
 - Replace `An unseen bench exposes...` with non-blind hold-out wording.
 - Add `car-only` to camera-gate framing early in the abstract/setup.
@@ -55,7 +104,7 @@ were mainly wording, artifact availability, and reviewer-facing clarity.
 - Add artifact availability text explaining public source/curated evidence versus
   large local artifacts and model files.
 
-## Follow-Up Already Applied
+### Follow-Up Already Applied
 
 The manuscript/package was revised after this review:
 
@@ -81,7 +130,7 @@ Residual note: the Vietnamese build emitted small TeX layout warnings
 (`underfull hbox`, `overfull vbox` around 1--2 pt), but the validator passed and
 the page budget remained six pages.
 
-## Final Status
+### Final Status
 
 All six required revisions from the board are applied in both the English and
 Vietnamese manuscripts. The optional consistency strengthening was also applied:

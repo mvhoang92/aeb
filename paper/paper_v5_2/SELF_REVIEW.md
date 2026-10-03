@@ -49,8 +49,9 @@ traceability to a frozen CUDA campaign.
 - The Akula et al. preprint (arXiv 2606.27556) is inherited from v5.1; its
   status should be re-checked before submission.
 - `REVIEW_RESPONSE.md`, `REVIEW_BOARD_NOTES.md` and
-  `AUTHOR_READING_GUIDE_VI.md` are inherited v5.1 documents and do not
-  describe the McNemar column or the new figures.
+  `AUTHOR_READING_GUIDE_VI.md` now describe v5.2, including the McNemar
+  column and the new figures. They keep the v5.1 content as marked history;
+  no reviewer board has been run on v5.2.
 
 ## Claims checked
 
