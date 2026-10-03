@@ -6,9 +6,17 @@ import unittest
 
 import numpy as np
 
-from ui.manual_control_common import YoloDetector
+from ci_support import carla_import_skip_reason, skip_if
+
+try:
+    from ui.manual_control_common import YoloDetector
+except ModuleNotFoundError as exc:
+    CARLA_SKIP = carla_import_skip_reason(exc)
+else:
+    CARLA_SKIP = None
 
 
+@skip_if(CARLA_SKIP)
 class YoloDetectorTimingTests(unittest.TestCase):
     def detector_stub(self):
         detector = YoloDetector.__new__(YoloDetector)

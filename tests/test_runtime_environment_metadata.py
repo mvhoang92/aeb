@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from ci_support import probe_carla_import, skip_if
 from infrastructure import cuda_runtime
 
 
@@ -191,6 +192,7 @@ class RuntimeEnvironmentTests(unittest.TestCase):
         self.assertEqual("550.1", info["nvidia_driver_version"])
 
 
+@skip_if(probe_carla_import("scripts.run_radar_aeb_scenarios"))
 class RunMetadataTests(unittest.TestCase):
     def test_metadata_keeps_legacy_keys_and_adds_runtime_environment(self):
         from scripts.run_radar_aeb_scenarios import ScenarioRunner

@@ -1,0 +1,59 @@
+# Unit tests + manuscript claim validators, without CARLA, GPU or the
+# machine-local aeb_workspace.  Validators read only tracked frozen evidence
+# (docs/log/, paper/).  Tests that need the CARLA 0.9.11 PythonAPI egg or the
+# sibling CARLA install skip explicitly under AEB_CI=1 (see tests/ci_support.py).
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-and-claims:
+    # Python 3.7.17 (the CARLA 0.9.11 client version) is still provided by
+    # actions/setup-python for ubuntu-22.04; ubuntu-24.04 images lack it.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    env:
+      AEB_CI: "1"
+      MPLBACKEND: Agg
+      PYTHONDONTWRITEBYTECODE: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.7.17"
+          cache: pip
+          cache-dependency-path: environments/requirements-ci-py37.txt
+
+      - name: Install system tools
+        # poppler-utils: pdfinfo/pdftotext for the validators.
+        # python3-tk, python3-yaml, xvfb: the launcher GUI smoke test runs the
+        # system /usr/bin/python3 under xvfb-run, as on the workstation.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            poppler-utils python3-tk python3-yaml xvfb
+
+      - name: Install Python dependencies
+        run: python -m pip install -r environments/requirements-ci-py37.txt
+
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Manuscript claim validators
+        run: |
+          python scripts/validate_v4_manuscript_claims.py
+          python scripts/validate_v5_manuscript_claims.py
+          python scripts/validate_v51_manuscript_claims.py
+          python scripts/validate_v52_manuscript_claims.py

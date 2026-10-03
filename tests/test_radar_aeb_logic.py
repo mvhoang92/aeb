@@ -11,12 +11,20 @@ from core.radar_aeb_pipeline import RadarAEBPipeline
 from core.radar_object import radar_object_from_cluster
 from core.target_selector import select_aeb_target
 from perception.radar.radar_object_tracker import RadarClusterConfig, RadarClusterTracker
-from scripts.run_radar_aeb_scenarios import (
-    legacy_target_spec,
-    match_cluster_to_scenario_actor,
-    nearest_frame_path,
-    select_evidence_events,
-)
+
+from ci_support import carla_import_skip_reason, skip_if
+
+try:
+    from scripts.run_radar_aeb_scenarios import (
+        legacy_target_spec,
+        match_cluster_to_scenario_actor,
+        nearest_frame_path,
+        select_evidence_events,
+    )
+except ModuleNotFoundError as exc:
+    RUNNER_SKIP = carla_import_skip_reason(exc)
+else:
+    RUNNER_SKIP = None
 
 
 @dataclass
@@ -627,6 +635,7 @@ class RadarObjectTests(unittest.TestCase):
         )
 
 
+@skip_if(RUNNER_SKIP)
 class ScenarioEvidenceTests(unittest.TestCase):
     def test_selects_warning_brake_and_minimum_gap(self):
         rows = [
@@ -728,6 +737,7 @@ class Cluster:
         self.world_location = world_location
 
 
+@skip_if(RUNNER_SKIP)
 class ScenarioActorTests(unittest.TestCase):
     def test_legacy_braking_target_is_converted(self):
         spec = legacy_target_spec(

@@ -4,9 +4,17 @@ from __future__ import annotations
 
 import unittest
 
-from ui.manual_control_common import Detection, nms_detections, onnx_model_names
+from ci_support import carla_import_skip_reason, skip_if
+
+try:
+    from ui.manual_control_common import Detection, nms_detections, onnx_model_names
+except ModuleNotFoundError as exc:
+    CARLA_SKIP = carla_import_skip_reason(exc)
+else:
+    CARLA_SKIP = None
 
 
+@skip_if(CARLA_SKIP)
 class OnnxModelNamesTests(unittest.TestCase):
     def test_custom_single_class_names(self):
         names = onnx_model_names({"names": "{0: 'car'}"}, {0: "person"})
@@ -17,6 +25,7 @@ class OnnxModelNamesTests(unittest.TestCase):
         self.assertEqual(names, {2: "car"})
 
 
+@skip_if(CARLA_SKIP)
 class OnnxNmsTests(unittest.TestCase):
     def test_overlapping_same_class_boxes_are_suppressed(self):
         detections = [
