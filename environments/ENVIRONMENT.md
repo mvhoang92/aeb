@@ -72,7 +72,9 @@ The repository handles this in `infrastructure/cuda_runtime.py`
 
 Manual probe: `../venv/bin/python -m infrastructure.cuda_runtime
 models/yolo26n_aeb_v7.onnx` (prints `CUDA probe OK`, exit 0, or a hard-stop
-message, exit 3).
+message, exit 3). `../venv/bin/python scripts/doctor.py` runs the same probe
+together with the model SHA-256, workspace, launcher, GPU-memory and CARLA-port
+checks.
 
 On a **new** machine do not copy the symlink trick. Install a cuDNN 8 build
 for CUDA 11 (for example `libcudnn8=8.9.7.29-1+cuda11.8`) together with CUDA
@@ -119,5 +121,5 @@ the workspace default.
 
 Launcher GUI: `sudo apt-get install python3-tk python3-yaml`.
 
-Then verify with the unit tests and the manuscript validators
-(`docs/01_QUICK_START.md`, steps 1–2).
+Then verify with `../venv/bin/python scripts/doctor.py`, the unit tests and
+the manuscript validators (`docs/01_QUICK_START.md`, steps 1–2).

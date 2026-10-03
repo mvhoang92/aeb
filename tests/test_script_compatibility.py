@@ -8,6 +8,7 @@ from pathlib import Path
 from ci_support import carla_import_skip_reason, skip_if
 from scripts import analyze_v4_final as legacy_analysis
 from scripts import check_workspace as workspace_entry
+from scripts import doctor as doctor_entry
 from scripts import run_v4_campaign as legacy_campaign
 from scripts import run_v4_final_pipeline as legacy_pipeline
 from scripts import train_yolo_pipeline as legacy_training
@@ -21,6 +22,7 @@ from scripts.analysis import validate_v52_manuscript_claims
 from scripts.campaign import run_v4_campaign, run_v4_final_pipeline
 from scripts.training import train_yolo_pipeline
 from scripts.maintenance import check_workspace
+from scripts.maintenance import doctor
 
 try:
     from scripts import collect_yolo_dataset as legacy_collector
@@ -60,6 +62,15 @@ class ScriptCompatibilityTests(unittest.TestCase):
     def test_workspace_wrapper_reexports_implementation(self):
         self.assertIs(workspace_entry.main, check_workspace.main)
         self.assertIs(workspace_entry.collect_status, check_workspace.collect_status)
+
+    def test_doctor_wrapper_reexports_implementation(self):
+        self.assertIs(doctor_entry.main, doctor.main)
+        self.assertIs(doctor_entry.check_cuda, doctor.check_cuda)
+        self.assertIs(doctor.check_workspace.collect_status, check_workspace.collect_status)
+        self.assertEqual(doctor.AEB_ROOT, AEB_ROOT)
+        self.assertEqual(
+            17, len((AEB_ROOT / "scripts" / "doctor.py").read_text().splitlines())
+        )
 
     @skip_if(COLLECTOR_SKIP)
     def test_dataset_wrapper_reexports_implementation(self):
