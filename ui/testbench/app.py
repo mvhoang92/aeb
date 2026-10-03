@@ -227,7 +227,10 @@ def apply_cli(app, args):
                     flush=True,
                 )
             if not experiment.start_queue():
-                print("TESTBENCH-AUTOSTART-FAILED", flush=True)
+                errors = plan.errors if plan is not None else ["no plan"]
+                if not app.carla_online():
+                    errors = errors + ["CARLA offline"]
+                print("TESTBENCH-AUTOSTART-FAILED " + json.dumps(errors, ensure_ascii=False), flush=True)
                 if args.exit_when_done:
                     app.root.after(500, app.root.destroy)
                     app.exit_code = 2
