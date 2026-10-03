@@ -11,6 +11,7 @@ from __future__ import absolute_import
 import csv
 import json
 import os
+import shlex
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
@@ -124,6 +125,25 @@ class RunInfo(object):
         if self.created_at is None:
             return ""
         return self.created_at.strftime("%Y-%m-%d %H:%M")
+
+
+def planned_runs(run, catalog):
+    """Scenario-runs the recorded command asked for, or ``None`` if unknown.
+
+    Mirrors the runner: ``--scenario`` ids (or the whole suite) that support
+    the recorded control mode, times ``repeat``.
+    """
+    if not run.command or not run.scenario_config or not run.repeat:
+        return None
+    try:
+        tokens = shlex.split(run.command)
+        suite = catalog.find_suite(run.scenario_config)
+    except (ValueError, KeyError):
+        return None
+    ids = [tokens[i + 1] for i, token in enumerate(tokens[:-1]) if token == "--scenario"]
+    scenarios = [s for s in suite.scenarios if not ids or s.id in ids]
+    mode = run.control_mode or suite.default_control_mode
+    return sum(1 for s in scenarios if s.supports_mode(mode)) * int(run.repeat)
 
 
 def list_runs(logs_root):

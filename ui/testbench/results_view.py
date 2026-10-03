@@ -14,6 +14,7 @@ from ui.testbench.results import (
     list_runs,
     load_summaries,
     paired_comparison,
+    planned_runs,
     totals,
 )
 from ui.testbench.widgets import Section, Tooltip, wrap_label
@@ -110,7 +111,7 @@ class ResultsPage(ttk.Frame):
         self.run_tree = ttk.Treeview(frame, columns=columns, show="headings", selectmode="extended")
         for column, text, width, stretch in (
             ("run_id", "Run-id", 175, True),
-            ("pass", "PASS", 46, False),
+            ("pass", "PASS", 58, False),
             ("date", "Cập nhật", 96, False),
             ("system", "Hệ thống", 112, False),
             ("suite", "Suite", 110, True),
@@ -121,6 +122,7 @@ class ResultsPage(ttk.Frame):
         self.run_tree.tag_configure("allpass", foreground=c["pass"])
         self.run_tree.tag_configure("somefail", foreground=c["fail"])
         self.run_tree.tag_configure("nometa", foreground=c["faint"])
+        self.run_tree.tag_configure("incomplete", foreground=c["warn"], background=c["warn_bg"])
         scroll = ttk.Scrollbar(frame, orient="vertical", command=self.run_tree.yview)
         self.run_tree.configure(yscrollcommand=scroll.set)
         self.run_tree.grid(row=0, column=0, sticky="nsew")
@@ -181,7 +183,8 @@ class ResultsPage(ttk.Frame):
             if present:
                 self.run_tree.selection_set(present)
                 self.run_tree.focus(present[0])
-                self.run_tree.see(present[0])
+                top = min(present, key=self.run_tree.index)
+                self.run_tree.see(top)
 
     def _fill_runs(self):
         tree = self.run_tree
@@ -198,13 +201,18 @@ class ResultsPage(ttk.Frame):
             if not all(token in haystack for token in tokens):
                 continue
             tag = "nometa"
+            pass_text = run.pass_text
             if run.has_metadata and run.completed:
                 tag = "allpass" if not run.failed else "somefail"
+                planned = self._planned(run)
+                if planned and run.completed < planned:
+                    tag = "incomplete"
+                    pass_text += " · dở {}/{}".format(run.completed, planned)
             tree.insert(
                 "",
                 "end",
                 iid=run.run_id,
-                values=(run.run_id, run.pass_text, run.short_date_text, run.short_label, run.suite_stem),
+                values=(run.run_id, pass_text, run.short_date_text, run.short_label, run.suite_stem),
                 tags=(tag,),
             )
             shown += 1
@@ -212,6 +220,13 @@ class ResultsPage(ttk.Frame):
         keep = [iid for iid in selection if tree.exists(iid)]
         if keep:
             tree.selection_set(keep)
+
+    def _planned(self, run):
+        cache = self.__dict__.setdefault("_planned_cache", {})
+        key = (run.run_id, run.command)
+        if key not in cache:
+            cache[key] = planned_runs(run, self.app.catalog)
+        return cache[key]
 
     def _on_select(self):
         selection = self.run_tree.selection()
@@ -325,8 +340,15 @@ class ResultsPage(ttk.Frame):
                 ),
                 tags=("pass" if ok else "fail",),
             )
+        planned = self._planned(run)
         if not rows:
             self.footer_note.configure(text="Run này chưa có summary (có thể bị dừng trước scenario đầu tiên).")
+        elif planned and len(rows) < planned:
+            self.footer_note.configure(
+                text="⚠ Run DỞ DANG: {}/{} lượt chạy theo lệnh gốc (thường do CARLA crash hoặc bị "
+                "dừng). Có thể chạy tiếp bằng --resume với cùng run-id (cần cùng commit, "
+                "working tree sạch).".format(len(rows), planned)
+            )
         else:
             self.footer_note.configure(
                 text="Dương tính = kịch bản phải phanh. TP/FP/TN/FN tính trên từng "

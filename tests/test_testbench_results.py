@@ -31,8 +31,10 @@ from ui.testbench.results import (
     list_runs,
     load_summaries,
     paired_comparison,
+    planned_runs,
     totals,
 )
+from ui.testbench.catalog import Catalog
 
 
 def row(scenario_id, status="PASS", run_index=1, expected_brake=True, brake=True, collision=False, gap=3.0):
@@ -112,6 +114,38 @@ class RunDirectoryTests(unittest.TestCase):
         self.assertEqual(old.suite_stem, "smoke_basic")
         self.assertEqual(old.date_text, "2026-10-01 10:00")
         self.assertEqual(list_runs(self.root / "missing"), [])
+
+    def test_planned_runs_detects_incomplete_runs(self):
+        catalog = Catalog.load()
+        meta = {
+            "command": "scripts/run_radar_aeb_scenarios.py --scenario-config "
+            "configs/scenarios/suites/smoke_basic.yaml --repeat 2 --run-id x",
+            "scenario_config": "configs/scenarios/suites/smoke_basic.yaml",
+            "control_mode": "physics",
+            "repeat": 2,
+            "completed_scenario_runs": 3,
+            "passed": 3,
+            "failed": 0,
+        }
+        self.make_run("whole", [row("a")], meta)
+        partial = dict(meta, command=meta["command"] + " --scenario ccrs_30 --scenario ccrm_50_20")
+        self.make_run("partial", [row("a")], partial)
+        runs = dict((run.run_id, run) for run in list_runs(self.root))
+        self.assertEqual(planned_runs(runs["whole"], catalog), 10)
+        self.assertEqual(planned_runs(runs["partial"], catalog), 4)
+        physics_only = dict(
+            meta,
+            command="scripts/run_radar_aeb_scenarios.py --scenario-config "
+            "configs/scenarios/suites/radar_only_regression.yaml --scenario cut_in_65_45",
+            scenario_config="configs/scenarios/suites/radar_only_regression.yaml",
+            control_mode="deterministic",
+            repeat=1,
+        )
+        self.make_run("skipped", [row("a")], physics_only)
+        self.make_run("legacy", [row("a")], {"completed_scenario_runs": 1})
+        runs = dict((run.run_id, run) for run in list_runs(self.root))
+        self.assertEqual(planned_runs(runs["skipped"], catalog), 0)
+        self.assertIsNone(planned_runs(runs["legacy"], catalog))
 
     def test_csv_fallback_and_totals(self):
         rows = [
