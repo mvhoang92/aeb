@@ -174,6 +174,11 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
   --load-map
 ```
 
+Runner tự thêm thư mục thư viện CUDA (`AEB_CUDA_LIBRARY_PATH`, mặc định
+`/usr/local/cuda-11.7/lib64`) nên chạy được cả qua ssh/`nohup`/launcher; thiếu
+thư viện CUDA là technical hard-stop (exit code 3), xem
+`docs/01_QUICK_START.md` mục 5.
+
 Headline evidence hiện nằm ở:
 
 ```text

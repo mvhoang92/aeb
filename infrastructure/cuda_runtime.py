@@ -682,11 +682,32 @@ def main(argv=None):
     if not argv:
         print("usage: python -m infrastructure.cuda_runtime MODEL.onnx", file=sys.stderr)
         return 2
-    result = probe_cuda_session(argv[0], use_cache=False)
+    resolution = resolve_cuda_library_dirs()
+    environ = dict(os.environ)
+    current = split_path_list(environ.get("LD_LIBRARY_PATH", ""))
+    environ["LD_LIBRARY_PATH"] = os.pathsep.join(
+        [path for path in resolution.dirs if path not in current] + current
+    )
+    result = probe_cuda_session(argv[0], environ=environ, use_cache=False)
     if result["ok"]:
-        print("CUDA probe OK: providers={}".format(",".join(result["providers"])))
+        print(
+            "CUDA probe OK: providers={} (CUDA library dirs {} from {})".format(
+                ",".join(result["providers"]),
+                os.pathsep.join(resolution.dirs) or "<none>",
+                resolution.source,
+            )
+        )
         return 0
-    print(format_probe_failure(result), file=sys.stderr)
+    print(
+        format_probe_failure(
+            result,
+            {
+                "cuda_library_dirs": resolution.dirs,
+                "cuda_library_dirs_source": resolution.source,
+            },
+        ),
+        file=sys.stderr,
+    )
     return TECHNICAL_HARD_STOP_EXIT_CODE
 
 

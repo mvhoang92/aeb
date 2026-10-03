@@ -12,8 +12,10 @@ from scripts import run_v4_campaign as legacy_campaign
 from scripts import run_v4_final_pipeline as legacy_pipeline
 from scripts import train_yolo_pipeline as legacy_training
 from scripts import validate_v5_manuscript_claims as legacy_validator
+from scripts import validate_v51_manuscript_claims as legacy_v51_validator
 from scripts.analysis import analyze_v4_final
 from scripts.analysis import validate_v5_manuscript_claims
+from scripts.analysis import validate_v51_manuscript_claims
 from scripts.campaign import run_v4_campaign, run_v4_final_pipeline
 from scripts.dataset import collect_yolo_dataset
 from scripts.training import train_yolo_pipeline
@@ -41,6 +43,8 @@ class ScriptCompatibilityTests(unittest.TestCase):
         self.assertIs(legacy_validator.main, validate_v5_manuscript_claims.main)
         self.assertEqual(analyze_v4_final.AEB_ROOT, AEB_ROOT)
         self.assertEqual(validate_v5_manuscript_claims.ROOT, AEB_ROOT)
+        self.assertIs(legacy_v51_validator.main, validate_v51_manuscript_claims.main)
+        self.assertEqual(validate_v51_manuscript_claims.ROOT, AEB_ROOT)
 
     def test_workspace_wrapper_reexports_implementation(self):
         self.assertIs(workspace_entry.main, check_workspace.main)
