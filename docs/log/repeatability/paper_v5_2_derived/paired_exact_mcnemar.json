@@ -1,0 +1,91 @@
+{
+  "description": "Exact two-sided McNemar tests on named-condition system PASS, paper v5.2.",
+  "test": "Conditional binomial test of discordant pairs, p = min(1, 2*P[X <= min(b, c)]), X ~ Binomial(b + c, 1/2).",
+  "unit": "named condition (repeats are all-PASS or all-FAIL and are not counted as pairs)",
+  "framing": "Descriptive on a constructed, non-random condition grid: no road-population inference, no multiplicity correction claimed, discordant counts reported alongside p.",
+  "inputs": {
+    "docs/log/repeatability/paper_v4_gpu_final/scenario_consistency.csv": "816c3e1649f12edbb45bfbd1fcabcc5c6a06caa8a739667bd431c0ea50030117",
+    "docs/log/repeatability/paper_v5_derived/named_paired_outcomes.csv": "19c1be967aeaafc938c0d021dbaf491ecef64715af2c4792dcffd3c2d7098b25"
+  },
+  "cross_check": "2x2 counts recomputed from scenario_consistency.csv equal named_paired_outcomes.csv",
+  "results": [
+    {
+      "scope": "core_without_synthetic_fault",
+      "policy_a": "radar_only",
+      "policy_b": "hard_gate",
+      "paired_named_conditions": 105,
+      "both_pass": 91,
+      "a_only_pass": 2,
+      "b_only_pass": 8,
+      "both_fail": 4,
+      "discordant": 10,
+      "exact_p_two_sided": "0.1094",
+      "exact_p_fraction": "7/64"
+    },
+    {
+      "scope": "core_without_synthetic_fault",
+      "policy_a": "radar_only",
+      "policy_b": "safe_fallback",
+      "paired_named_conditions": 105,
+      "both_pass": 93,
+      "a_only_pass": 0,
+      "b_only_pass": 8,
+      "both_fail": 4,
+      "discordant": 8,
+      "exact_p_two_sided": "0.0078",
+      "exact_p_fraction": "1/128"
+    },
+    {
+      "scope": "core_without_synthetic_fault",
+      "policy_a": "hard_gate",
+      "policy_b": "safe_fallback",
+      "paired_named_conditions": 105,
+      "both_pass": 99,
+      "a_only_pass": 0,
+      "b_only_pass": 2,
+      "both_fail": 4,
+      "discordant": 2,
+      "exact_p_two_sided": "0.5000",
+      "exact_p_fraction": "1/2"
+    },
+    {
+      "scope": "frozen_adverse_holdout",
+      "policy_a": "radar_only",
+      "policy_b": "hard_gate",
+      "paired_named_conditions": 14,
+      "both_pass": 6,
+      "a_only_pass": 0,
+      "b_only_pass": 5,
+      "both_fail": 3,
+      "discordant": 5,
+      "exact_p_two_sided": "0.0625",
+      "exact_p_fraction": "1/16"
+    },
+    {
+      "scope": "frozen_adverse_holdout",
+      "policy_a": "radar_only",
+      "policy_b": "safe_fallback",
+      "paired_named_conditions": 14,
+      "both_pass": 6,
+      "a_only_pass": 0,
+      "b_only_pass": 1,
+      "both_fail": 7,
+      "discordant": 1,
+      "exact_p_two_sided": "1.0000",
+      "exact_p_fraction": "1/1"
+    },
+    {
+      "scope": "frozen_adverse_holdout",
+      "policy_a": "hard_gate",
+      "policy_b": "safe_fallback",
+      "paired_named_conditions": 14,
+      "both_pass": 7,
+      "a_only_pass": 4,
+      "b_only_pass": 0,
+      "both_fail": 3,
+      "discordant": 4,
+      "exact_p_two_sided": "0.1250",
+      "exact_p_fraction": "1/8"
+    }
+  ]
+}
