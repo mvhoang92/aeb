@@ -1,5 +1,12 @@
 # v5.2 Change Log
 
+## Artifact availability DOI placeholder
+
+- Both sources define `\newcommand{\artifactdoi}{\textit{DOI to be assigned (Zenodo)}}`
+  and the artifact-availability paragraph now states that the package is
+  archived at `\artifactdoi`. Replace the macro body with the minted Zenodo
+  DOI once the archive exists; no other text needs to change.
+
 ## Figures: pipeline diagram and failure time series
 
 - New committed script `scripts/analysis/plot_v52_figures.py` (vector PDF,

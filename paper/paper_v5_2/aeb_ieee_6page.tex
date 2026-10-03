@@ -8,6 +8,8 @@
 \usepackage{graphicx}
 \graphicspath{{figures/}}
 \usepackage{booktabs,array,url,balance,microtype}
+% Fill in when the Zenodo archive is minted (one place for both languages' text).
+\newcommand{\artifactdoi}{\textit{DOI to be assigned (Zenodo)}}
 
 \title{When Camera Confirmation Helps and Hurts: Radar--Camera AEB Permission Policies and Failure Severity in CARLA}
 \author{
@@ -468,8 +470,8 @@ or removing a run. Repository refactoring and launcher changes occurred later
 and are not experimental contributions or new validation of these policies.
 
 Source code, manuscript files, checksums, and curated derived evidence are indexed at
-\url{https://github.com/mvhoang92/aeb}; the companion source map identifies the
-frozen raw archive, derivation scripts, and checksum trail. Large runtime artifacts
+\url{https://github.com/mvhoang92/aeb} and archived at \artifactdoi; the companion
+source map identifies the frozen raw archive, derivation scripts, and checksum trail. Large runtime artifacts
 and local model files are referenced by hash and path policy rather than embedded
 in the manuscript package. Re-execution requires a compatible CARLA installation,
 local model artifact, and CUDA environment.
