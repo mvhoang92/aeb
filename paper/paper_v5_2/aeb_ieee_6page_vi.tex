@@ -172,7 +172,14 @@ nối các lần suy luận nhưng cho phép xác nhận cũ còn hiệu lực t
 hữu hạn.
 
 \subsection{Tính nguy hiểm và ba cách cho phép phanh}
-Hệ thống lọc điểm radar theo khoảng cách, độ cao và vùng quỹ đạo dự đoán.
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{pipeline_permission_policies.pdf}
+\caption{Chuỗi xử lý dùng chung từ cảm biến đến phanh. Ba chính sách nhận cùng yêu cầu phanh radar $B_r$ và cùng xác nhận car $C$/giữ $H$, chỉ khác ở bước cấp quyền cuối: gate cứng từ chối $B_r$ nếu không có box car tại mục tiêu chiếu; fallback còn cấp quyền khi điều kiện khẩn cấp $E_r$ thỏa. Hình giữ nhãn tiếng Anh để đối chiếu với bản nộp.}
+\label{fig:pipeline}
+\end{figure}
+
+Hình~\ref{fig:pipeline} tóm tắt chuỗi xử lý dùng chung. Hệ thống lọc điểm radar theo khoảng cách, độ cao và vùng quỹ đạo dự đoán.
 Các điểm còn lại được gom thành cụm, rồi theo dõi qua nhiều frame. Chỉ một
 mục tiêu đã được xác nhận, còn mới và có nguy cơ va chạm mới được chọn. Với
 khoảng cách $d$, vận tốc tương đối radar $v_r<0$ và vận tốc xe ego $v_e$,
@@ -293,7 +300,7 @@ chấn thương hay nguy cơ va chạm thứ cấp.
 
 \section{Kết quả: khi nào mỗi cách hoạt động và thất bại}
 \subsection{So sánh theo từng điều kiện}
-Bảng~\ref{tab:primary} và Hình~\ref{fig:primary} trình bày kết quả của bộ
+Bảng~\ref{tab:primary} trình bày kết quả của bộ
 chính và bộ hold-out. Trên bộ chính, fallback PASS 101/105 điều kiện, camera
 gate cứng PASS 99/105 và radar-only PASS 93/105. Hai chính sách có camera đều
 chặn tám trường hợp radar-only phanh nhầm trước vật thể gần mép đường. Radar-
@@ -355,21 +362,21 @@ giữa hai chính sách camera vì camera vẫn nhận ra chúng. Như vậy, th
 chính sách phụ thuộc vào loại tình huống, không phụ thuộc đơn giản vào số
 lần chạy.
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.90\textwidth]{scenario_level_tradeoff.png}
-\caption{Kết quả theo từng điều kiện đã khóa. Trái: precision--recall của bộ chính và khoảng Wilson mô tả trên điều kiện định danh được xây dựng. Phải: số điều kiện PASS trên bộ hold-out bất lợi gồm 14 điều kiện. Các bộ này không cho biết tần suất tình huống ngoài đường. Hình giữ nhãn tiếng Anh để đối chiếu với bản nộp.}
-\label{fig:primary}
-\end{figure*}
-
 \subsection{Bốn nguyên nhân thất bại chính}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{timeseries_ghost_vs_bench.pdf}
+\caption{Log theo tick đã khóa. (a) Fallback với ghost tổng hợp sáu điểm: cấp quyền khẩn cấp ở 0.15~s và dừng hẳn. (b) Gate cứng với ghế dài hold-out: yêu cầu phanh radar bị chặn đến lúc va chạm (nét đứt). Nền xám: có yêu cầu phanh radar $B_r$. Cách chọn: lượt chạy có các đại lượng severity bằng trung vị của chính sách (tốc độ bắt đầu, thời gian và giảm tốc cực đại của ghost trên 20 lượt; tốc độ trước va chạm của ghế dài trên năm lượt), lấy mã kịch bản/lượt nhỏ nhất khi bằng nhau.}
+\label{fig:timeseries}
+\end{figure}
+
 \emph{1) Radar không tạo được mục tiêu.} Xe đẩy hàng chỉ tạo tối đa hai điểm
 ứng viên và không tạo được cụm đủ tin cậy. Vì radar chưa yêu cầu phanh nên
 không chính sách nào có cơ hội cứu tình huống này. Cả ba xe đều va chạm mà
 không phanh, với tốc độ trung vị 49.96 km/h.
 
 \emph{2) Camera chặn vật cản thật.} Ghế dài tạo được mục tiêu radar nhưng
-camera không xác nhận đó là xe. Radar-only bắt đầu phanh ở 12.624 m; fallback
+camera không xác nhận đó là xe (Hình~\ref{fig:timeseries}b). Radar-only bắt đầu phanh ở 12.624 m; fallback
 chỉ đủ điều kiện ở 4.295 m; gate cứng không phanh. Tốc độ trước va chạm lần
 lượt là 32.57, 54.93 và 59.95 km/h. Fallback đã cho phép phanh nhưng phanh
 quá muộn để dừng kịp. So với gate cứng, radar-only giảm tốc độ va chạm khoảng
@@ -382,7 +389,7 @@ thấy ``đã phanh'' và ``đã tránh được va chạm'' là hai kết quả
 
 \emph{4) Radar ghost đủ giống vật thật.} Khi chèn sáu điểm vào giữa làn,
 tracker xác nhận mục tiêu ở 0.15 s, với confidence 1.0, TTC 0.89 s và biên
-$-15.21$ m. Radar-only và fallback đều phanh; gate cứng không phanh vì không
+$-15.21$ m (Hình~\ref{fig:timeseries}a). Radar-only và fallback đều phanh; gate cứng không phanh vì không
 có xác nhận car. Ghost có tám hoặc mười điểm cũng cho kết quả tương tự. Khi
 dịch ghost lệch 0.75 m, nó vượt giới hạn 0.65 m của fallback nên bị chặn,
 nhưng radar-only vẫn phanh. Đây là một phản ví dụ do chèn lỗi tổng hợp, không
@@ -535,7 +542,8 @@ Kết quả ủng hộ cách so sánh theo cơ chế và mức độ hậu quả
 luận fusion luôn tốt hơn. Camera không xác nhận không có nghĩa là đường trống;
 rada có track ổn định cũng chưa chứng minh có vật cản thật.
 
-\balance
+% No \balance: this uncapped author copy runs onto a seventh page, and balancing
+% the over-full sixth page produced an 11-pt overfull vbox.
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 \end{document}

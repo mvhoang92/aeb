@@ -79,9 +79,8 @@ processing, controller, and scoring held common; (2) a mechanism-oriented
 analysis linking camera veto, emergency qualification, and missing tracks to
 core and adverse hold-out outcomes; and (3) scenario-level reporting coupled to
 false-brake and pre-impact severity, supported by a frozen CUDA execution and
-artifact trail. These contributions are empirical. The additional organization
-and paired reporting in this revision reuse the existing frozen evidence; they
-do not introduce a new algorithm or a new campaign.
+artifact trail. These contributions are empirical and reuse the frozen
+evidence; no new algorithm or campaign is introduced.
 
 \section{Related Work and Research Boundary}
 Radar--vision vehicle recognition for AEB is established. Kim and Song address
@@ -168,7 +167,14 @@ wall time. The identical 0.35-s hold in both camera policies bridges inference
 intervals but permits bounded stale confirmation.
 
 \subsection{Risk and three alternative gates}
-Radar points are filtered by range, road height, and predicted constant-curvature
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{pipeline_permission_policies.pdf}
+\caption{Shared sensor-to-brake pipeline. All policies receive the same radar request $B_r$ and car-only confirmation $C$/hold $H$ and differ only in late permission: hard gating denies $B_r$ without a car box at the projected target; fallback also grants it when the emergency condition $E_r$ holds.}
+\label{fig:pipeline}
+\end{figure}
+
+Fig.~\ref{fig:pipeline} summarizes the shared chain. Radar points are filtered by range, road height, and predicted constant-curvature
 path, clustered by position/velocity, and associated across frames. A confirmed,
 non-stale, collision-relevant track is selected. For range $d$, relative radar
 velocity $v_r<0$, and ego speed $v_e$,
@@ -287,7 +293,7 @@ or secondary-crash risk estimates.
 
 \section{Results: Benefits, Counterexamples, and Severity}
 \subsection{Paired operating points}
-Table~\ref{tab:primary} and Fig.~\ref{fig:primary} show core and hold-out results.
+Table~\ref{tab:primary} shows core and hold-out results.
 Core fallback passes 101/105 conditions, versus 99 for hard gating and 93 for
 radar-only. Both camera policies suppress eight edge-prop false brakes (four
 prop types at two lateral offsets). Radar-only and fallback brake for both
@@ -349,21 +355,21 @@ fallback because they remain within the camera's label space. The policy
 ordering changes with the mechanisms represented in the suite, not simply with
 the number of repeated executions.
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.90\textwidth]{scenario_level_tradeoff.png}
-\caption{Frozen named-condition evidence. Left: core precision--recall with descriptive Wilson ranges on constructed named conditions. Right: system PASS on the 14-condition adverse hold-out. Neither grid estimates road prevalence.}
-\label{fig:primary}
-\end{figure*}
-
 \subsection{Mechanisms at different pipeline stages}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{timeseries_ghost_vs_bench.pdf}
+\caption{Frozen tick logs. (a) Fallback, six-point synthetic ghost: emergency permission at 0.15~s and a full stop. (b) Hard gate, hold-out bench: the radar request is vetoed until impact (dashed). Grey: radar request $B_r$ present. Selection: the run whose severity descriptors equal the policy median (ghost onset speed, duration, and peak deceleration over 20 runs; bench pre-impact speed over five runs), lowest scenario/run identifier on ties.}
+\label{fig:timeseries}
+\end{figure}
+
 \emph{Missing track.} The hold-out shopping cart produces at most two path
 candidates and no confirmed cluster. No radar brake request reaches any gate;
 a late permission override cannot recover this upstream failure. All policies
 impact without braking at a median proxy speed of 49.96 km/h.
 
 \emph{Semantic veto and late permission.} The bench forms a radar track, but no
-usable car confirmation. Radar-only brakes at 12.624 m; fallback qualifies at
+usable car confirmation (Fig.~\ref{fig:timeseries}b). Radar-only brakes at 12.624 m; fallback qualifies at
 4.295 m; hard gating does not brake. Table~\ref{tab:severity} records pre-impact
 speeds of 32.57, 54.93, and 59.95 km/h, respectively. Fallback recovers a brake
 TP, not timely stopping. Relative to hard gating, radar-only lowers this proxy
@@ -376,7 +382,8 @@ it does not independently identify a contact-dynamics or controller defect.
 It demonstrates mitigation hidden by a binary collision count.
 
 \emph{Convincing false track.} A six-point center injection forms a confirmed
-track by 0.15 s with confidence 1.0, TTC 0.89 s, and margin $-15.21$ m.
+track by 0.15 s with confidence 1.0, TTC 0.89 s, and margin $-15.21$ m
+(Fig.~\ref{fig:timeseries}a).
 Radar-only and fallback request emergency braking; hard gating has no car
 confirmation. Eight- and ten-point center/0.50-m ghosts behave similarly.
 Moving the injection to 0.75 m crosses the frozen 0.65-m fallback boundary but
@@ -467,8 +474,6 @@ and local model files are referenced by hash and path policy rather than embedde
 in the manuscript package. Re-execution requires a compatible CARLA installation,
 local model artifact, and CUDA environment.
 Hashes establish artifact identity, not hardware-independent bitwise behavior.
-The provenance distinction matters: regression testing of later software does
-not enlarge the scientific sample or replace the archived campaign.
 
 \section{Discussion and Validity}
 \subsection{What the comparison establishes}
@@ -497,8 +502,7 @@ track, and passing a radar-quality threshold can both admit a ghost and delay a
 real obstacle. Finally, collision avoidance, impact mitigation, and unwanted
 intervention are distinct objectives. A policy that wins on one should not be
 selected from a single aggregate F1 or PASS rate without specifying the intended
-operating conditions and acceptable error costs. The present suite supports
-these comparisons within its grid, not deployment-specific cost estimation.
+operating conditions and acceptable error costs.
 
 \subsection{Limits of the evidence}
 The experiment covers one map, ego platform, fixed seed, favorable imaging,

@@ -1,0 +1,33 @@
+{
+  "archive": "docs/log/repeatability/artifacts/paper_v4_gpu_final_locked_20260825_raw_logs.tar.gz",
+  "archive_sha256": "4d60f2568a7049128db08d282699ada7b4cc28680dac47812fcabd465a85b524",
+  "selection": [
+    {
+      "panel": "ghost",
+      "config": "safe_fallback",
+      "job": "holdout_safe_fallback",
+      "scenario_id": "holdout_ghost_6pt_center",
+      "run_index": 1,
+      "rule": "median onset/duration/peak deceleration over 20 fallback ghost runs; smallest (scenario, run) on ties",
+      "tied_runs": 15,
+      "medians": {
+        "onset_speed_kph": 78.368,
+        "brake_duration_s": 3.6,
+        "peak_deceleration_mps2": 9.022
+      }
+    },
+    {
+      "panel": "bench",
+      "config": "hard_gate",
+      "job": "holdout_hard_gate",
+      "scenario_id": "holdout_bench_center_v60_g22",
+      "run_index": 1,
+      "rule": "median last-tick pre-impact speed over 5 hard-gate bench runs; smallest run on ties",
+      "tied_runs": 5,
+      "medians": {
+        "preimpact_speed_kph": 59.945
+      }
+    }
+  ],
+  "shading": "grey = radar request B_r present (gate action in ['camera_confirmed', 'confirmation_hold', 'fusion_blocked_brake', 'radar_emergency_fallback', 'radar_emergency_fallback_hold'])"
+}

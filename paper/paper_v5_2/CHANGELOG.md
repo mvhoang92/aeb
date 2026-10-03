@@ -1,5 +1,33 @@
 # v5.2 Change Log
 
+## Figures: pipeline diagram and failure time series
+
+- New committed script `scripts/analysis/plot_v52_figures.py` (vector PDF,
+  reproducible bytes) writes to `docs/log/repeatability/paper_v5_2_derived/figures/`
+  and copies the PDFs into `paper_v5_2/figures/`:
+  - `pipeline_permission_policies.pdf` (Fig. 1): shared radar chain, car-only
+    camera confirmation, the three permission rules (where each grants or
+    denies $B_r$), the emergency condition $E_r$ and the staged PID brake;
+  - `timeseries_ghost_vs_bench.pdf` (Fig. 2): speed, radar TTC and brake
+    command for one fallback synthetic-ghost run (false full stop) and one
+    hard-gate hold-out bench run (vetoed request, impact). The raw-log archive
+    SHA256 is verified against its sidecar first; tick CSVs are read directly
+    from the archive (nothing extracted into the repository). Selection rule:
+    run whose severity descriptors equal the policy median, lowest
+    scenario/run identifier on ties (15/20 ghost and 5/5 bench runs tie).
+    Traces and the selection record are kept as `timeseries_selected_runs.csv`
+    and `timeseries_selection.json`.
+- Removed the v5 `scenario_level_tradeoff.png` figure (a double-column figure
+  that duplicated Table I numbers) from the v5.2 manuscript to make room; it
+  remains in `paper_v5_derived/figures/` and in v5/v5.1.
+- Text tightened to stay at six pages (EN only; the VI author copy is not
+  shortened): merged the two "contributions are empirical" sentences, removed
+  the repeated provenance sentence in Computation/reproducibility and the last
+  sentence of the RQ1--RQ3 discussion paragraph.
+- Vietnamese copy: same figures/captions; `\balance` removed because the
+  uncapped copy now runs to seven pages and balancing produced an 11-pt
+  overfull vbox. `build.sh` now also fails on overfull vboxes > 1 pt.
+
 ## Exact paired McNemar tests
 
 - New script `scripts/analysis/analyze_v52_paired_tests.py` recomputes the

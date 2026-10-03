@@ -23,9 +23,9 @@ build() {  # $1 = engine, $2 = stem
     echo "Font-shape substitution in $2.log" >&2
     exit 1
   fi
-  worst=$(grep -o 'Overfull \\hbox ([0-9.]*pt' "$2.log" | grep -o '[0-9.]*' | sort -g | tail -1 || true)
+  worst=$(grep -o 'Overfull \\[hv]box ([0-9.]*pt' "$2.log" | grep -o '[0-9.]*' | sort -g | tail -1 || true)
   if [[ -n "$worst" ]] && awk -v w="$worst" 'BEGIN { exit !(w > 1.0) }'; then
-    echo "Overfull hbox of ${worst}pt (> 1pt) in $2.log" >&2
+    echo "Overfull box of ${worst}pt (> 1pt) in $2.log" >&2
     exit 1
   fi
   pdfinfo "$2.pdf" | grep '^Pages:'
