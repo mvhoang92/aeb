@@ -1,5 +1,39 @@
 # v5.2 Change Log
 
+## Text revision (abstract, limits, wording)
+
+- Abstract rewritten from 209 to 178 words (whitespace-delimited). Kept
+  only the story numbers: 105/14 conditions, hold-out 11/14 vs 7/14, and
+  bench last-tick speeds 32.57/54.93/59.95 km/h. Moved to the body: the core
+  precision/recall trio (Table I), eight edge-prop false brakes, four ghost
+  conditions, "all 20 fallback ghost runs stop" and the medians 78.4 km/h,
+  3.60 s and 9.02 m/s^2 (new sentence by Table IV), and the 2,461-run campaign
+  size (Sec. IV). The closing scope sentence is unchanged.
+- Limits: the conclusions rest on identified mechanisms, not statistical
+  significance; only 1 of 6 exact McNemar contrasts (core radar-only vs.
+  fallback, 0 vs. 8, p=0.0078) is below 0.05. The p<0.05 sentence in
+  Results now points to this subsection.
+- Repeats: they measure determinism of the simulated pipeline (no mixed
+  outcomes), not run-to-run variability; sensor-noise and seed variation are
+  future work.
+- Ambiguities resolved from frozen configs/logs: "late" = pipeline position,
+  with "delayed (fallback) permission" for the temporal sense; the shared
+  cut-out FN leaves the +/-1.25 m predicted-path corridor
+  (`brake.max_lateral_offset_m`, frozen `config_snapshot/sensors.yaml`) before
+  the brake threshold; the ghost combinations are named; the cart has at most
+  two radar points per frame passing the range/height/path filter and no
+  cluster; ghost severity values are stated as medians; TTC and margin must
+  both hold.
+- To stay at six pages, EN drops: "The intended benefit is selective
+  recovery..." (Intro), "It demonstrates mitigation hidden by a binary
+  collision count." (warning prop), the sentence listing what the ghost rows
+  report (replaced by the new median sentence), and "Repeats are correlated,"
+  (now covered by the determinism sentence). The Vietnamese copy is synced
+  for every content change but not shortened.
+- The v5.2 validator now checks the abstract's story numbers, the EN
+  abstract length (150-185 words) and closing sentence, and that each moved
+  or clarified statement is present in the body of both languages.
+
 ## Gates and package documentation
 
 - New validator `scripts/analysis/validate_v52_manuscript_claims.py` (shim
