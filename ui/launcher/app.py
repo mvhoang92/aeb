@@ -272,6 +272,13 @@ class AebLauncher(
         ttk.Label(brand, text="CARLA 0.9.11", style="SidebarNote.TLabel").pack(
             anchor=tk.W, pady=(px(2), 0)
         )
+        ttk.Label(
+            brand,
+            text="Khởi động CARLA, chạy demo, kiểm thử và ghi video tại một nơi.",
+            style="SidebarNote.TLabel",
+            wraplength=px(SIDEBAR_WIDTH - 34),
+            justify=tk.LEFT,
+        ).pack(fill=tk.X, pady=(px(10), 0))
 
         ttk.Label(sidebar, text="QUY TRÌNH", style="SidebarCaps.TLabel").pack(
             anchor=tk.W, padx=px(18), pady=(px(4), px(6))

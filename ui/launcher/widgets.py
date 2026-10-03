@@ -319,7 +319,7 @@ class StatusPill(tk.Canvas):
 # --------------------------------------------------------------------------- #
 # Command preview
 # --------------------------------------------------------------------------- #
-PREVIEW_MIN_LINES = 2
+PREVIEW_MIN_LINES = 1
 PREVIEW_MAX_LINES = 4
 
 
