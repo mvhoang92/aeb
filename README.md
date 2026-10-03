@@ -242,3 +242,11 @@ cd /home/mvhoang/CARLA_0.9.11/aeb
 
 Khi hoàn thiện báo cáo, link GitHub và link Google Drive video sẽ được đưa vào
 phụ lục thay vì liệt kê toàn bộ đường dẫn local trong nội dung chính.
+
+## Giấy Phép
+
+Mã nguồn được phát hành theo GNU Affero General Public License v3.0
+(`LICENSE`), nhất quán với Ultralytics YOLO (AGPL-3.0) mà `ui/` và
+`scripts/training/` sử dụng. Gói artifact trên Zenodo tách hai record: log và
+evidence theo CC-BY-4.0, model weights YOLO26n fine-tuned theo AGPL-3.0 (xem
+`docs/release/ZENODO_PAPER_V5_2.md`).
