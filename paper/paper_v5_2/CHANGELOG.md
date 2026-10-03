@@ -5,7 +5,7 @@
 - Abstract rewritten from 209 to 178 words (whitespace-delimited). Kept
   only the story numbers: 105/14 conditions, hold-out 11/14 vs 7/14, and
   bench last-tick speeds 32.57/54.93/59.95 km/h. Moved to the body: the core
-  precision/recall trio (Table I), eight edge-prop false brakes, four ghost
+  precision/recall trio (Table II), eight edge-prop false brakes, four ghost
   conditions, "all 20 fallback ghost runs stop" and the medians 78.4 km/h,
   3.60 s and 9.02 m/s^2 (new sentence by Table IV), and the 2,461-run campaign
   size (Sec. IV). The closing scope sentence is unchanged.
@@ -73,7 +73,7 @@
     Traces and the selection record are kept as `timeseries_selected_runs.csv`
     and `timeseries_selection.json`.
 - Removed the v5 `scenario_level_tradeoff.png` figure (a double-column figure
-  that duplicated Table I numbers) from the v5.2 manuscript to make room; it
+  that duplicated the Table II numbers) from the v5.2 manuscript to make room; it
   remains in `paper_v5_derived/figures/` and in v5/v5.1.
 - Text tightened to stay at six pages (EN only; the VI author copy is not
   shortened): merged the two "contributions are empirical" sentences, removed
@@ -92,7 +92,7 @@
   two-sided McNemar p-value (conditional binomial on discordant pairs).
   Outputs: `docs/log/repeatability/paper_v5_2_derived/paired_exact_mcnemar.{csv,json}`
   with `SHA256SUMS.txt`.
-- Table II gains a `p` column; the analysis section frames it as descriptive
+- Table III (paired outcomes) gains a `p` column; the analysis section frames it as descriptive
   on a constructed grid (discordant counts shown, no multiplicity adjustment,
   no population inference). References 29 -> 31 (McNemar 1947; Fagerland et
   al. 2013). Vietnamese copy synchronized. EN remains six pages.

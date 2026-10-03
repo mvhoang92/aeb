@@ -39,8 +39,8 @@
 | Manuscript claim | Source |
 |---|---|
 | 105 core and 14 hold-out named conditions; TP/FP/TN/FN/PASS/collision | `named_scenario_metrics.csv` |
-| Paired policy outcomes (Table II counts) | `named_paired_outcomes.csv` |
-| Table II exact McNemar p | `paired_exact_mcnemar.csv` |
+| Paired policy outcomes (Table III counts) | `named_paired_outcomes.csv` |
+| Table III exact McNemar p | `paired_exact_mcnemar.csv` |
 | Bench/cart/warning pre-impact severity | `collision_severity_summary.csv` |
 | Ghost duration, onset, deceleration and stop count | `false_brake_severity_runs.csv`, `false_brake_severity_summary.csv` |
 | Fig. 2 traces | `timeseries_selected_runs.csv` (raw tick logs) |

@@ -15,11 +15,11 @@ present it as a new perception-fusion algorithm.
    learned radar–camera detection, scenario-based assessment, AV fault
    injection, AEB field effectiveness, Wilson, McNemar, Fagerland et al.).
    Related Work ends with an explicit positioning sentence.
-3. Table II gains exact two-sided McNemar p-values computed by a committed
+3. Table III (paired outcomes) gains exact two-sided McNemar p-values computed by a committed
    script from frozen evidence, framed as descriptive on a constructed grid.
 4. New Fig. 1 (pipeline and where each policy grants/denies permission) and
    Fig. 2 (median fallback ghost run vs. median hard-gate bench run). The v5
-   trade-off figure, which duplicated Table I, was removed.
+   trade-off figure, which duplicated Table II, was removed.
 5. `\artifactdoi` macro for the future Zenodo DOI.
 6. New v5.2 validator, shim and unit tests.
 
@@ -44,7 +44,7 @@ traceability to a frozen CUDA campaign.
 - The study has no estimate of run-to-run variability: repeats were
   deterministic, so sensor noise and seed variation remain untested.
 - The abstract now omits the core precision/recall trio; reviewers looking
-  for headline rates must go to Table I.
+  for headline rates must go to Table II.
 - Fig. 2 shows one run per mechanism; repeats are deterministic in the
   descriptors used for selection, so the figure illustrates mechanism, not
   variability.
