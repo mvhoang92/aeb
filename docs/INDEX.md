@@ -22,6 +22,7 @@
 3. [`log/repeatability/paper_v4_gpu_final/FINAL_GPU_EVIDENCE.md`](log/repeatability/paper_v4_gpu_final/FINAL_GPU_EVIDENCE.md)
 4. [`../paper/CURRENT.md`](../paper/CURRENT.md)
 5. [`../paper/paper_v5/CLAIM_EVIDENCE_MATRIX.md`](../paper/paper_v5/CLAIM_EVIDENCE_MATRIX.md)
+6. [`release/ZENODO_PAPER_V5_2.md`](release/ZENODO_PAPER_V5_2.md): gói tái lập Zenodo cho paper v5.2 (nội dung, checksum, giấy phép, cách upload và nơi ghi DOI).
 
 ## Phân loại tài liệu
 
@@ -32,6 +33,7 @@
 - `log/*.md`: experiment records lịch sử, không phải quick-start.
 - `history/legacy_docs/`: tài liệu cũ chỉ để truy nguyên.
 - `maintenance/`: inventory, migration và cleanup records.
+- `release/`: hướng dẫn phát hành artifact ngoài Git (Zenodo/GitHub Releases) kèm checksum.
 
 Report v3 và paper v1–v5 là versioned artifacts. Không sửa đè để cập nhật tài
 liệu vận hành; tạo generation mới khi claim hoặc thuật toán thay đổi.
