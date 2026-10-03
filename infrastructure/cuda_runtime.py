@@ -479,6 +479,202 @@ def preflight_or_exit(model_config, model_path, stream=None, prober=None):
     raise SystemExit(TECHNICAL_HARD_STOP_EXIT_CODE)
 
 
+_CUDA_LIBRARY_MAP_PATTERN = re.compile(
+    r"lib(?:cudnn|cublas|cublasLt|cudart|cufft|curand|nvrtc|onnxruntime_providers_cuda)"
+    r"[\w.-]*\.so"
+)
+
+
+def loaded_cuda_libraries(maps_path="/proc/self/maps"):
+    """Return the CUDA-related shared objects mapped into this process."""
+
+    try:
+        with open(maps_path) as stream:
+            lines = stream.read().splitlines()
+    except (IOError, OSError):
+        return []
+    found = []
+    for line in lines:
+        parts = line.split(None, 5)
+        if len(parts) < 6:
+            continue
+        path = parts[5].strip()
+        name = os.path.basename(path)
+        if _CUDA_LIBRARY_MAP_PATTERN.match(name) and path not in found:
+            found.append(path)
+    return sorted(found)
+
+
+def _decode_cudnn_version(value):
+    value = int(value)
+    if value >= 90000:  # cuDNN 9 encodes major*10000 + minor*100 + patch
+        return "{}.{}.{}".format(value // 10000, (value % 10000) // 100, value % 100)
+    return "{}.{}.{}".format(value // 1000, (value % 1000) // 100, value % 100)
+
+
+def _decode_cuda_version(value):
+    value = int(value)
+    return "{}.{}".format(value // 1000, (value % 1000) // 10)
+
+
+def _library_version(libraries, prefix, symbol, decoder, pointer_arg):
+    """Query a version from a library that is *already* mapped in-process."""
+
+    import ctypes  # pylint: disable=import-outside-toplevel
+
+    for path in libraries:
+        if not os.path.basename(path).startswith(prefix):
+            continue
+        try:
+            library = ctypes.CDLL(path)
+            function = getattr(library, symbol)
+            if pointer_arg:
+                value = ctypes.c_int(0)
+                if function(ctypes.byref(value)) != 0:
+                    return None
+                return decoder(value.value)
+            function.restype = ctypes.c_size_t
+            return decoder(function())
+        except (OSError, AttributeError, ValueError):
+            return None
+    return None
+
+
+def onnxruntime_details():
+    """Return ORT version/providers without importing ORT into a CPU-only run."""
+
+    module = sys.modules.get("onnxruntime")
+    if module is not None:
+        try:
+            providers = list(module.get_available_providers())
+        except Exception:  # pylint: disable=broad-except
+            providers = None
+        return getattr(module, "__version__", None), providers
+    try:
+        import pkg_resources  # pylint: disable=import-outside-toplevel
+    except ImportError:
+        return None, None
+    for distribution in ("onnxruntime-gpu", "onnxruntime"):
+        try:
+            return pkg_resources.get_distribution(distribution).version, None
+        except Exception:  # pylint: disable=broad-except
+            continue
+    return None, None
+
+
+def nvidia_driver_info(runner=None):
+    """Query nvidia-smi once; tolerate a missing binary or driver."""
+
+    if "nvidia_smi" in _STATE:
+        return _STATE["nvidia_smi"]
+    info = {"nvidia_driver_version": None, "gpu_name": None}
+    try:
+        completed = (runner or subprocess.run)(
+            [
+                "nvidia-smi",
+                "--query-gpu=driver_version,name",
+                "--format=csv,noheader",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError):
+        completed = None
+    if completed is not None and completed.returncode == 0:
+        first = (completed.stdout or "").strip().splitlines()
+        if first:
+            fields = [field.strip() for field in first[0].split(",", 1)]
+            info["nvidia_driver_version"] = fields[0] or None
+            info["gpu_name"] = fields[1] if len(fields) > 1 else None
+    _STATE["nvidia_smi"] = info
+    return info
+
+
+def process_start_ld_library_path(environ_path="/proc/self/environ"):
+    """Return LD_LIBRARY_PATH as the dynamic loader saw it at exec time.
+
+    ``os.environ`` is not authoritative: e.g. importing cv2 prepends its own
+    lib dir there, which the loader never reads.
+    """
+
+    try:
+        with open(environ_path, "rb") as stream:
+            entries = stream.read().split(b"\0")
+    except (IOError, OSError):
+        return None
+    for entry in entries:
+        if entry.startswith(b"LD_LIBRARY_PATH="):
+            return entry[len(b"LD_LIBRARY_PATH="):].decode("utf-8", "replace")
+    return ""
+
+
+def runtime_environment(environ=None):
+    """Return additive ``run_metadata.json`` evidence about the GPU runtime."""
+
+    effective_ld = process_start_ld_library_path() if environ is None else None
+    environ = os.environ if environ is None else environ
+    bootstrap = bootstrap_info()
+    if bootstrap is None:
+        reexeced = environ.get(REEXEC_MARKER_ENV) == "1"
+        bootstrap = {
+            "cuda_requested": None,
+            "cuda_library_dirs": [],
+            "cuda_library_dirs_source": "not_bootstrapped",
+            "cuda_library_dirs_ignored": [],
+            "cuda_reexec_applied": reexeced,
+            "cuda_reexec_skipped_reason": None,
+            "ld_library_path_at_start": (
+                environ.get(ORIGINAL_LD_PATH_ENV, "")
+                if reexeced
+                else environ.get("LD_LIBRARY_PATH", "")
+            ),
+        }
+    libraries = loaded_cuda_libraries()
+    ort_version, ort_providers = onnxruntime_details()
+    probe = last_probe_result()
+    info = dict(bootstrap)
+    info.update(
+        {
+            "ld_library_path_effective": (
+                environ.get("LD_LIBRARY_PATH", "")
+                if effective_ld is None
+                else effective_ld
+            ),
+            "onnxruntime_version": ort_version,
+            "onnxruntime_available_providers": ort_providers,
+            "cuda_preflight": (
+                None
+                if probe is None
+                else {
+                    key: probe.get(key)
+                    for key in (
+                        "ok",
+                        "returncode",
+                        "missing_library",
+                        "providers",
+                        "duration_s",
+                    )
+                }
+            ),
+            "loaded_cuda_libraries": libraries,
+            "cudnn_version": _library_version(
+                libraries, "libcudnn.so", "cudnnGetVersion", _decode_cudnn_version, False
+            ),
+            "cuda_runtime_version": _library_version(
+                libraries,
+                "libcudart.so",
+                "cudaRuntimeGetVersion",
+                _decode_cuda_version,
+                True,
+            ),
+        }
+    )
+    info.update(nvidia_driver_info())
+    return info
+
+
 def main(argv=None):
     """CLI: ``python -m infrastructure.cuda_runtime MODEL.onnx`` probes CUDA."""
 

@@ -41,6 +41,7 @@ from evaluation.scoring import summarize_scenario
 from evaluation.schemas import SUMMARY_FIELDS, TICK_FIELDS
 from evaluation.summary_writer import SummaryWriter, aggregate_summaries
 from evaluation.telemetry import add_motion_metrics
+from infrastructure import cuda_runtime
 from infrastructure.workspace import logs_root
 from ui.manual_control_common import RadarPoint, RadarSensor, carla, load_yaml
 
@@ -1300,6 +1301,8 @@ class ScenarioRunner(object):
             "record_evidence": self.args.record_evidence,
             "passed": sum(1 for summary in summaries if summary["status"] == "PASS"),
             "failed": sum(1 for summary in summaries if summary["status"] == "FAIL"),
+            # Additive: ORT/CUDA/cuDNN/driver evidence and how CUDA libs resolved.
+            "runtime_environment": cuda_runtime.runtime_environment(),
         }
         with open(str(run_directory / "run_metadata.json"), "w") as stream:
             json.dump(metadata, stream, ensure_ascii=False, indent=2)
