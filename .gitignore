@@ -56,6 +56,7 @@ report_exports/
 !paper/paper_v*/aeb_ieee_6page.pdf
 !paper/paper_v*/aeb_ieee_6page_vi.pdf
 !paper/paper_v5_2/figures/*.pdf
+!paper/paper_v5_2/translation_vi/*.pdf
 !docs/log/repeatability/paper_v5_2_derived/figures/*.pdf
 *.pptx
 *.mp4

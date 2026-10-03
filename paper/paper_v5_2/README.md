@@ -39,6 +39,7 @@ compliance or functional-safety/SOTIF certification.
 - `REVIEW_BOARD_NOTES.md`: no board has reviewed v5.2. The file checks the
   v5.1 board's required revisions against the v5.2 text and lists open items,
   followed by the v5.1 board notes kept verbatim as history.
+- `translation_vi/`: faithful Vietnamese translation of the English master (one-column and IEEE two-column PDFs, for reading only; English is authoritative; see its `README.md`).
 - `AUTHOR_READING_GUIDE_VI.md`: Vietnamese plain-language guide for the
   author, updated for v5.2 (what changed, how to read Table III's McNemar
   column and Figs. 1–2).
