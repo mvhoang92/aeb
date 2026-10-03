@@ -38,20 +38,36 @@ re-running `scripts/analyze_v5_review_metrics.py` on the packaged archive
 reproduced the derived CSV/Markdown/PNG files byte-identically; secret scan
 found nothing.
 
-## Licensing — decision required
+## Licensing — confirmed 2026-10-03
 
-Zenodo allows one license per record, hence two records:
+The authors confirmed the licenses on 2026-10-03. Zenodo allows one license
+per record, hence two records:
 
-- **Record 1 (data)**: CC-BY-4.0 — logs, tables, configs, documentation.
+- **Record 1 (data)**: CC-BY-4.0 — logs, tables, configs, documentation
+  (everything except `model_record/`).
 - **Record 2 (model)**: AGPL-3.0 — the weights are fine-tuned from Ultralytics
   YOLO26n; the installed `ultralytics` 8.4.70 metadata says `License:
   AGPL-3.0` and the exported ONNX embeds the same license string.
-- The GitHub repository has **no LICENSE file**. Choose one before (or with)
-  the release; see `LICENSES.md` in the package.
+- **GitHub repository**: AGPL-3.0, `LICENSE` file added in commit `26d5e71`.
 
-If the authors prefer not to publish the weights, skip record 2; the paper
-tables can still be re-derived from record 1, and the model is identified by
-SHA-256.
+The package `LICENSES.md` states this decision; identical copies are in the
+package root, `record1_data/`, inside the record-1 zip and in
+`record2_model/`. CARLA (MIT code, CC-BY assets; no CARLA binaries or assets
+are shipped) and the unpublished training images are noted there as
+information only. The paper tables can be re-derived from record 1 alone; the
+model is identified there by SHA-256.
+
+## Backups (do not upload)
+
+Superseded copies are kept outside the drag-and-drop folders, in
+`$AEB_WORKSPACE_ROOT/releases/_backups/zenodo_paper_v5_2/`:
+`aeb_paper_v5_2_evidence.zip.bak-20261003` (original zip, `5799eb65…4432`),
+`aeb_paper_v5_2_evidence.zip.bak-20261003b` (intermediate zip, `93b01f10…d3a4`),
+the previous `LICENSES.md` and the previous `SHA256SUMS` files. Upload only the
+files listed in each record's `SHA256SUMS`. The current record-1 zip
+(`892a053b…b995`) differs from the original only in
+`zenodo_paper_v5_2/LICENSES.md` and `zenodo_paper_v5_2/SHA256SUMS`; the other
+101 entries are byte-identical, including their compressed streams.
 
 ## Upload steps
 
@@ -79,7 +95,7 @@ SHA-256.
    the `.zenodo.json` file itself.
 6. **Save draft → Preview.** Check that `README.md` renders, the zip is
    previewable and the license is right.
-7. **Record 2 (model), optional.** Repeat steps 3–6 with `record2_model/` and
+7. **Record 2 (model).** Repeat steps 3–6 with `record2_model/` and
    `model_record/.zenodo.json`: resource type *Software* (or *Model* if
    offered), license *GNU Affero General Public License v3.0*. Add related
    work *Is supplement to* the record-1 DOI, and in record 1 add *Is
