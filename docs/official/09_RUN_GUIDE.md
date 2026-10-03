@@ -61,6 +61,73 @@ Kiểm tra dependency mà không mở cửa sổ:
 /usr/bin/python3 launcher.py --check
 ```
 
+## AEB Test Bench v2 (`launcher_v2.py`)
+
+Test Bench v2 là launcher thứ hai, độc lập hoàn toàn với `launcher.py` (mã
+nguồn riêng trong `ui/testbench/`, không import `ui/launcher/`). Nó chỉ dựng
+lệnh cho hai runner có sẵn và chỉ đọc YAML kịch bản/log, không ghi config hay
+bằng chứng.
+
+```bash
+cd /home/mvhoang/CARLA_0.9.11/aeb
+/usr/bin/python3 launcher_v2.py            # mở cửa sổ "AEB Test Bench v2"
+/usr/bin/python3 launcher_v2.py --check    # kiểm tra điều kiện, không mở cửa sổ
+```
+
+Màn **Thí nghiệm** đi theo thứ tự định nghĩa một thí nghiệm:
+
+1. **Kịch bản**: cây file suite → nhóm tình huống (CCRs, CCRm, CCRb, cut-in,
+   đường trống, xe làn bên, vật ven đường, radar ma…) → kịch bản, ô chọn ba
+   trạng thái, tìm kiếm, lọc theo kỳ vọng (phải phanh / không được phanh / va
+   chạm chấp nhận được) và bảng chi tiết bằng tiếng Việt.
+2. **Hệ thống được kiểm tra**: Radar-only (`configs/sensors.yaml`), Camera hard
+   gate (`sensors_fusion_hard_batch_{gpu,cpu}.yaml`), Gate + radar emergency
+   fallback (`sensors_fusion_safe_fallback_batch_{gpu,cpu}.yaml`); chọn nhiều
+   để so sánh cặp. Thiết bị CUDA/CPU và chế độ physics/deterministic.
+3. **Thiết kế thí nghiệm**: số lần lặp, seed, cooldown, reload world, load map,
+   ghi video, `--resume`, run-id (mẫu `tb_<mẫu|custom>_{policy}[_{suite}]_<thời gian>`).
+4. **Kế hoạch chạy**: mỗi dòng là một lệnh = một thư mục log, kèm số lượt chạy,
+   thời gian ước lượng và lệnh chính xác (sao chép được).
+5. **Chạy**: hàng đợi tuần tự, tiến độ, log trực tiếp, dừng lệnh/hàng đợi.
+   Exit 1 = có FAIL thuật toán (bằng chứng, hàng đợi chạy tiếp); exit 3 =
+   HARD-STOP kỹ thuật thiếu CUDA; traceback/CARLA crash = lỗi kỹ thuật. Hai loại
+   kỹ thuật được hiển thị khác màu và mặc định dừng hàng đợi.
+
+Cách dựng lệnh: một lệnh cho mỗi cặp (file suite × hệ thống). Chọn cả suite thì
+không truyền `--scenario` (giống chiến dịch của paper); chọn một phần thì
+truyền nhiều `--scenario` trong cùng lệnh (runner hỗ trợ `action="append"`), nên
+mỗi cặp vẫn chỉ có một thư mục log. Không sinh YAML tạm, vì SHA-256 của file
+suite thật được ghi vào `run_metadata.json`. Lệnh được xếp theo từng suite (mọi
+hệ thống của suite này rồi mới tới suite sau) để hàng đợi bị ngắt vẫn để lại
+các cặp so sánh hoàn chỉnh.
+
+Mẫu một chạm: **Smoke nhanh** (`smoke_basic.yaml`, radar-only, 1 lần),
+**Hồi quy core** (4 suite phạm vi core của paper × 3 hệ thống, CUDA, physics)
+và **Hold-out** (`fusion_fallback_holdout.yaml` × 3 hệ thống). Giao thức paper
+dùng 5 lần lặp; hai mẫu sau mặc định 1 lần và có nút chuyển sang 5 lần kèm thời
+gian ước lượng.
+
+Màn **Kết quả** liệt kê thư mục log (mới nhất trước) với hệ thống/suite/PASS
+từ `run_metadata.json`; chọn một run để xem từng lượt chạy (kỳ vọng và thực tế
+phanh/va chạm, gap nhỏ nhất, PASS/FAIL) cùng TP/FP/TN/FN, precision, recall; giữ
+Ctrl chọn run thứ hai để xem bảng cặp theo điều kiện có tên (cả hai PASS / chỉ
+A / chỉ B / cả hai FAIL / lặp không nhất quán) — cùng logic bảng McNemar của
+paper, chỉ mô tả, không tính p-value.
+
+Cờ tự động hóa (dùng cho kiểm thử end-to-end):
+
+```bash
+/usr/bin/python3 launcher_v2.py --preset smoke --autostart --exit-when-done
+/usr/bin/python3 launcher_v2.py --scenario configs/scenarios/suites/smoke_basic.yaml:ccrs_30 \
+  --policy fallback --device cuda --autostart --exit-when-done
+/usr/bin/python3 launcher_v2.py --page results --select-run <run-id> --select-run <run-id>
+```
+
+Trạng thái CARLA được đọc từ bảng socket của kernel (`/proc/net/tcp`), không mở
+kết nối tới cổng RPC, và tạm ngưng khi hàng đợi đang chạy. Kiểm thử:
+`tests/test_testbench_plan.py`, `tests/test_testbench_results.py`,
+`tests/test_testbench_gui.py`.
+
 ## Scenario Config
 
 Scenario YAML hiện chia theo hai tầng:

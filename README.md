@@ -145,6 +145,17 @@ Kiểm tra dependency launcher:
 python3 launcher.py --check
 ```
 
+Launcher thứ hai, **AEB Test Bench v2** (độc lập với `launcher.py`, mã nguồn
+trong `ui/testbench/`), dựng thí nghiệm theo 5 bước: kịch bản → hệ thống
+(radar-only / hard gate / fallback) → thiết kế (lặp, seed, run-id) → kế hoạch
+lệnh → chạy hàng đợi, và có màn Kết quả với TP/FP/TN/FN và so sánh cặp hai run:
+
+```bash
+/usr/bin/python3 launcher_v2.py          # hoặc --check
+```
+
+Chi tiết: `docs/official/09_RUN_GUIDE.md` (mục AEB Test Bench v2).
+
 ## Chạy Final Demo 3 Màn
 
 ```bash
