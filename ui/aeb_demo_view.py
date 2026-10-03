@@ -16,6 +16,7 @@ if str(AEB_ROOT) not in sys.path:
     sys.path.insert(0, str(AEB_ROOT))
 
 from control.brake import AEBState, compute_ttc
+from infrastructure import cuda_runtime
 from ui.manual_control_common import (
     CameraSensor,
     YoloDetector,
@@ -33,6 +34,7 @@ from ui.manual_control_common import (
     prepare_manual_control_args,
     project_world_to_camera,
     pygame,
+    resolve_yolo_model_path,
     scale_detection,
 )
 from ui.radar_aeb_view import BrakeRadarPanel, DEFAULT_SCENARIO_CONFIG
@@ -501,6 +503,11 @@ def draw_demo_radar_overlay(radar_panel, display, area):
 def run_demo(args):
     config = load_yaml(args.config)
     config = apply_runtime_overrides(config, args)
+    # Desktop-menu/ssh launches lack ~/.bashrc CUDA dirs: re-exec once with
+    # them before pygame/CARLA exist; required CUDA hard-stops cleanly (exit 3).
+    model_config = config.get("model", {}) or {}
+    cuda_runtime.ensure_cuda_library_path(model_config)
+    cuda_runtime.preflight_or_exit(model_config, resolve_yolo_model_path(model_config))
     if getattr(args, "keep_driving_after_aeb", False):
         config = copy.deepcopy(config)
         brake_config = config.setdefault("brake", {})

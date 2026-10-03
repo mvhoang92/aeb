@@ -24,6 +24,7 @@ PROJECT_ROOT = AEB_ROOT.parent
 if str(AEB_ROOT) not in sys.path:
     sys.path.insert(0, str(AEB_ROOT))
 
+from infrastructure import cuda_runtime  # noqa: E402
 from infrastructure.workspace import logs_root  # noqa: E402
 from scripts.run_radar_aeb_scenarios import (  # noqa: E402
     actor_distances,
@@ -37,6 +38,7 @@ from ui.manual_control_common import (  # noqa: E402
     load_yaml,
     project_world_to_camera,
     pygame,
+    resolve_yolo_model_path,
 )
 
 
@@ -431,6 +433,10 @@ def run_full_scenario(args):
 def main():
     args = parse_args()
     config = load_yaml(args.sensor_config)
+    # Re-exec with CUDA lib dirs before CARLA/pygame; required CUDA hard-stops (exit 3).
+    model_config = config.get("model", {}) or {}
+    cuda_runtime.ensure_cuda_library_path(model_config)
+    cuda_runtime.preflight_or_exit(model_config, resolve_yolo_model_path(model_config))
     report = {
         "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         "sensor_config": str(args.sensor_config),
