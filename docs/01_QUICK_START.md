@@ -70,7 +70,9 @@ chỉ có trong `/usr/local/cuda-11.7/lib64` và chỉ được `~/.bashrc` thê
 launcher mở từ menu desktop, runner trước đây chết với SIGABRT.
 
 Hiện tại `run_fusion_aeb_scenarios.py` (và `ui/fusion_view.py`,
-`ui/yolo_view.py`) tự xử lý:
+`ui/yolo_view.py`, `ui/aeb_demo_view.py` — kể cả khi được
+`scripts/record_scenario_videos.py` gọi — và
+`scripts/campaign/smoke_yolo_fusion_full.py`) tự xử lý:
 
 1. Tìm thư mục thư viện CUDA theo thứ tự: biến môi trường
    `AEB_CUDA_LIBRARY_PATH` (danh sách phân tách bằng `:`), khóa
