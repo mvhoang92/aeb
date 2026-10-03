@@ -371,7 +371,8 @@ class CommandTests(unittest.TestCase):
         one = estimate_seconds(RADAR_RUNNER, scenarios, ExperimentOptions(repeat=1))
         five = estimate_seconds(RADAR_RUNNER, scenarios, ExperimentOptions(repeat=5))
         fusion = estimate_seconds(FUSION_RUNNER, scenarios, ExperimentOptions(repeat=1))
-        self.assertGreater(one, sum(s.duration_s for s in scenarios))
+        # Calibrated: radar smoke (5 runs, 39 simulated s) took ~36 s.
+        self.assertTrue(25.0 < one < 60.0, one)
         self.assertGreater(five, 4 * one)
         self.assertGreater(fusion, one)
         self.assertEqual(estimate_seconds(RADAR_RUNNER, [], ExperimentOptions()), 0.0)

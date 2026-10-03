@@ -43,12 +43,17 @@ PAPER_SEED = 2026
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 
 # Wall-clock model used for the *estimate* shown before a run.  Calibrated on
-# this machine (RTX 3050 laptop, CARLA 0.9.11 Low) from smoke runs; real time
-# varies with early stops, map loads and CARLA health.
-STARTUP_S = {RADAR_RUNNER: 12.0, FUSION_RUNNER: 25.0}
-LOAD_MAP_S = 8.0
-RUN_OVERHEAD_S = {RADAR_RUNNER: 1.5, FUSION_RUNNER: 2.5}
-RELOAD_S = 3.0
+# this machine (RTX 3050 laptop, CARLA 0.9.11 Low, synchronous mode) from
+# test-bench runs on 2026-10-03: radar smoke 5 runs ~36 s, fusion CUDA 1 run
+# ~14 s.  Synchronous simulation runs faster than real time and scenarios stop
+# early after a full stop, so simulated seconds are scaled down.  Real time
+# varies with map loads, evidence recording and CARLA health.
+STARTUP_S = {RADAR_RUNNER: 5.0, FUSION_RUNNER: 8.0}
+SIM_FACTOR = {RADAR_RUNNER: 0.4, FUSION_RUNNER: 0.6}
+RUN_OVERHEAD_S = {RADAR_RUNNER: 1.0, FUSION_RUNNER: 1.5}
+COOLDOWN_FACTOR = 0.5
+LOAD_MAP_S = 3.0
+RELOAD_S = 1.5
 RELOAD_WAIT_S = 2.0
 EVIDENCE_FACTOR = 1.6
 
@@ -248,11 +253,12 @@ def estimate_seconds(runner, scenarios, options):
     if runs == 0:
         return 0.0
     simulated = sum(scenario.duration_s for scenario in scenarios) * int(options.repeat)
+    simulated *= SIM_FACTOR.get(runner, 0.6)
     if options.record_evidence:
         simulated *= EVIDENCE_FACTOR
-    total = STARTUP_S.get(runner, 20.0) + simulated
-    total += runs * RUN_OVERHEAD_S.get(runner, 2.0)
-    total += (runs - 1) * float(options.cooldown_s)
+    total = STARTUP_S.get(runner, 8.0) + simulated
+    total += runs * RUN_OVERHEAD_S.get(runner, 1.5)
+    total += (runs - 1) * float(options.cooldown_s) * COOLDOWN_FACTOR
     if int(options.reload_every) > 0:
         total += ((runs - 1) // int(options.reload_every)) * (RELOAD_S + RELOAD_WAIT_S)
     if options.load_map:
