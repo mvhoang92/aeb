@@ -1,0 +1,8 @@
+# Minimal, pinned dependencies for the CARLA/GPU-free CI job (.github/workflows/tests.yml).
+# Versions match the CARLA client venv (requirements-carla-py37.lock.txt).
+# opencv-python-headless replaces opencv-python (same version) so the runner needs no libGL.
+# Deliberately absent: carla (0.9.11 egg is not on PyPI), pygame, onnxruntime-gpu, torch, ultralytics.
+numpy==1.21.6
+PyYAML==6.0.1
+opencv-python-headless==4.13.0.92
+matplotlib==3.5.3

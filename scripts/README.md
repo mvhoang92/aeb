@@ -31,3 +31,14 @@ subprocess; a failed probe exits with code 3 (technical hard-stop), never 1
 (algorithm FAIL). `run_metadata.json` records the result under
 `runtime_environment`. Generated paths use `AEB_WORKSPACE_ROOT`; run
 `scripts/check_workspace.py` to inspect active dataset/log/output locations.
+
+`scripts/doctor.py` (wrapper around `maintenance/doctor.py`) prints one
+`OK`/`WARN`/`FAIL` line per prerequisite: Git branch/dirty state, workspace
+(reusing `check_workspace.collect_status`), launcher prerequisites (reusing
+`ui.launcher.config.check_prerequisites`, the `launcher.py --check` logic),
+model files against `docs/log/repeatability/environment_20260818/model_sha256.txt`,
+a CUDA ONNX Runtime probe in a subprocess via `infrastructure/cuda_runtime.py`,
+free GPU memory (`nvidia-smi`, optional) and whether the CARLA port is
+listening (local hosts are looked up in the socket table; no connection is
+made). It exits 0 unless a check FAILs; `--skip-cuda-probe` and
+`--sensor-config` adjust the CUDA/model checks.

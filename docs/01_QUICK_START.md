@@ -4,6 +4,19 @@
 
 ```bash
 cd /home/mvhoang/CARLA_0.9.11/aeb
+../venv/bin/python scripts/doctor.py
+```
+
+`doctor.py` in một dòng `OK`/`WARN`/`FAIL` cho từng điều kiện: branch và trạng
+thái dirty của Git, workspace (cùng logic `scripts/check_workspace.py`), điều
+kiện của launcher (cùng logic `launcher.py --check`), file model và SHA-256 so
+với manifest, probe CUDA ONNX Runtime trong subprocess, bộ nhớ GPU còn trống
+(`nvidia-smi`) và cổng CARLA 2000 có đang listen không. Exit code 0 nếu không
+có `FAIL`; CARLA offline hoặc thiếu `nvidia-smi` chỉ là `WARN`. Thêm
+`--skip-cuda-probe` nếu không muốn tạo CUDA session. Các lệnh riêng lẻ vẫn dùng
+được:
+
+```bash
 git status --short --branch
 ../venv/bin/python scripts/check_workspace.py
 /usr/bin/python3 launcher.py --check
@@ -23,6 +36,7 @@ export AEB_WORKSPACE_ROOT=/path/to/aeb_workspace
 ../venv/bin/python scripts/validate_v4_manuscript_claims.py
 ../venv/bin/python scripts/validate_v5_manuscript_claims.py
 ../venv/bin/python scripts/validate_v51_manuscript_claims.py
+../venv/bin/python scripts/validate_v52_manuscript_claims.py
 ```
 
 Mỗi validator in một dòng `PASS: ...` và trả exit code 0.

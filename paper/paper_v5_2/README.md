@@ -33,9 +33,16 @@ compliance or functional-safety/SOTIF certification.
   `scripts/analysis/plot_v52_figures.py`.
 - `CLAIM_EVIDENCE_MATRIX.md`, `SOURCE_MAP.md`, `SELF_REVIEW.md`,
   `CHANGELOG.md`, `SHA256SUMS.txt`.
-- Inherited from v5.1 without change (historical context, not re-reviewed for
-  v5.2): `REVIEW_RESPONSE.md`, `REVIEW_BOARD_NOTES.md`,
-  `AUTHOR_READING_GUIDE_VI.md`.
+- `REVIEW_RESPONSE.md`: anticipated reviewer concerns and the v5.2 responses
+  (McNemar column, Figs. 1–2, references, `\artifactdoi`, text revision),
+  followed by the v5.1 outline kept verbatim as history.
+- `REVIEW_BOARD_NOTES.md`: no board has reviewed v5.2. The file checks the
+  v5.1 board's required revisions against the v5.2 text and lists open items,
+  followed by the v5.1 board notes kept verbatim as history.
+- `translation_vi/`: faithful Vietnamese translation of the English master (one-column and IEEE two-column PDFs, for reading only; English is authoritative; see its `README.md`).
+- `AUTHOR_READING_GUIDE_VI.md`: Vietnamese plain-language guide for the
+  author, updated for v5.2 (what changed, how to read Table III's McNemar
+  column and Figs. 1–2).
 
 ## Rebuild and validate
 

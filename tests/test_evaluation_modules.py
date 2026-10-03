@@ -12,7 +12,15 @@ from evaluation.metrics import summarize_scenario
 from evaluation.schemas import SUMMARY_FIELDS, TICK_FIELDS
 from evaluation.severity import compute_severity_metrics
 from evaluation.summary_writer import SummaryWriter
-from scripts import run_radar_aeb_scenarios as historical_runner
+
+from ci_support import carla_import_skip_reason, skip_if
+
+try:
+    from scripts import run_radar_aeb_scenarios as historical_runner
+except ModuleNotFoundError as exc:
+    RUNNER_SKIP = carla_import_skip_reason(exc)
+else:
+    RUNNER_SKIP = None
 
 
 class EvaluationModuleTests(unittest.TestCase):
@@ -33,6 +41,7 @@ class EvaluationModuleTests(unittest.TestCase):
             "88b2d9f98a29e2a8d88798626784590159ef274f3ba4cffc419b43ec3093ee9a",
         )
 
+    @skip_if(RUNNER_SKIP)
     def test_historical_runner_reexports_extracted_api(self):
         self.assertIs(historical_runner.TICK_FIELDS, TICK_FIELDS)
         self.assertIs(historical_runner.SUMMARY_FIELDS, SUMMARY_FIELDS)

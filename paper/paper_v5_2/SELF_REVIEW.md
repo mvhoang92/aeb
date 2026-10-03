@@ -15,13 +15,17 @@ present it as a new perception-fusion algorithm.
    learned radar–camera detection, scenario-based assessment, AV fault
    injection, AEB field effectiveness, Wilson, McNemar, Fagerland et al.).
    Related Work ends with an explicit positioning sentence.
-3. Table II gains exact two-sided McNemar p-values computed by a committed
+3. Table III (paired outcomes) gains exact two-sided McNemar p-values computed by a committed
    script from frozen evidence, framed as descriptive on a constructed grid.
 4. New Fig. 1 (pipeline and where each policy grants/denies permission) and
    Fig. 2 (median fallback ghost run vs. median hard-gate bench run). The v5
-   trade-off figure, which duplicated Table I, was removed.
+   trade-off figure, which duplicated Table II, was removed.
 5. `\artifactdoi` macro for the future Zenodo DOI.
 6. New v5.2 validator, shim and unit tests.
+
+7. Text revision: shorter abstract (178 words), explicit
+   mechanisms-not-significance limitation, repeats framed as determinism
+   checks, and six ambiguous phrases rewritten from frozen configs/logs.
 
 ## Strengths (unchanged)
 
@@ -37,6 +41,10 @@ traceability to a frozen CUDA campaign.
   multiplicity adjustment is applied; the exact conditional test is
   conservative (Fagerland et al. recommend mid-p), so p-values are reported
   only as descriptive.
+- The study has no estimate of run-to-run variability: repeats were
+  deterministic, so sensor noise and seed variation remain untested.
+- The abstract now omits the core precision/recall trio; reviewers looking
+  for headline rates must go to Table II.
 - Fig. 2 shows one run per mechanism; repeats are deterministic in the
   descriptors used for selection, so the figure illustrates mechanism, not
   variability.
@@ -49,8 +57,9 @@ traceability to a frozen CUDA campaign.
 - The Akula et al. preprint (arXiv 2606.27556) is inherited from v5.1; its
   status should be re-checked before submission.
 - `REVIEW_RESPONSE.md`, `REVIEW_BOARD_NOTES.md` and
-  `AUTHOR_READING_GUIDE_VI.md` are inherited v5.1 documents and do not
-  describe the McNemar column or the new figures.
+  `AUTHOR_READING_GUIDE_VI.md` now describe v5.2, including the McNemar
+  column and the new figures. They keep the v5.1 content as marked history;
+  no reviewer board has been run on v5.2.
 
 ## Claims checked
 

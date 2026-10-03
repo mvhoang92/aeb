@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from ci_support import probe_carla_import, skip_if
 from infrastructure import cuda_runtime
 
 
@@ -299,6 +300,7 @@ class ProbeTests(CudaRuntimeTestCase):
         prober.assert_called_once_with("/m.onnx", {"gpu_mem_limit": 536870912})
 
 
+@skip_if(probe_carla_import("ui.manual_control_common"))
 class YoloDetectorGuardTests(CudaRuntimeTestCase):
     """The shared detector must never create a CUDA session after a failed probe."""
 
