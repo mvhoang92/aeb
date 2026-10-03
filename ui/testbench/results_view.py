@@ -298,7 +298,16 @@ class ResultsPage(ttk.Frame):
         self.detail_meta.configure(text="   ·   ".join(parts))
         stats = totals(rows)
         all_pass = stats["total"] and stats["passed"] == stats["total"]
-        self._tile(0, "PASS", "{}/{}".format(stats["passed"], stats["total"]), "pass" if all_pass else "fail")
+        planned = self._planned(run)
+        if planned and stats["total"] < planned:
+            self._tile(
+                0,
+                "PASS · DỞ {}/{} lượt".format(stats["total"], planned),
+                "{}/{}".format(stats["passed"], stats["total"]),
+                "warn",
+            )
+        else:
+            self._tile(0, "PASS", "{}/{}".format(stats["passed"], stats["total"]), "pass" if all_pass else "fail")
         self._tile(1, "TP", stats["tp"], "neutral", "Phải phanh và đã phanh")
         self._tile(2, "FN", stats["fn"], "fail" if stats["fn"] else "neutral", "Phải phanh nhưng không phanh (bỏ sót)")
         self._tile(3, "FP", stats["fp"], "warn" if stats["fp"] else "neutral", "Không được phanh nhưng đã phanh (phanh nhầm)")
@@ -340,7 +349,6 @@ class ResultsPage(ttk.Frame):
                 ),
                 tags=("pass" if ok else "fail",),
             )
-        planned = self._planned(run)
         if not rows:
             self.footer_note.configure(text="Run này chưa có summary (có thể bị dừng trước scenario đầu tiên).")
         elif planned and len(rows) < planned:
