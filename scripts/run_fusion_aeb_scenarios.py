@@ -22,6 +22,7 @@ from core.brake_permission_policy import (  # noqa: E402
 from core.fusion_brake_gate import FusionBrakeGateConfig  # noqa: E402
 from core.headless_aeb_runtime import PolicyControlledAEBRuntime  # noqa: E402
 from core.radar_aeb_pipeline import RadarAEBPipeline  # noqa: E402
+from infrastructure import cuda_runtime  # noqa: E402
 from scripts.run_radar_aeb_scenarios import (  # noqa: E402
     DEFAULT_LOG_ROOT,
     DEFAULT_SENSOR_CONFIG,
@@ -32,8 +33,10 @@ from ui.manual_control_common import (  # noqa: E402
     RadarSensor,
     YoloDetector,
     camera_intrinsic,
+    load_yaml,
     project_world_to_camera,
     pygame,
+    resolve_yolo_model_path,
 )
 
 
@@ -312,6 +315,14 @@ def parse_args():
 
 def main():
     args = parse_args()
+    model_config = load_yaml(args.sensor_config).get("model", {}) or {}
+    # Non-interactive shells lack the CUDA lib dirs from ~/.bashrc: re-exec
+    # once with them, then probe CUDA in a subprocess before touching CARLA.
+    cuda_runtime.ensure_cuda_library_path(model_config)
+    cuda_runtime.preflight_or_exit(
+        model_config,
+        resolve_yolo_model_path(model_config),
+    )
     summaries = FusionScenarioRunner(args).run()
     failed = [summary for summary in summaries if summary["status"] != "PASS"]
     if failed:

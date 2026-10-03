@@ -56,6 +56,7 @@ except ImportError:
     raise RuntimeError("cannot import numpy, make sure numpy package is installed")
 
 from control.brake import compute_ttc
+from infrastructure import cuda_runtime
 
 try:
     import pygame
@@ -292,6 +293,8 @@ def run_two_panel(args, panel_factory, caption):
 
     config = load_yaml(args.config)
     config = apply_runtime_overrides(config, args)
+    # Re-exec before pygame/CARLA resources exist so CUDA libs are loadable.
+    cuda_runtime.ensure_cuda_library_path(config.get("model", {}))
     panel_width, panel_height = display_size_from_args(args, config)
     fps = int(config_value(config, "display", "fps", 60))
     gamma = float(config_value(config, "display", "gamma", 2.2))
@@ -547,6 +550,20 @@ class Detection(object):
     class_name: str
 
 
+def resolve_yolo_model_path(config, backend=None):
+    """Resolve the YOLO model path exactly as :class:`YoloDetector` loads it."""
+
+    config = config or {}
+    backend = str(backend or config.get("backend", "auto")).lower()
+    default_path = (
+        DEFAULT_ONNX_MODEL_PATH if backend in ("auto", "onnx") else DEFAULT_MODEL_PATH
+    )
+    model_path = Path(str(config.get("path", default_path)))
+    if not model_path.is_absolute():
+        model_path = ROOT / model_path
+    return model_path
+
+
 class YoloDetector(object):
     """Optional YOLO wrapper with ONNX Runtime GPU preferred for CARLA runtime."""
 
@@ -590,6 +607,7 @@ class YoloDetector(object):
         self.inference_error_count = 0
         self.inference_durations_ms = []
         self.active_providers = []
+        self.cuda_probe = None
         self._load_model()
         if self.required_provider and self.required_provider not in self.active_providers:
             raise RuntimeError(
@@ -604,10 +622,7 @@ class YoloDetector(object):
             self.status = "YOLO đang tắt trong config"
             return
 
-        default_path = DEFAULT_ONNX_MODEL_PATH if self.backend in ("auto", "onnx") else DEFAULT_MODEL_PATH
-        model_path = Path(str(self.config.get("path", default_path)))
-        if not model_path.is_absolute():
-            model_path = ROOT / model_path
+        model_path = resolve_yolo_model_path(self.config, self.backend)
         if not model_path.exists():
             self.status = "Không thấy model: {}".format(model_path)
             return
@@ -639,6 +654,8 @@ class YoloDetector(object):
                         ",".join(sorted(available)),
                     )
                 )
+            if cuda_runtime.CUDA_PROVIDER in provider_names:
+                provider_names = self._probe_cuda_provider(model_path, provider_names)
             if not provider_names:
                 provider_names = ["CPUExecutionProvider"]
             providers = []
@@ -696,6 +713,24 @@ class YoloDetector(object):
             self.status = "Lỗi tải ONNX: {}".format(exc)
             if self.required_provider:
                 raise RuntimeError(self.status)
+
+    def _probe_cuda_provider(self, model_path, provider_names):
+        """Probe CUDA in a subprocess so a native abort cannot kill this process."""
+
+        probe = cuda_runtime.probe_cuda_session(
+            str(model_path),
+            self.provider_options.get(cuda_runtime.CUDA_PROVIDER),
+        )
+        self.cuda_probe = probe
+        if probe.get("ok"):
+            return provider_names
+        if (
+            self.required_provider == cuda_runtime.CUDA_PROVIDER
+            or not self.allow_provider_fallback
+        ):
+            raise RuntimeError(cuda_runtime.format_probe_failure(probe))
+        print(cuda_runtime.format_probe_failure(probe, hard_stop=False), file=sys.stderr)
+        return [name for name in provider_names if name != cuda_runtime.CUDA_PROVIDER]
 
     def _load_ultralytics_model(self, model_path):
         try:
