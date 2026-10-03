@@ -55,11 +55,15 @@ phanh nhầm, chèn lỗi tổng hợp, đánh giá theo tình huống
 
 \section{Giới thiệu}
 AEB phải trả lời hai câu hỏi: phía trước có nguy hiểm không, và bằng chứng đã
-đủ chắc chắn để tự động phanh chưa? Radar đo khoảng cách và vận tốc tương đối
+đủ chắc chắn để tự động phanh chưa? Số liệu thực tế cho thấy AEB gắn với ít va
+chạm đuôi xe hơn \cite{cicchino2017effectiveness}, và các hệ thống thương mại
+luôn phải cân bằng giữa can thiệp và kích hoạt không mong muốn
+\cite{coelingh2010collision}. Radar đo khoảng cách và vận tốc tương đối
 rất tốt, nhưng đôi khi nhận nhầm vật thể hoặc tín hiệu phản xạ. Camera có thể
 giúp kiểm tra mục tiêu đó có phải xe hay không. Ngược lại, nếu camera chỉ nhận
 một lớp ``car'', nó có thể bỏ qua một vật cản thật như thùng hoặc ghế dài
-\cite{yang2022aebreview}.
+\cite{yang2022aebreview}. Những thiếu sót nhận thức như vậy, dù không có lỗi
+phần cứng, thuộc phạm vi SOTIF \cite{iso21448}.
 
 Vì vậy, nghiên cứu này chỉ thay đổi \emph{bước quyết định cuối cùng}: có cho
 phép yêu cầu phanh từ radar đi tới bộ điều khiển hay không. Các bước xử lý
@@ -92,8 +96,10 @@ Các nghiên cứu trước đã dùng radar và camera để nhận diện xe, 
 chọn mục tiêu cho AEB \cite{kim2013vehicle,hsu2015noise}. Một số nghiên cứu
 kết hợp camera với LiDAR hoặc radar để theo dõi vật thể, chọn mục tiêu trên
 đường cong và điều khiển phanh \cite{bae2021cipv,zhang2023curved}. Các phương
-pháp như CenterFusion đi xa hơn, hướng tới phát hiện vật thể 3-D bằng mô hình
-học máy \cite{nabati2021centerfusion}. Vì vậy, chúng tôi không nhận camera
+pháp học máy kết hợp radar--camera như CRF-Net \cite{nobis2019crfnet}, phát
+hiện xe ở xa bằng radar và ảnh \cite{chadwick2019distant} và CenterFusion
+\cite{nabati2021centerfusion} nhằm cải thiện phát hiện vật thể; chúng không
+quyết định có cho phép phanh hay không. Vì vậy, chúng tôi không nhận camera
 xác nhận hay phanh phân tầng là ý tưởng mới.
 
 Công trình gần nhất với ý tưởng ``radar chỉ vị trí, camera kiểm tra'' là Akula
@@ -104,11 +110,14 @@ nguy cơ. Đây không phải baseline số liệu trực tiếp cho bài này v
 tốc độ, nhãn và cách xác minh khác nhau. Điểm khác của chúng tôi là giữ nguyên
 chuỗi xử lý phía trước rồi so sánh ba luật cho phép phanh.
 
-Đánh giá AEB bằng mô phỏng CARLA và kiểm thử các tình huống ngoài chuẩn cũng
-đã được nghiên cứu \cite{gomez2022carla,feng2025dvs,rao2024corner}. Radar ghost
+Riedmaier và cộng sự tổng quan đánh giá an toàn dựa trên kịch bản
+\cite{riedmaier2020survey}. Đánh giá AEB bằng mô phỏng CARLA và kiểm thử các
+tình huống ngoài chuẩn cũng đã được nghiên cứu
+\cite{gomez2022carla,feng2025dvs,rao2024corner}. Radar ghost
 và cách nhận diện chúng cũng là một chủ đề riêng \cite{kraus2021ghost}. Trong
 bài này, các tín hiệu radar ảo được gọi đúng là \emph{synthetic fault injection}
-(chèn lỗi tổng hợp); chúng không phải phép đo hiện tượng đa đường ngoài đời.
+(chèn lỗi tổng hợp), tương tự các nghiên cứu chèn lỗi trong mô phỏng xe tự
+hành \cite{jha2019mlfi}; chúng không phải phép đo hiện tượng đa đường ngoài đời.
 Mô hình radar trong mô phỏng vì thế là một giới hạn khi suy rộng kết quả
 \cite{magosi2022radar}.
 
@@ -117,7 +126,10 @@ của mục tiêu \cite{sandblom2011threat,lindenmaier2022existence}. Fallback t
 bài này chỉ là một luật tất định, không phải tracker xác suất đã hiệu chỉnh.
 Đóng góp được giới hạn ở việc cho thấy luật đó được gì, mất gì và thất bại ở
 đâu khi đưa đến quyết định phanh. Các tình huống lấy cảm hứng từ protocol không
-phải kiểm thử tuân thủ ISO hay Euro NCAP \cite{iso15623,euroncap_aeb}.
+phải kiểm thử tuân thủ các tiêu chuẩn ISO về va chạm phía trước
+\cite{iso15623,iso22839}, phê duyệt kiểu theo UN~R152 \cite{unr152} hay xếp
+hạng Euro NCAP \cite{euroncap_aeb}. Đóng góp là một so sánh thực nghiệm có
+kiểm soát giữa các luật cấp quyền phanh muộn, không phải một kỹ thuật fusion mới.
 
 \section{Chuỗi xử lý dùng chung và các chính sách cấp quyền}
 \subsection{Cảm biến, bộ nhận diện và ranh giới thông tin}
@@ -252,7 +264,7 @@ quá muộn.
 
 Bài báo tính TP/FP/TN/FN, precision/recall, PASS và va chạm theo từng điều
 kiện được đặt tên. Khi so sánh hai chính sách, chúng tôi ghép đúng cùng một
-điều kiện. Khoảng Wilson chỉ là khoảng tham khảo mô tả trên lưới thử nghiệm
+điều kiện. Khoảng Wilson \cite{wilson1927} chỉ là khoảng tham khảo mô tả trên lưới thử nghiệm
 được xây dựng; nó không phải khoảng tin cậy cho toàn bộ giao thông. Tỷ lệ các
 loại tình huống đã được thiết kế từ trước và số hold-out nhỏ, nên không được
 suy ra tần suất ngoài đường.

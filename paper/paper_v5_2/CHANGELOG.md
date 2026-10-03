@@ -1,5 +1,19 @@
 # v5.2 Change Log
 
+## References: 19 -> 29 verified entries
+
+Added (each checked against Crossref DOI metadata or the official
+publisher/standards page): Cicchino (2017) AEB field effectiveness;
+Coelingh et al. (2010) production AEB; ISO 21448:2022 SOTIF;
+Nobis et al. (2019) CRF-Net; Chadwick et al. (2019) radar--vision distant
+vehicle detection; Riedmaier et al. (2020) scenario-based assessment survey;
+Jha et al. (2019) ML-based fault injection; ISO 22839:2013 FVCMS;
+UN Regulation No. 152 (AEBS M1/N1); Wilson (1927) score interval. The
+Euro NCAP entry now carries its exact title, version/date and official URL.
+Related Work ends with an explicit positioning sentence: a controlled
+empirical comparison of late brake-permission policies, not a new fusion
+primitive. Vietnamese copy synchronized.
+
 ## Build: English master on standard pdfLaTeX
 
 - The v5.1 English source used `fontspec` + Times New Roman under XeLaTeX.

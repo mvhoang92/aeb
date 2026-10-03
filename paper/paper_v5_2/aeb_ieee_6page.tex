@@ -48,12 +48,16 @@ false braking, fault injection, scenario-based evaluation
 
 \section{Introduction}
 Automatic emergency braking (AEB) must decide not only whether an object was
-detected, but whether the available evidence justifies a timely brake. Radar
+detected, but whether the available evidence justifies a timely brake. Field
+data associate AEB with fewer front-to-rear crashes \cite{cicchino2017effectiveness},
+and production designs balance intervention against unwanted activation
+\cite{coelingh2010collision}. Radar
 provides range and relative velocity; camera semantics can reject implausible
 radar targets. However, a car-only camera detector may also withhold permission
 for a genuine non-vehicle obstacle. AEB performance consequently depends on the
 perception--risk--actuation chain rather than detector accuracy alone
-\cite{yang2022aebreview}.
+\cite{yang2022aebreview}; such fault-free perception insufficiencies are the
+concern of SOTIF \cite{iso21448}.
 
 This study isolates the \emph{late brake-permission policy}: the rule that
 accepts or vetoes a brake already requested by a shared radar risk stage.
@@ -86,9 +90,11 @@ Hsu \emph{et al.} filter radar/camera noise including reflection-related returns
 \cite{hsu2015noise}. Bae \emph{et al.} use LiDAR-camera fusion for closest-in-path
 vehicle estimation \cite{bae2021cipv}. Zhang \emph{et al.} combine curved-road
 target selection, TTC, safety distance, and graded braking
-\cite{zhang2023curved}. Learned approaches such as CenterFusion target 3-D
-object detection \cite{nabati2021centerfusion}. We therefore claim neither
-camera confirmation nor graded braking as new.
+\cite{zhang2023curved}. Learned radar--camera detectors such as CRF-Net
+\cite{nobis2019crfnet}, radar--vision distant-vehicle detection
+\cite{chadwick2019distant}, and CenterFusion \cite{nabati2021centerfusion}
+improve object detection; they do not decide brake permission. We therefore
+claim neither camera confirmation nor graded braking as new.
 
 The closest verification-oriented work is the preprint by Akula \emph{et al.}
 \cite{akula2026radarguided}. It tests radar-guided edge-density verification on
@@ -100,13 +106,15 @@ our CARLA results: sensing, speeds, labels, and verification methods differ.
 Our narrower comparison holds the upstream pipeline fixed and substitutes
 three brake-permission rules, including a radar override of a car-only gate.
 
-Simulation-based pipeline evaluation \cite{gomez2022carla} and alternative
+Riedmaier \emph{et al.} survey scenario-based safety assessment \cite{riedmaier2020survey};
+simulation-based pipeline evaluation \cite{gomez2022carla} and alternative
 visual sensing for CARLA AEB \cite{feng2025dvs} are also prior work. Rao
 \emph{et al.} reconstruct non-standard AEB corner cases and quantitatively
 analyse failures \cite{rao2024corner}; corner-case evaluation itself is not our
 novelty. Kraus \emph{et al.} provide annotated automotive radar ghosts
 \cite{kraus2021ghost}. Unlike measured multipath, our synthetic returns are
-rule-directed fault injections. Radar-model abstraction strongly limits
+rule-directed fault injections, as in simulation fault-injection studies of
+autonomous driving \cite{jha2019mlfi}. Radar-model abstraction strongly limits
 transfer from virtual tests \cite{magosi2022radar}.
 
 Probabilistic threat assessment \cite{sandblom2011threat} and Bayesian
@@ -115,7 +123,10 @@ object-existence estimation in radar-camera tracking
 a deterministic permission rule, not calibrated existence inference. The
 research question is what this simple rule gains, loses, and cannot resolve in
 a controlled sensor-to-brake comparison. Protocol-inspired cases do not
-constitute ISO or Euro NCAP compliance \cite{iso15623,euroncap_aeb}.
+constitute compliance with ISO forward-collision standards
+\cite{iso15623,iso22839}, UN~R152 type approval \cite{unr152}, or a Euro NCAP
+rating \cite{euroncap_aeb}. The contribution is a controlled empirical
+comparison of late brake-permission policies, not a new fusion primitive.
 
 \section{Shared Pipeline and Permission Policies}
 \subsection{Sensors, detector, and information boundary}
@@ -247,7 +258,7 @@ brake TP may still collide or violate the stopping-gap criterion.
 
 We report TP/FP/TN/FN, precision/recall, system PASS, and collision counts per
 named condition. Paired matrices match identical condition identifiers. Wilson
-intervals are descriptive binomial reference intervals computed from named
+intervals \cite{wilson1927} are descriptive binomial reference intervals computed from named
 counts, not coverage guarantees or road-population inference for this nonrandom
 grid. No significance test treats repetitions as independent. Designed class
 ratios influence precision, and small hold-out denominators limit interpretation.
