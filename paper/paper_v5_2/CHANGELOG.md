@@ -1,5 +1,24 @@
 # v5.2 Change Log
 
+## Build: English master on standard pdfLaTeX
+
+- The v5.1 English source used `fontspec` + Times New Roman under XeLaTeX.
+  That font has no small-caps shape (`TU/TimesNewRoman(0)/m/sc undefined`),
+  so IEEE section headings lost their small caps. The English master now uses
+  standard IEEEtran with pdfLaTeX, `[T1]{fontenc}` and `newtxtext/newtxmath`
+  (Times). The source contained no non-ASCII characters to replace;
+  `amssymb` was dropped because `newtxmath` provides the symbols.
+- The Vietnamese author copy stays on XeLaTeX/fontspec. It uses Times New
+  Roman/Arial when installed and the metric-compatible TeX Gyre Termes /
+  Liberation Sans otherwise, so it builds on machines without Microsoft fonts.
+- `build.sh` builds EN with pdfLaTeX and VI with XeLaTeX, and fails on
+  unresolved citations/references, missing glyphs, font-shape substitution
+  (except the IEEEtran class-load `TU/ptm` notices under XeLaTeX, which
+  typeset no text), overfull boxes wider than 1 pt, or an English PDF that is
+  not six pages.
+- Page count: EN 6 -> 6 (v5.1 PDF was six pages; the pdfLaTeX build leaves
+  roughly half of page six free). VI: 6 pages.
+
 ## Compared with paper v5.1 (scaffold)
 
 - `paper_v5_2/` created as a byte-for-byte copy of the tracked v5.1 package

@@ -1,10 +1,11 @@
-% Bản dịch đầy đủ v5.1 để tác giả đọc; không áp giới hạn sáu trang.
+% Bản dịch đầy đủ v5.2 để tác giả đọc; không áp giới hạn sáu trang.
 % Dùng dấu chấm thập phân thống nhất với bản Anh và dữ liệu nguồn.
 \documentclass[conference]{IEEEtran}
 \IEEEoverridecommandlockouts
 \usepackage{fontspec}
-\setmainfont{Times New Roman}
-\setsansfont{Arial}
+% Times New Roman/Arial where installed; metric-compatible free fallbacks otherwise.
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{\setmainfont{TeX Gyre Termes}}
+\IfFontExistsTF{Arial}{\setsansfont{Arial}}{\setsansfont{Liberation Sans}}
 \setmonofont{DejaVu Sans Mono}
 \usepackage{graphicx}
 \graphicspath{{figures/}}
