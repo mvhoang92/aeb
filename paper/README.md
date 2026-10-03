@@ -6,6 +6,9 @@ directories rather than overwriting old source. `paper_v5` is the current
 reviewer-driven manuscript; claim map, review response, source map, changelog và
 structured self-review nằm trực tiếp trong `paper_v5/`. Paper v4 remains the
 immutable first final-campaign manuscript.
+`paper_v5_2` is the current submission draft (superseding the `paper_v5_1`
+draft); its English master builds with pdfLaTeX and its Vietnamese copy with
+XeLaTeX via `paper_v5_2/build.sh`. See `CURRENT.md` and `VERSION_INDEX.md`.
 
 The English manuscript is the master version. The Vietnamese manuscript has the
 same claims, figures, tables, and references, and is provided for review.

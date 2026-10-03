@@ -67,5 +67,30 @@ class FrozenEvidenceTest(unittest.TestCase):
         self.assertEqual((hold["a_only_pass"], hold["b_only_pass"], hold["exact_p_two_sided"]), (4, 0, "0.1250"))
 
 
+class ManuscriptValidatorTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        from scripts.analysis import validate_v52_manuscript_claims as validator
+
+        cls.validator = validator
+        cls.english = (validator.PAPER / "aeb_ieee_6page.tex").read_text(encoding="utf-8")
+        cls.vietnamese = (validator.PAPER / "aeb_ieee_6page_vi.tex").read_text(encoding="utf-8")
+        cls.bibliography = (validator.PAPER / "references.bib").read_text(encoding="utf-8")
+
+    def test_committed_sources_pass(self):
+        self.validator.validate_texts(self.english, self.vietnamese, self.bibliography)
+
+    def test_altered_mcnemar_value_is_rejected(self):
+        altered = self.english.replace("& 0.0078", "& 0.0080", 1)
+        self.assertNotEqual(altered, self.english)
+        with self.assertRaises(AssertionError):
+            self.validator.validate_texts(altered, self.vietnamese, self.bibliography)
+
+    def test_unbalanced_citation_is_rejected(self):
+        altered = self.vietnamese.replace("\\cite{mcnemar1947}", "", 1)
+        with self.assertRaises(AssertionError):
+            self.validator.validate_texts(self.english, altered, self.bibliography)
+
+
 if __name__ == "__main__":
     unittest.main()

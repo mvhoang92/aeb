@@ -1,5 +1,19 @@
 # v5.2 Change Log
 
+## Gates and package documentation
+
+- New validator `scripts/analysis/validate_v52_manuscript_claims.py` (shim
+  `scripts/validate_v52_manuscript_claims.py`): tables vs. frozen CSV, McNemar
+  column vs. the recomputed derivation, bilingual equation/citation/figure/
+  table parity, derived-evidence checksums, `\artifactdoi`, ASCII-only
+  English source, PDFs present and English PDF at most six pages.
+- `tests/test_v52_analysis.py` covers the McNemar computation and checks that
+  the validator rejects altered values and unbalanced citations.
+- README, CLAIM_EVIDENCE_MATRIX, SOURCE_MAP (incl. per-reference
+  verification), SELF_REVIEW and SHA256SUMS rewritten for v5.2;
+  `paper/CURRENT.md` and `paper/README.md` name v5.2 as the submission draft
+  (v5 remains the latest frozen version).
+
 ## Artifact availability DOI placeholder
 
 - Both sources define `\newcommand{\artifactdoi}{\textit{DOI to be assigned (Zenodo)}}`
