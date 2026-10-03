@@ -21,6 +21,7 @@ from ui.testbench.execution import (
     CommandQueue,
     OutputState,
     classify_exit,
+    listening_ports,
 )
 from ui.testbench.results import (
     OUTCOME_FAIL,
@@ -208,6 +209,21 @@ class OutputParsingTests(unittest.TestCase):
         self.assertEqual(classify_exit(0, OutputState()), OUTCOME_ALL_PASS)
         self.assertEqual(classify_exit(2, OutputState()), OUTCOME_TECH_ERROR)
         self.assertEqual(classify_exit(-9, OutputState()), OUTCOME_TECH_ERROR)
+
+
+class ListeningPortTests(unittest.TestCase):
+    def test_reads_listen_entries_only(self):
+        folder = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, folder)
+        table = os.path.join(folder, "tcp")
+        with open(table, "w") as stream:
+            stream.write(
+                "  sl  local_address rem_address   st tx_queue rx_queue\n"
+                "   0: 00000000:07D0 00000000:0000 0A 00000000:00000000\n"
+                "   1: 0100007F:07D1 0100007F:9C40 01 00000000:00000000\n"
+            )
+        self.assertEqual(listening_ports((table,)), {2000})
+        self.assertIsNone(listening_ports((os.path.join(folder, "missing"),)))
 
 
 class FakeCommand(object):

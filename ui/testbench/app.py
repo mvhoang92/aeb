@@ -9,7 +9,7 @@ from tkinter import messagebox, ttk
 from ui.testbench.catalog import Catalog
 from ui.testbench.execution import (
     carla_command_text,
-    port_open,
+    carla_listening,
     start_carla,
 )
 from ui.testbench.experiment import ExperimentPage
@@ -124,9 +124,15 @@ class TestBenchApp(object):
 
     # ---------------------------------------------------------------- CARLA
     def carla_online(self):
-        return port_open(self.host, self.port)
+        return carla_listening(self.host, self.port)
 
     def _poll_carla(self):
+        experiment = self.experiment
+        if experiment.queue is not None and experiment.queue.running:
+            # The running runner is the authoritative health signal.
+            self.carla_pill.set("CARLA · đang dùng bởi hàng đợi", "info")
+            self.root.after(5000, self._poll_carla)
+            return
         online = self.carla_online()
         if online:
             self._carla_starting = False
@@ -136,7 +142,7 @@ class TestBenchApp(object):
         else:
             self.carla_pill.set("CARLA offline · {}:{}".format(self.host, self.port), "offline")
         self.carla_button.state(["disabled"] if online or self._carla_starting else ["!disabled"])
-        self.root.after(2500, self._poll_carla)
+        self.root.after(3000, self._poll_carla)
 
     def start_carla(self):
         if self.carla_online():

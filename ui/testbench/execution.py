@@ -119,6 +119,45 @@ def classify_exit(returncode, state, stopped=False):
     return OUTCOME_TECH_ERROR
 
 
+LOCAL_HOSTS = ("127.0.0.1", "localhost", "0.0.0.0", "::1")
+TCP_LISTEN = "0A"
+
+
+def listening_ports(tables=("/proc/net/tcp", "/proc/net/tcp6")):
+    """Local TCP ports in LISTEN state, read from the kernel (no connection).
+
+    Returns ``None`` when the tables are unavailable (non-Linux).
+    """
+    ports = set()
+    found = False
+    for table in tables:
+        try:
+            with open(table) as stream:
+                lines = stream.readlines()[1:]
+        except (IOError, OSError):
+            continue
+        found = True
+        for line in lines:
+            fields = line.split()
+            if len(fields) > 3 and fields[3] == TCP_LISTEN:
+                try:
+                    ports.add(int(fields[1].rsplit(":", 1)[1], 16))
+                except (IndexError, ValueError):
+                    pass
+    return ports if found else None
+
+
+def carla_listening(host, port):
+    """Is CARLA up?  For a local server, check the listening-socket table
+    instead of connecting: repeatedly opening and closing raw connections to
+    the CARLA 0.9.11 RPC port is avoided because the server is fragile."""
+    if str(host) in LOCAL_HOSTS:
+        ports = listening_ports()
+        if ports is not None:
+            return int(port) in ports
+    return port_open(host, port)
+
+
 def port_open(host, port, timeout=0.25):
     try:
         with socket.create_connection((host, int(port)), timeout=timeout):

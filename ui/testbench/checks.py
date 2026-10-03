@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from ui.testbench.catalog import Catalog
-from ui.testbench.execution import port_open
+from ui.testbench.execution import carla_listening
 from ui.testbench.paths import (
     AEB_ROOT,
     CARLA_PYTHON,
@@ -43,6 +43,6 @@ def check_prerequisites(stream=None):
     checks.append(("Log root", Path(root).is_dir(), str(root)))
     for name, passed, detail in checks:
         stream.write("{:<24} {:<8} {}\n".format(name, "OK" if passed else "MISSING", detail))
-    online = port_open(DEFAULT_HOST, DEFAULT_PORT)
+    online = carla_listening(DEFAULT_HOST, DEFAULT_PORT)
     stream.write("{:<24} {:<8} {}:{}\n".format("CARLA port", "online" if online else "offline", DEFAULT_HOST, DEFAULT_PORT))
     return 0 if all(passed for _, passed, _ in checks) else 2
