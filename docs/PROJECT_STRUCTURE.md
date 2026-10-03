@@ -8,7 +8,7 @@ only describes the live source tree.
 
 | Layer | Location | Responsibility |
 |---|---|---|
-| Entry points | `launcher.py`, `ui/`, `scripts/` | Desktop launcher, interactive views and command-line jobs |
+| Entry points | `launcher.py`, `ui/`, `scripts/` | Desktop launcher (thin entry; UI in `ui/launcher/`), interactive views and command-line jobs |
 | Scenario runtime | `scripts/run_*_aeb_scenarios.py` | CARLA actor lifecycle, simulation loop and compatibility CLIs |
 | Runtime composition | `core/headless_aeb_runtime.py` | Shared radar pipeline → permission policy → actuation order |
 | Evaluation | `evaluation/` | Frozen schemas, scoring, telemetry, severity and summary output |

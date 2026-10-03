@@ -17,8 +17,10 @@ For example, `scripts/run_v4_campaign.py` is a compatibility wrapper around
 use the historical path until a versioned CLI migration is announced.
 
 Manuscript claim validators keep stable root-level wrappers:
-`validate_v4_manuscript_claims.py`, `validate_v5_manuscript_claims.py` and
-`validate_v51_manuscript_claims.py` (each delegates to `analysis/`).
+`validate_v4_manuscript_claims.py`, `validate_v5_manuscript_claims.py`,
+`validate_v51_manuscript_claims.py` and `validate_v52_manuscript_claims.py`
+(each delegates to `analysis/`). Paper v5.2 derivations live in
+`analysis/analyze_v52_paired_tests.py` and `analysis/plot_v52_figures.py`.
 
 Do not classify algorithmic FAIL as a technical failure in campaign scripts.
 CUDA provider mismatch and inference errors remain hard-stops for final

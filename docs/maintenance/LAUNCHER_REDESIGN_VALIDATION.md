@@ -31,3 +31,16 @@ previous commit matched all command builders and start/stop methods.
 - All four tabs instantiated and command previews remained visible: PASS.
 - Compile audit and `git diff --check`: PASS.
 - Workspace, report-v3/paper-v4 and paper-v5 validators: PASS.
+
+## Sidebar redesign (2026-10-03)
+
+- `launcher.py` is now a thin entry point; the UI lives in `ui/launcher/`
+  (`commands.py` pure command builders, `processes.py`, `theme.py`,
+  `widgets.py`, `app.py`, `pages/`).
+- Tabs replaced by a left sidebar, scrollable pages, a fixed command footer and
+  a resizable process log; Tk scaling follows `Xft.dpi` (override with
+  `AEB_LAUNCHER_SCALE`). New options: `--page carla|apps|tests|video`,
+  `--geometry WxH`.
+- A dump of 15,536 generated commands/previews was byte-identical before the
+  split, after the split and after the redesign. Tests:
+  `tests/test_launcher_commands.py`, `tests/test_launcher_gui.py` (xvfb).
