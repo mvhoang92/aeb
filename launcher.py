@@ -111,6 +111,16 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Check launcher prerequisites without opening the window.",
     )
+    parser.add_argument(
+        "--page",
+        default=None,
+        help="Page to open first: carla, apps, tests, video (or 1-4).",
+    )
+    parser.add_argument(
+        "--geometry",
+        default=None,
+        help="Initial window size/position in X11 form, e.g. 1280x800.",
+    )
     return parser.parse_args()
 
 
@@ -118,8 +128,16 @@ def main() -> int:
     args = parse_args()
     if args.check:
         return check_prerequisites()
+    from ui.launcher.app import page_index
+
+    try:
+        initial_page = page_index(args.page)
+    except ValueError as exc:
+        raise SystemExit(str(exc))
     root = tk.Tk()
-    AebLauncher(root)
+    AebLauncher(root, initial_page=initial_page)
+    if args.geometry:
+        root.geometry(args.geometry)
     root.mainloop()
     return 0
 

@@ -15,153 +15,157 @@ class AppsPageMixin:
     """Mixed into ``AebLauncher``; uses its Tk variables and helpers."""
 
     def _build_ui_tab(self) -> None:
-        self._section_intro(
-            self.ui_tab,
-            "Ứng dụng trực quan",
-            "Chọn màn hình quan sát và scenario. Các tùy chọn AEB chỉ xuất hiện trong lệnh khi phù hợp.",
-        )
-        form = ttk.Frame(self.ui_tab)
-        form.pack(anchor=tk.NW, fill=tk.X)
+        page = self.ui_tab
+        px = self.theme.px
 
-        ttk.Label(form, text="Ứng dụng").grid(row=0, column=0, sticky=tk.W, pady=6)
+        app_form = self._form(self._card(page, "Ứng dụng"))
         app_combo = ttk.Combobox(
-            form,
+            app_form,
             textvariable=self.ui_name,
             values=tuple(UI_APPLICATIONS.keys()),
             state="readonly",
-            width=20,
+            width=18,
         )
-        app_combo.grid(row=0, column=1, sticky=tk.W, padx=(8, 24))
+        self._field(app_form, "Ứng dụng", app_combo, row=0)
         app_combo.bind("<<ComboboxSelected>>", self._on_ui_selection)
-
-        ttk.Label(form, text="Map").grid(row=0, column=2, sticky=tk.W)
-        ttk.Combobox(
-            form,
-            textvariable=self.ui_map,
-            values=("Town04", "Town06"),
-            width=14,
-        ).grid(row=0, column=3, sticky=tk.W, padx=8)
-
-        ttk.Label(form, text="Độ phân giải mỗi panel").grid(
-            row=1, column=0, sticky=tk.W, pady=6
+        self._field(
+            app_form,
+            "Map",
+            ttk.Combobox(
+                app_form,
+                textvariable=self.ui_map,
+                values=("Town04", "Town06"),
+                width=12,
+            ),
+            row=0,
+            column=1,
         )
-        ttk.Combobox(
-            form,
-            textvariable=self.ui_resolution,
-            values=("1500x850", "1600x900", "1280x720", "960x540", "800x450"),
-            width=20,
-        ).grid(row=1, column=1, sticky=tk.W, padx=(8, 24))
+        self._field(
+            app_form,
+            "Độ phân giải mỗi panel",
+            ttk.Combobox(
+                app_form,
+                textvariable=self.ui_resolution,
+                values=("1500x850", "1600x900", "1280x720", "960x540", "800x450"),
+                width=12,
+            ),
+            row=1,
+        )
         ttk.Checkbutton(
-            form,
+            app_form,
             text="Autopilot",
             variable=self.ui_autopilot,
             command=self._refresh_command_preview,
-        ).grid(row=1, column=2, sticky=tk.W)
+        ).grid(row=1, column=2, columnspan=2, sticky=tk.W, padx=(px(20), 0))
 
-        scenario_frame = ttk.LabelFrame(
-            form,
-            text="Scenario AEB trực tiếp",
-            style="Panel.TLabelframe",
-            padding=10,
-        )
-        scenario_frame.grid(
-            row=2,
-            column=0,
-            columnspan=4,
-            sticky=tk.EW,
-            pady=(12, 0),
-        )
-        ttk.Label(scenario_frame, text="Config").grid(row=0, column=0, sticky=tk.W)
+        scenario_form = self._form(self._card(page, "Scenario AEB trực tiếp"))
         config_combo = ttk.Combobox(
-            scenario_frame,
+            scenario_form,
             textvariable=self.scenario_config_name,
             values=tuple(SCENARIO_CONFIGS.keys()),
             state="readonly",
-            width=26,
+            width=22,
         )
-        config_combo.grid(row=0, column=1, sticky=tk.W, padx=8)
+        self._field(scenario_form, "Config", config_combo, row=0)
         config_combo.bind("<<ComboboxSelected>>", self._on_scenario_config_selection)
-
-        ttk.Label(scenario_frame, text="Scenario").grid(row=0, column=2, sticky=tk.W)
         self.live_scenario_combo = ttk.Combobox(
-            scenario_frame,
+            scenario_form,
             textvariable=self.live_scenario,
             values=self.scenarios,
             state="readonly",
-            width=30,
+            width=22,
         )
-        self.live_scenario_combo.grid(row=0, column=3, sticky=tk.W, padx=8)
-        ttk.Label(scenario_frame, text="Điều khiển").grid(row=1, column=0, sticky=tk.W, pady=(8, 0))
-        ttk.Combobox(
-            scenario_frame,
-            textvariable=self.live_control_mode,
-            values=("physics", "deterministic"),
-            state="readonly",
-            width=14,
-        ).grid(row=1, column=1, sticky=tk.W, padx=8, pady=(8, 0))
-        ttk.Label(scenario_frame, text="Camera").grid(row=1, column=2, sticky=tk.W, pady=(8, 0))
-        ttk.Combobox(
-            scenario_frame,
-            textvariable=self.live_camera,
-            values=("wide_chase", "high_chase", "manual"),
-            state="readonly",
-            width=14,
-        ).grid(row=1, column=3, sticky=tk.W, padx=8, pady=(8, 0))
-        ttk.Label(scenario_frame, text="Warm-up (s)").grid(row=2, column=0, sticky=tk.W, pady=(8, 0))
-        ttk.Spinbox(
-            scenario_frame,
-            from_=0.0,
-            to=10.0,
-            increment=0.5,
-            textvariable=self.live_warmup,
-            width=8,
-        ).grid(row=2, column=1, sticky=tk.W, padx=8, pady=(8, 0))
-        ttk.Label(scenario_frame, text="Hành vi AEB").grid(row=2, column=2, sticky=tk.W, pady=(8, 0))
-        ttk.Combobox(
-            scenario_frame,
-            textvariable=self.ui_behavior,
-            values=(
-                "Validation: phanh rồi dừng để đo",
-                "Realistic: hết nguy hiểm thì nhả phanh chạy tiếp",
+        self._field(scenario_form, "Scenario", self.live_scenario_combo, row=0, column=1)
+        self._field(
+            scenario_form,
+            "Điều khiển",
+            ttk.Combobox(
+                scenario_form,
+                textvariable=self.live_control_mode,
+                values=("physics", "deterministic"),
+                state="readonly",
+                width=14,
             ),
-            state="readonly",
-            width=42,
-        ).grid(row=2, column=3, sticky=tk.W, padx=8, pady=(8, 0))
-        ttk.Label(scenario_frame, text="Loại phanh").grid(row=3, column=0, sticky=tk.W, pady=(8, 0))
-        ttk.Combobox(
-            scenario_frame,
-            textvariable=self.ui_brake_mode,
-            values=BRAKE_MODES,
-            state="readonly",
-            width=24,
-        ).grid(row=3, column=1, sticky=tk.W, padx=8, pady=(8, 0))
+            row=1,
+        )
+        self._field(
+            scenario_form,
+            "Camera",
+            ttk.Combobox(
+                scenario_form,
+                textvariable=self.live_camera,
+                values=("wide_chase", "high_chase", "manual"),
+                state="readonly",
+                width=14,
+            ),
+            row=1,
+            column=1,
+        )
+        self._field(
+            scenario_form,
+            "Warm-up (s)",
+            ttk.Spinbox(
+                scenario_form,
+                from_=0.0,
+                to=10.0,
+                increment=0.5,
+                textvariable=self.live_warmup,
+                width=8,
+            ),
+            row=2,
+        )
+        self._field(
+            scenario_form,
+            "Loại phanh",
+            ttk.Combobox(
+                scenario_form,
+                textvariable=self.ui_brake_mode,
+                values=BRAKE_MODES,
+                state="readonly",
+                width=14,
+            ),
+            row=2,
+            column=1,
+        )
+        self._field(
+            scenario_form,
+            "Hành vi AEB",
+            ttk.Combobox(
+                scenario_form,
+                textvariable=self.ui_behavior,
+                values=(
+                    "Validation: phanh rồi dừng để đo",
+                    "Realistic: hết nguy hiểm thì nhả phanh chạy tiếp",
+                ),
+                state="readonly",
+                width=40,
+            ),
+            row=3,
+            span=2,
+        )
 
-        option_frame = ttk.Frame(form)
-        option_frame.grid(row=3, column=0, columnspan=4, sticky=tk.W, pady=(12, 0))
-        ttk.Checkbutton(
-            option_frame,
-            text="Clean radar overlay",
-            variable=self.ui_clean_overlay,
-            command=self._refresh_command_preview,
-        ).pack(side=tk.LEFT)
-        ttk.Checkbutton(
-            option_frame,
-            text="Synchronous 20 FPS",
-            variable=self.ui_sync,
-            command=self._refresh_command_preview,
-        ).pack(side=tk.LEFT, padx=18)
-        ttk.Checkbutton(
-            option_frame,
-            text="Reload world khi mở scenario",
-            variable=self.ui_reload_world,
-            command=self._refresh_command_preview,
-        ).pack(side=tk.LEFT)
-        ttk.Checkbutton(
-            option_frame,
-            text="Restart CARLA trước scenario",
-            variable=self.ui_restart_carla,
-            command=self._refresh_command_preview,
-        ).pack(side=tk.LEFT, padx=18)
+        option_frame = self._form(self._card(page, "Tùy chọn chạy"))
+        for index, (text, variable) in enumerate(
+            (
+                ("Clean radar overlay", self.ui_clean_overlay),
+                ("Synchronous 20 FPS", self.ui_sync),
+                ("Reload world khi mở scenario", self.ui_reload_world),
+                ("Restart CARLA trước scenario", self.ui_restart_carla),
+            )
+        ):
+            ttk.Checkbutton(
+                option_frame,
+                text=text,
+                variable=variable,
+                command=self._refresh_command_preview,
+            ).grid(
+                row=index // 2,
+                column=(index % 2) * 2,
+                columnspan=2,
+                sticky=tk.W,
+                padx=(px(20) if index % 2 else 0, 0),
+                pady=px(2),
+            )
 
         for variable in (
             self.ui_map,
@@ -177,21 +181,9 @@ class AppsPageMixin:
         ):
             variable.trace_add("write", lambda *_args: self._refresh_command_preview())
 
-        actions = ttk.Frame(self.ui_tab)
-        actions.pack(anchor=tk.W, pady=(16, 10))
-        ttk.Button(
-            actions,
-            text="Chạy ứng dụng",
-            style="Primary.TButton",
-            command=self._start_ui,
-        ).pack(side=tk.LEFT)
-        ttk.Button(
-            actions,
-            text="Dừng ứng dụng",
-            style="Danger.TButton",
-            command=self._stop_ui,
-        ).pack(side=tk.LEFT, padx=8)
-        self.ui_command_preview = self._command_preview(self.ui_tab)
+        self._action(page, "Chạy ứng dụng", self._start_ui, "Primary.TButton")
+        self._action(page, "Dừng ứng dụng", self._stop_ui, "Danger.TButton")
+        self.ui_command_preview = self._command_preview(page)
 
     def _app_settings(self) -> AppSettings:
         return AppSettings(

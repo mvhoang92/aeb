@@ -15,14 +15,11 @@ class TestingPageMixin:
     """Mixed into ``AebLauncher``; uses its Tk variables and helpers."""
 
     def _build_test_tab(self) -> None:
-        self._section_intro(
-            self.test_tab,
-            "Kiểm thử có kiểm soát",
-            "Chạy scenario radar/fusion, unit test hoặc audit dataset từ cùng một giao diện.",
-        )
-        form = ttk.Frame(self.test_tab)
-        form.pack(anchor=tk.NW, fill=tk.X)
-        ttk.Label(form, text="Loại kiểm thử").grid(row=0, column=0, sticky=tk.W, pady=6)
+        page = self.test_tab
+        px = self.theme.px
+
+        test_card = self._card(page, "Bài kiểm thử")
+        form = self._form(test_card)
         test_combo = ttk.Combobox(
             form,
             textvariable=self.test_type,
@@ -33,73 +30,79 @@ class TestingPageMixin:
                 "Kiểm tra dataset YOLO",
             ),
             state="readonly",
-            width=28,
+            width=22,
         )
-        test_combo.grid(row=0, column=1, sticky=tk.W, padx=(8, 24))
+        self._field(form, "Loại kiểm thử", test_combo, row=0)
         test_combo.bind("<<ComboboxSelected>>", self._on_test_selection)
-
-        ttk.Label(form, text="Scenario").grid(row=0, column=2, sticky=tk.W)
         self.test_scenario_combo = ttk.Combobox(
             form,
             textvariable=self.test_scenario,
             values=["Tất cả"] + self.scenarios,
             state="readonly",
-            width=30,
+            width=22,
         )
-        self.test_scenario_combo.grid(row=0, column=3, sticky=tk.W, padx=8)
-
-        ttk.Label(form, text="Chế độ điều khiển").grid(row=1, column=0, sticky=tk.W, pady=6)
-        self.test_control_combo = ttk.Combobox(
+        self._field(form, "Scenario", self.test_scenario_combo, row=0, column=1)
+        self._field(
             form,
+            "Scenario config",
+            ttk.Label(form, textvariable=self.scenario_config_name),
+            row=1,
+            span=2,
+            sticky=tk.W,
+        )
+
+        batch_form = self._form(self._card(page, "Tham số batch"))
+        self.test_control_combo = ttk.Combobox(
+            batch_form,
             textvariable=self.test_control_mode,
             values=("physics", "deterministic"),
             state="readonly",
-            width=20,
+            width=14,
         )
-        self.test_control_combo.grid(row=1, column=1, sticky=tk.W, padx=(8, 24))
-        ttk.Label(form, text="Số lần lặp").grid(row=1, column=2, sticky=tk.W)
+        self._field(batch_form, "Chế độ điều khiển", self.test_control_combo, row=0)
         self.test_repeat_spin = ttk.Spinbox(
-            form,
+            batch_form,
             from_=1,
             to=20,
             textvariable=self.test_repeat,
             width=8,
         )
-        self.test_repeat_spin.grid(row=1, column=3, sticky=tk.W, padx=8)
-
-        ttk.Label(form, text="Run ID").grid(row=2, column=0, sticky=tk.W, pady=6)
-        ttk.Entry(form, textvariable=self.test_run_id, width=28).grid(
-            row=2,
+        self._field(batch_form, "Số lần lặp", self.test_repeat_spin, row=0, column=1)
+        self._field(
+            batch_form,
+            "Run ID",
+            ttk.Entry(batch_form, textvariable=self.test_run_id, width=18),
+            row=1,
+        )
+        self._field(
+            batch_form,
+            "Cooldown (s)",
+            ttk.Spinbox(
+                batch_form,
+                from_=0.0,
+                to=10.0,
+                increment=0.5,
+                textvariable=self.test_cooldown,
+                width=8,
+            ),
+            row=1,
             column=1,
-            sticky=tk.W,
-            padx=(8, 24),
         )
-        ttk.Label(form, text="Cooldown (s)").grid(row=2, column=2, sticky=tk.W)
-        ttk.Spinbox(
-            form,
-            from_=0.0,
-            to=10.0,
-            increment=0.5,
-            textvariable=self.test_cooldown,
-            width=8,
-        ).grid(row=2, column=3, sticky=tk.W, padx=8)
-
-        ttk.Label(form, text="Reload world mỗi N bài").grid(
-            row=3,
-            column=0,
-            sticky=tk.W,
-            pady=6,
+        self._field(
+            batch_form,
+            "Reload world mỗi N bài",
+            ttk.Spinbox(
+                batch_form,
+                from_=0,
+                to=20,
+                textvariable=self.test_reload_every,
+                width=8,
+            ),
+            row=2,
         )
-        ttk.Spinbox(
-            form,
-            from_=0,
-            to=20,
-            textvariable=self.test_reload_every,
-            width=8,
-        ).grid(row=3, column=1, sticky=tk.W, padx=(8, 24))
 
-        options = ttk.Frame(form)
-        options.grid(row=4, column=0, columnspan=4, sticky=tk.W, pady=(8, 0))
+        options = ttk.Frame(batch_form, style="Card.TFrame")
+        options.grid(row=3, column=0, columnspan=4, sticky=tk.W, pady=(px(6), 0))
         self.load_map_check = ttk.Checkbutton(
             options,
             text="Load map",
@@ -113,7 +116,7 @@ class TestingPageMixin:
             variable=self.test_record_evidence,
             command=self._refresh_command_preview,
         )
-        self.evidence_check.pack(side=tk.LEFT, padx=18)
+        self.evidence_check.pack(side=tk.LEFT, padx=(px(24), 0))
 
         for variable in (
             self.test_type,
@@ -126,21 +129,9 @@ class TestingPageMixin:
         ):
             variable.trace_add("write", lambda *_args: self._refresh_command_preview())
 
-        actions = ttk.Frame(self.test_tab)
-        actions.pack(anchor=tk.W, pady=(16, 10))
-        ttk.Button(
-            actions,
-            text="Chạy kiểm thử",
-            style="Primary.TButton",
-            command=self._start_test,
-        ).pack(side=tk.LEFT)
-        ttk.Button(
-            actions,
-            text="Dừng kiểm thử",
-            style="Danger.TButton",
-            command=self._stop_test,
-        ).pack(side=tk.LEFT, padx=8)
-        self.test_command_preview = self._command_preview(self.test_tab)
+        self._action(page, "Chạy kiểm thử", self._start_test, "Primary.TButton")
+        self._action(page, "Dừng kiểm thử", self._stop_test, "Danger.TButton")
+        self.test_command_preview = self._command_preview(page)
         self._on_test_selection()
 
     def _check_settings(self) -> CheckSettings:
