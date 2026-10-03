@@ -20,7 +20,8 @@ only describes the live source tree.
 | Script jobs | `scripts/{campaign,analysis,dataset,training,maintenance}/` | Categorized implementations behind historical root wrappers |
 | Configuration | `configs/` | Sensor, scenario, evaluation, dataset and training configuration |
 | Workspace infrastructure | `infrastructure/workspace.py` | Explicit legacy-to-external artifact path mapping |
-| Verification | `tests/`, validation scripts | Unit, schema, manuscript and campaign checks |
+| Verification | `tests/`, validation scripts, `.github/workflows/` | Unit, schema, manuscript and campaign checks; CI without CARLA/GPU |
+| Environments | `environments/` | Reference stack description and pinned lock files of the CARLA and YOLO venvs |
 
 Dependencies should point downward. UI and scenario scripts may orchestrate core,
 perception, control and evaluation code; reusable logic must not move back into

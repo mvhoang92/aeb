@@ -18,7 +18,7 @@
 ### Người kiểm tra kết quả khoa học
 
 1. [`04_SCENARIO_AND_EVALUATION.md`](04_SCENARIO_AND_EVALUATION.md)
-2. [`06_REPRODUCIBILITY.md`](06_REPRODUCIBILITY.md)
+2. [`06_REPRODUCIBILITY.md`](06_REPRODUCIBILITY.md) và [`../environments/ENVIRONMENT.md`](../environments/ENVIRONMENT.md) (driver/CUDA/cuDNN, lock file của hai venv)
 3. [`log/repeatability/paper_v4_gpu_final/FINAL_GPU_EVIDENCE.md`](log/repeatability/paper_v4_gpu_final/FINAL_GPU_EVIDENCE.md)
 4. [`../paper/CURRENT.md`](../paper/CURRENT.md)
 5. [`../paper/paper_v5/CLAIM_EVIDENCE_MATRIX.md`](../paper/paper_v5/CLAIM_EVIDENCE_MATRIX.md)

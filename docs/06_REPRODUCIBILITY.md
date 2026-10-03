@@ -10,6 +10,10 @@ A reproducible run records:
 - model SHA/provider/cadence/inference diagnostics;
 - ordered tick and summary schemas.
 
+The reference OS/driver/CUDA/cuDNN stack, the pinned `pip freeze` lock files
+of both Python environments and how to recreate them are in
+[`../environments/ENVIRONMENT.md`](../environments/ENVIRONMENT.md).
+
 Final headline evidence requires CUDA. Provider mismatch or inference error is a
 technical hard-stop. CPU campaigns may be diagnostic but cannot be mixed into
 final evidence.
