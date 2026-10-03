@@ -47,6 +47,15 @@
 | CUDA sessions, inference count, latency and errors | `FINAL_GPU_EVIDENCE.md`, campaign manifests/raw metadata |
 | Detector and dataset metrics | `dataset_audit_v7_same_lane.json`, frozen runtime metadata |
 
+## Text-revision evidence (wording clarifications)
+
+| Statement | Source |
+|---|---|
+| Cut-out FN corridor (±1.25 m predicted path) | raw `cut_out_late_65_35_run_01.csv` (radar_only/hard_gate/safe_fallback regression jobs); frozen `config_snapshot/sensors.yaml` `brake.max_lateral_offset_m`; `core/radar_aeb_pipeline.py` `brake_lateral_limit`/`valid_path_target` |
+| Cart: ≤2 radar points/frame on the predicted path, 0 clusters | hold-out `summary.json` `maximum_path_candidates`, `maximum_clusters`; `scripts/run_radar_aeb_scenarios.py` (`path_candidates = len(pipeline.candidate_points)`) |
+| Ghost combinations (6/8/10-pt central, 8-pt at 0.50 m and 0.75 m) | hold-out `summary.json` and `fusion_fallback_holdout.yaml` scenario ids |
+| Ghost medians 78.4 km/h / 3.60 s / 9.02 m/s² over 20 fallback runs | `false_brake_severity_runs.csv` (Table IV) |
+
 ## Bibliography verification (v5.2 additions)
 
 | Key | Verified via |

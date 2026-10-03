@@ -86,6 +86,18 @@ class ManuscriptValidatorTest(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.validator.validate_texts(altered, self.vietnamese, self.bibliography)
 
+    def test_number_removed_from_body_is_rejected(self):
+        altered = self.english.replace("median onset speed of 78.4 km/h", "median onset speed", 1)
+        self.assertNotEqual(altered, self.english)
+        with self.assertRaises(AssertionError):
+            self.validator.validate_texts(altered, self.vietnamese, self.bibliography)
+
+    def test_story_number_removed_from_abstract_is_rejected(self):
+        abstract, _ = self.validator.split_abstract(self.english)
+        altered = self.english.replace(abstract, abstract.replace("11/14", "most", 1), 1)
+        with self.assertRaises(AssertionError):
+            self.validator.validate_texts(altered, self.vietnamese, self.bibliography)
+
     def test_unbalanced_citation_is_rejected(self):
         altered = self.vietnamese.replace("\\cite{mcnemar1947}", "", 1)
         with self.assertRaises(AssertionError):

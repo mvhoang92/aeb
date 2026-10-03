@@ -129,6 +129,47 @@ def expected_tables():
             'tab:extended': extended, 'tab:severity': severity}
 
 
+# The abstract keeps only the story numbers; every number removed from it in the
+# v5.2 text revision must still be stated in the body prose (outside tables too).
+ABSTRACT_TOKENS = ('105', '14', '11/14', '7/14', '32.57', '54.93', '59.95')
+BODY_TOKENS = {
+    'EN': ('2,461', 'all 20 fallback ghost runs stop', 'median onset speed of 78.4 km/h',
+           'median override duration of 3.60 s', 'median peak deceleration of 9.02',
+           'suppress eight edge-prop false brakes', 'four of five high-support hold-out ghosts',
+           '$p=0.0078$', 'not statistical significance', 'determinism of the simulated pipeline',
+           'not its timing', 'predicted-path corridor'),
+    'VI': ('2,461', 'Cả 20 lần fallback', 'trung vị tốc độ bắt đầu phanh 78.4 km/h',
+           'trung vị thời gian phanh 3.60 s', 'trung vị giảm tốc cực đại 9.02',
+           'chặn tám trường hợp', '$p=0.0078$', 'không dựa trên ý nghĩa thống kê',
+           'tính tất định', 'không chỉ thời điểm', 'hành lang quỹ đạo dự đoán'),
+}
+
+
+def split_abstract(text):
+    match = re.search(r'\\begin\{abstract\}(.*?)\\end\{abstract\}', text, re.S)
+    if not match:
+        raise AssertionError('Missing abstract')
+    return match.group(1), text[:match.start()] + text[match.end():]
+
+
+def validate_abstract_and_body(lang, text):
+    abstract, body = split_abstract(text)
+    flat_abstract = ' '.join(abstract.split())
+    for token in ABSTRACT_TOKENS:
+        if token not in flat_abstract:
+            raise AssertionError('{} abstract missing story number {}'.format(lang, token))
+    if lang == 'EN':
+        words = len(flat_abstract.replace('~', ' ').split())
+        if not 150 <= words <= 185:
+            raise AssertionError('EN abstract has {} words (target ~150-180)'.format(words))
+        if 'not a new fusion primitive' not in flat_abstract:
+            raise AssertionError('EN abstract lost its closing scope sentence')
+    flat_body = ' '.join(body.split())
+    for token in BODY_TOKENS[lang]:
+        if token not in flat_body:
+            raise AssertionError('{} body missing moved/clarified statement: {}'.format(lang, token))
+
+
 def cited_keys(text):
     return set(key.strip() for group in re.findall(r'\\cite\{([^}]+)\}', text) for key in group.split(','))
 
@@ -139,6 +180,7 @@ def validate_texts(english, vietnamese, bibliography):
     if len(bibkeys) < MIN_REFERENCES:
         raise AssertionError('Expected at least {} references, found {}'.format(MIN_REFERENCES, len(bibkeys)))
     for lang, text in [('EN', english), ('VI', vietnamese)]:
+        validate_abstract_and_body(lang, text)
         for label, rows in expected.items():
             equal([numbers(line) for line in data_rows(text, label)], rows, '{} {}'.format(lang, label))
         equal(cited_keys(text), bibkeys, lang + ' bibliography coverage')

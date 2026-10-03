@@ -23,6 +23,10 @@ present it as a new perception-fusion algorithm.
 5. `\artifactdoi` macro for the future Zenodo DOI.
 6. New v5.2 validator, shim and unit tests.
 
+7. Text revision: shorter abstract (178 words), explicit
+   mechanisms-not-significance limitation, repeats framed as determinism
+   checks, and six ambiguous phrases rewritten from frozen configs/logs.
+
 ## Strengths (unchanged)
 
 Narrow research question; shared upstream pipeline; named conditions as the
@@ -37,6 +41,10 @@ traceability to a frozen CUDA campaign.
   multiplicity adjustment is applied; the exact conditional test is
   conservative (Fagerland et al. recommend mid-p), so p-values are reported
   only as descriptive.
+- The study has no estimate of run-to-run variability: repeats were
+  deterministic, so sensor noise and seed variation remain untested.
+- The abstract now omits the core precision/recall trio; reviewers looking
+  for headline rates must go to Table I.
 - Fig. 2 shows one run per mechanism; repeats are deterministic in the
   descriptors used for selection, so the figure illustrates mechanism, not
   variability.
