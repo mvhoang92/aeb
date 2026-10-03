@@ -6,7 +6,6 @@ part of the experiment record and must not drift when the GUI changes.
 
 import subprocess
 import unittest
-from pathlib import Path
 
 from ui.launcher.commands import (
     AppSettings,

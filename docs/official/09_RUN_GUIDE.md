@@ -27,8 +27,20 @@ Launcher dùng Python hệ thống vì môi trường `venv` CARLA/YOLO có th�
 tự khởi động lại bằng `/usr/bin/python3`. Các nút bên trong vẫn gọi đúng Python
 riêng cho từng phần.
 
-Giao diện trình bày theo bốn bước `CARLA → ứng dụng → kiểm thử → ghi video`,
-có trạng thái kết nối theo màu, command preview và nhật ký tiến trình tập trung.
+Giao diện trình bày theo bốn bước `CARLA → ứng dụng → kiểm thử → ghi video`
+ở thanh điều hướng bên trái, có trạng thái kết nối theo màu (góc trên bên phải),
+command preview kèm nút sao chép luôn hiển thị ở cuối mỗi trang, và nhật ký tiến
+trình tập trung có thể kéo giãn. Trang dài tự cuộn; kích thước chữ và cửa sổ tự
+co giãn theo DPI màn hình (`Xft.dpi`). Mở thẳng một trang hoặc đặt kích thước:
+
+```bash
+/usr/bin/python3 launcher.py --page tests          # carla | apps | tests | video
+/usr/bin/python3 launcher.py --geometry 1280x800
+```
+
+Mã nguồn giao diện nằm trong `ui/launcher/` (`launcher.py` chỉ là entry point);
+các lệnh được dựng bởi hàm thuần trong `ui/launcher/commands.py` và được khóa
+bằng `tests/test_launcher_commands.py`.
 
 Các chức năng chính:
 
