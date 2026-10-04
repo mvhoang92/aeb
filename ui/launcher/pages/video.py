@@ -8,7 +8,7 @@ from typing import List
 
 from ui.launcher.commands import VideoSettings, video_command
 from ui.launcher.config import AEB_ROOT, BRAKE_MODES
-from ui.launcher.processes import ProcessSpec, port_open
+from ui.launcher.processes import ProcessSpec, carla_listening
 
 
 class VideoPageMixin:
@@ -176,7 +176,7 @@ class VideoPageMixin:
         return video_command(self._video_settings())
 
     def _start_video(self) -> None:
-        if not port_open(self.host.get(), self._int_value(self.port, 2000)):
+        if not carla_listening(self.host.get(), self._int_value(self.port, 2000)):
             messagebox.showerror(
                 "CARLA chưa sẵn sàng",
                 "Hãy bật CARLA server trước khi quay video.",

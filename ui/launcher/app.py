@@ -23,7 +23,7 @@ from ui.launcher.processes import (
     ManagedProcess,
     ProcessSpec,
     carla_process_rows,
-    port_open,
+    carla_listening,
 )
 from ui.launcher.theme import COLORS, configure_style
 from ui.launcher.widgets import (
@@ -512,7 +512,7 @@ class AebLauncher(
 
     def _check_server_now(self) -> None:
         port = self._int_value(self.port, 2000)
-        opened = port_open(self.host.get(), port, timeout=0.5)
+        opened = carla_listening(self.host.get(), port, timeout=0.5)
         if opened:
             status = "ONLINE  {}:{}".format(self.host.get(), port)
             status_kind = "online"

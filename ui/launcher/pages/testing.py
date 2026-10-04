@@ -8,7 +8,7 @@ from typing import List
 
 from ui.launcher.commands import CheckSettings, check_command
 from ui.launcher.config import AEB_ROOT, TEST_SCRIPTS
-from ui.launcher.processes import ProcessSpec, port_open
+from ui.launcher.processes import ProcessSpec, carla_listening
 
 
 class TestingPageMixin:
@@ -163,7 +163,7 @@ class TestingPageMixin:
 
     def _start_test(self) -> None:
         needs_carla = self.test_type.get() in TEST_SCRIPTS
-        if needs_carla and not port_open(
+        if needs_carla and not carla_listening(
             self.host.get(),
             self._int_value(self.port, 2000),
         ):

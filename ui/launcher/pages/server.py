@@ -19,7 +19,7 @@ from ui.launcher.processes import (
     ManagedProcess,
     ProcessSpec,
     carla_process_rows,
-    port_open,
+    carla_listening,
     process_alive,
 )
 
@@ -101,7 +101,7 @@ class ServerPageMixin:
             messagebox.showerror("Thiếu CARLA", "Không thấy {}".format(CARLA_SCRIPT))
             return
         port = self._int_value(self.port, 2000)
-        if port_open(self.host.get(), port):
+        if carla_listening(self.host.get(), port):
             messagebox.showinfo(
                 "Server đã bật",
                 "Port {} đã mở. Có thể CARLA đang được bật bên ngoài launcher.".format(
@@ -231,7 +231,7 @@ class ServerPageMixin:
         deadline = time.time() + 90.0
         while time.time() < deadline:
             self.root.update()
-            if port_open(self.host.get(), port, timeout=0.5):
+            if carla_listening(self.host.get(), port, timeout=0.5):
                 self._append_log(
                     "CARLA Server",
                     "Port {} online after restart\n".format(port),

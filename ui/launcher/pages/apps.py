@@ -8,7 +8,7 @@ from typing import List
 
 from ui.launcher.commands import AppSettings, app_command
 from ui.launcher.config import AEB_ROOT, BRAKE_MODES, SCENARIO_CONFIGS, UI_APPLICATIONS
-from ui.launcher.processes import ProcessSpec, port_open
+from ui.launcher.processes import ProcessSpec, carla_listening
 
 
 class AppsPageMixin:
@@ -219,7 +219,7 @@ class AppsPageMixin:
         ):
             if not self._restart_carla_blocking():
                 return
-        if not port_open(self.host.get(), port):
+        if not carla_listening(self.host.get(), port):
             if not messagebox.askyesno(
                 "CARLA chưa sẵn sàng",
                 "Không kết nối được CARLA port {}. Vẫn chạy ứng dụng?".format(
